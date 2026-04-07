@@ -7,6 +7,7 @@ import RightPanel from '@/components/RightPanel';
 import Editor2D from '@/components/Editor2D';
 import Preview3D from '@/components/Preview3D';
 import PreviewBAT from '@/components/PreviewBAT';
+import CartPanel from '@/components/CartPanel';
 import OnboardingTour from '@/components/OnboardingTour';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import WarningModal from '@/components/WarningModal';
@@ -99,6 +100,7 @@ const Index = () => {
 
       <WarningModal open={showWarning} onClose={handleWarningClose} />
       <OnboardingTour />
+      <CartPanel />
     </div>
   );
 };
