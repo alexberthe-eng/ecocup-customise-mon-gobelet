@@ -346,20 +346,48 @@ const Editor2D = () => {
             );
           })}
 
-          {/* Graduation marks overlay */}
+          {/* Graduation marks overlay — draggable */}
           {showGraduation && (() => {
             const marks = getGraduationMarks(currentDesign.graduation);
             const scale = isMobile ? 340 / 600 : 1;
             const canvasW = (isMobile ? 340 : 600);
             const canvasH = (isMobile ? 227 : 400);
+            const offsets = currentDesign.graduationOffsets;
             return marks.map((mark) => {
-              const y = mark.positionY * canvasH;
+              const off = offsets[mark.id] ?? { dx: 0, dy: 0 };
+              const x = mark.defaultX * canvasW + off.dx * scale;
+              const y = mark.defaultY * canvasH + off.dy * scale;
+              const lineW = canvasW * 0.08;
               return (
-                <div key={mark.label} className="absolute left-0 right-0 pointer-events-none" style={{ top: y }}>
-                  <div className="flex items-center justify-center gap-1">
-                    <div className="h-px bg-foreground/40" style={{ width: canvasW * 0.08 }} />
+                <div
+                  key={mark.id}
+                  className="absolute cursor-move select-none"
+                  style={{ left: x - lineW / 2 - 10, top: y - 4, zIndex: 999 }}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startDx = off.dx;
+                    const startDy = off.dy;
+                    const onMove = (ev: MouseEvent) => {
+                      const dx = (ev.clientX - startX) / scale;
+                      const dy = (ev.clientY - startY) / scale;
+                      const newOffsets = { ...useStore.getState().currentDesign.graduationOffsets, [mark.id]: { dx: startDx + dx, dy: startDy + dy } };
+                      useStore.setState((s) => ({ currentDesign: { ...s.currentDesign, graduationOffsets: newOffsets } }));
+                    };
+                    const onUp = () => {
+                      window.removeEventListener('mousemove', onMove);
+                      window.removeEventListener('mouseup', onUp);
+                      pushHistory();
+                    };
+                    window.addEventListener('mousemove', onMove);
+                    window.addEventListener('mouseup', onUp);
+                  }}
+                >
+                  <div className="flex items-center justify-center">
+                    <div className="h-px bg-foreground/40" style={{ width: lineW }} />
                   </div>
-                  <p className="text-center text-foreground/60 font-medium select-none" style={{ fontSize: 10 * scale }}>
+                  <p className="text-center text-foreground/60 font-medium whitespace-nowrap" style={{ fontSize: 10 * scale }}>
                     {mark.label}
                   </p>
                 </div>
