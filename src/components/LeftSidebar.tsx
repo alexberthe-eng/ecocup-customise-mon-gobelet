@@ -95,7 +95,7 @@ const LeftSidebar = () => {
               >
                 <div className="relative">
                   <Icon size={18} />
-                  {tool.showPlus && <Plus size={9} strokeWidth={3} className="absolute -top-0.5 -right-1.5 text-accent" />}
+                  {tool.showPlus && <Plus size={9} strokeWidth={3} className="absolute -top-0.5 -right-1.5" />}
                 </div>
                 <span className="truncate max-w-[56px]">{tool.label}</span>
               </button>
@@ -135,7 +135,7 @@ const LeftSidebar = () => {
               >
                 <div className="relative">
                   <Icon size={18} />
-                  {tool.showPlus && <Plus size={9} strokeWidth={3} className="absolute -top-0.5 -right-1.5 text-accent" />}
+                  {tool.showPlus && <Plus size={9} strokeWidth={3} className="absolute -top-0.5 -right-1.5" />}
                 </div>
                 <span className="truncate max-w-[56px]">{tool.label}</span>
               </button>
