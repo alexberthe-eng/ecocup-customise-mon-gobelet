@@ -66,3 +66,50 @@
     border-width: 0.5px;
   }
 }
+
+/* ─── Print styles ─── */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 15mm;
+  }
+
+  /* Hide everything except BAT content */
+  header,
+  aside,
+  footer,
+  nav,
+  .bat-actions,
+  .bat-pills,
+  .bat-legend,
+  [data-tour],
+  [class*="border-b border-thin"] {
+    display: none !important;
+  }
+
+  /* Show only the BAT zone */
+  #bat-content {
+    margin: 0 auto;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* Print header */
+  body::before {
+    content: "ECOCUP® — Bon à Tirer";
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  /* Print footer */
+  body::after {
+    content: "Ce document est un aperçu non contractuel. Vérifiez les zones de sécurité avant validation.";
+    display: block;
+    font-size: 8px;
+    color: #888;
+    margin-top: 16px;
+    text-align: center;
+  }
+}
