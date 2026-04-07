@@ -106,7 +106,7 @@ export const ElementPanel = ({
 }) => {
   const { updateElement, removeElement, moveElementLayer, pushHistory, addElement, setSelectedElementId } = useStore();
 
-  const update = (updates: Partial<DesignElement>) => updateElement(element.id, updates);
+  const update = (updates: Partial<DesignElement>) => updateElement(element.id, updates, false);
 
   const handleDuplicate = () => {
     const newId = crypto.randomUUID();
