@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 const TopBar = () => {
   const cart = useStore((s) => s.cart);
   const designName = useStore((s) => s.currentDesign.name);
+  const cupColor = useStore((s) => s.currentDesign.cupColor);
   const setDesignName = useStore((s) => s.setDesignName);
   const showRightPanel = useStore((s) => s.showRightPanel);
   const setShowRightPanel = useStore((s) => s.setShowRightPanel);
