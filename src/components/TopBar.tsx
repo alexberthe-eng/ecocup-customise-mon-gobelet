@@ -127,13 +127,16 @@ const TopBar = () => {
         .from('shared-designs')
         .getPublicUrl(fileName);
 
-      const { data, error } = await supabase
-        .from('shared_designs')
-        .insert({
+      const insertData: any = {
           design_name: designName,
           cup_color: cupColor,
           image_url: urlData.publicUrl,
-        })
+        };
+      if (user) insertData.user_id = user.id;
+
+      const { data, error } = await supabase
+        .from('shared_designs')
+        .insert(insertData)
         .select('id')
         .single();
 
