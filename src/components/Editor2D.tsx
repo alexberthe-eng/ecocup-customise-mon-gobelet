@@ -299,10 +299,10 @@ const Editor2D = () => {
                       </div>
                       <div className="w-px h-2 bg-accent" />
                     </div>
-                    {/* Close / deselect handle */}
+                    {/* Delete handle */}
                     <div
                       className="absolute -top-3 -right-3 w-5 h-5 rounded-full bg-destructive flex items-center justify-center cursor-pointer shadow-sm hover:scale-110 transition-transform"
-                      onClick={(e) => { e.stopPropagation(); setSelectedElementId(null); }}
+                      onClick={(e) => { e.stopPropagation(); removeElement(el.id); }}
                       onMouseDown={(e) => e.stopPropagation()}
                     >
                       <X size={10} className="text-destructive-foreground" />
@@ -364,7 +364,10 @@ const ContextualPanel = ({
         className="absolute bottom-0 left-0 right-0 bg-background border-t border-thin shadow-lg p-3 z-20 max-h-[50%] overflow-y-auto animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate">{elementName}</p>
+        <button onClick={() => setSelectedElementId(null)} className="absolute top-2 right-2 p-0.5 rounded hover:bg-secondary">
+          <X size={12} className="text-muted-foreground" />
+        </button>
+        <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate pr-5">{elementName}</p>
         <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} />
       </div>
     );
@@ -387,10 +390,13 @@ const ContextualPanel = ({
         style={{ top: arrowTop }}
       />
       <div
-        className="bg-background border-thin rounded-xl shadow-lg p-3 min-w-[220px] pointer-events-auto animate-scale-in"
+        className="relative bg-background border-thin rounded-xl shadow-lg p-3 min-w-[220px] pointer-events-auto animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate">{elementName}</p>
+        <button onClick={() => setSelectedElementId(null)} className="absolute top-2 right-2 p-0.5 rounded hover:bg-secondary">
+          <X size={12} className="text-muted-foreground" />
+        </button>
+        <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate pr-5">{elementName}</p>
         <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} />
       </div>
     </div>
