@@ -1,5 +1,6 @@
 import { useStore, getUnitPrice } from '@/store/useStore';
 import { X, ShoppingCart } from 'lucide-react';
+import { toast } from 'sonner';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
@@ -31,7 +32,9 @@ const RightPanel = () => {
 
   const handleAddToCart = () => {
     addToCart();
-    // On mobile, close this panel and open cart
+    toast.success('Design ajouté au panier ✓', {
+      description: 'Vous pouvez créer un nouveau visuel.',
+    });
     if (!isDesktop) {
       setShowRightPanel(false);
     }
