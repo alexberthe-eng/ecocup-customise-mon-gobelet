@@ -121,7 +121,7 @@ export const useStore = create<AppState>((set, get) => ({
   activeTool: null,
   openDrawer: null,
   showColorPopover: false,
-  gridVisible: false,
+  gridVisible: true,
   tourCompleted: localStorage.getItem('tourCompleted') === 'true',
   showTour: false,
   tourStep: 0,
