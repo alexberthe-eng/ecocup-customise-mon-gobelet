@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { useStore } from '@/store/useStore';
 import TopBar from '@/components/TopBar';
 import LeftSidebar from '@/components/LeftSidebar';
@@ -9,19 +9,21 @@ import Preview3D from '@/components/Preview3D';
 import PreviewBAT from '@/components/PreviewBAT';
 import OnboardingTour from '@/components/OnboardingTour';
 import ToggleSwitch from '@/components/ToggleSwitch';
+import WarningModal from '@/components/WarningModal';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
 const Index = () => {
   const { activeTab, setActiveTab, tourCompleted, startTour, gridVisible, setGridVisible } = useStore();
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
+  const [showWarning, setShowWarning] = useState(true);
 
-  useEffect(() => {
+  const handleWarningClose = () => {
+    setShowWarning(false);
     if (!tourCompleted) {
-      const timer = setTimeout(startTour, 800);
-      return () => clearTimeout(timer);
+      setTimeout(startTour, 400);
     }
-  }, []);
+  };
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
@@ -79,6 +81,7 @@ const Index = () => {
       {/* Mobile bottom toolbar */}
       {isMobile && <LeftSidebar />}
 
+      <WarningModal open={showWarning} onClose={handleWarningClose} />
       <OnboardingTour />
     </div>
   );
