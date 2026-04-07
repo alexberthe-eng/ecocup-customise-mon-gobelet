@@ -441,6 +441,8 @@ const Preview3D = () => {
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[11px] text-foreground/60 bg-background/85 px-4 py-2 rounded-full shadow-sm backdrop-blur-sm">
         ‹&nbsp; Glissez pour tourner &nbsp;›&nbsp; | &nbsp;Scrollez pour zoomer
       </div>
+
+      <CanvasDrawer />
     </div>
   );
 };
