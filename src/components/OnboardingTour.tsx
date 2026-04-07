@@ -64,51 +64,51 @@ const OnboardingTour = () => {
   return (
     <div className="fixed inset-0 z-50">
       {/* Overlay */}
-      <div className="absolute inset-0 bg-foreground/40" onClick={endTour} />
+      <div className="absolute inset-0 bg-black/50" onClick={endTour} />
 
       {/* Spotlight */}
       <div
-        className="absolute border-2 border-accent rounded-lg z-10"
+        className="absolute border-2 border-foreground rounded-lg z-10"
         style={{
           top: rect.top - 4,
           left: rect.left - 4,
           width: rect.width + 8,
           height: rect.height + 8,
-          boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)',
+          boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)',
         }}
       />
 
       {/* Tooltip */}
       <div
-        className="absolute bg-background rounded-xl p-4 shadow-lg z-20 w-[260px]"
+        className="absolute bg-white rounded-xl p-4 shadow-xl z-20 w-[260px] border border-neutral-200"
         style={{ left: tooltipLeft, top: tooltipTop }}
       >
-        <h4 className="text-sm font-semibold mb-1">{step.title}</h4>
-        <p className="text-xs text-muted-foreground mb-3">{step.description}</p>
+        <h4 className="text-sm font-semibold mb-1 text-neutral-900">{step.title}</h4>
+        <p className="text-xs text-neutral-500 mb-3">{step.description}</p>
 
         {/* Progress */}
         <div className="flex gap-1 mb-3">
           {TOUR_STEPS.map((_, i) => (
             <div
               key={i}
-              className={`h-1 flex-1 rounded-full ${i <= tourStep ? 'bg-accent' : 'bg-secondary'}`}
+              className={`h-1 flex-1 rounded-full ${i <= tourStep ? 'bg-neutral-900' : 'bg-neutral-200'}`}
             />
           ))}
         </div>
 
         <div className="flex justify-between text-xs">
-          <button onClick={endTour} className="text-muted-foreground hover:underline">
+          <button onClick={endTour} className="text-neutral-400 hover:text-neutral-600 hover:underline">
             Passer
           </button>
           <div className="flex gap-2">
             {tourStep > 0 && (
-              <button onClick={prevTourStep} className="text-muted-foreground hover:underline">
+              <button onClick={prevTourStep} className="text-neutral-400 hover:text-neutral-600 hover:underline">
                 ← Retour
               </button>
             )}
             <button
               onClick={nextTourStep}
-              className="bg-accent text-accent-foreground px-3 py-1 rounded-md hover:opacity-90"
+              className="bg-neutral-900 text-white px-3 py-1 rounded-md hover:bg-neutral-800 transition-colors"
             >
               {tourStep < TOUR_STEPS.length - 1 ? 'Suivant →' : 'Commencer !'}
             </button>
