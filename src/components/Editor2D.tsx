@@ -32,7 +32,11 @@ const Editor2D = () => {
     startY: number;
     elX: number;
     elY: number;
-    type: 'move' | 'resize';
+    type: 'move' | 'resize' | 'rotate';
+    startAngle?: number;
+    startRotation?: number;
+    centerX?: number;
+    centerY?: number;
   } | null>(null);
 
   const selectedElement = useMemo(
