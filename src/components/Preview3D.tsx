@@ -44,6 +44,7 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
   const cupColor = useStore((s) => s.currentDesign.cupColor);
   const elements = useStore((s) => s.currentDesign.elements);
   const graduation = useStore((s) => s.currentDesign.graduation);
+  const graduationOffsets = useStore((s) => s.currentDesign.graduationOffsets);
   const showGraduation = useStore((s) => s.showGraduation);
   const selectedElementId = useStore((s) => s.selectedElementId);
   const setSelectedElementId = useStore((s) => s.setSelectedElementId);
@@ -147,7 +148,7 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
         textureRef.current.needsUpdate = true;
       }
     });
-  }, [cupColor, elements, showGraduation, graduation]);
+  }, [cupColor, elements, showGraduation, graduation, graduationOffsets]);
 
   const texture = useMemo(() => {
     const tex = new THREE.CanvasTexture(offscreenCanvas.current!);
