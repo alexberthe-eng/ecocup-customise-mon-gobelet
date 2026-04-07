@@ -372,9 +372,8 @@ const Editor2D = () => {
                   const startDy = off.dy;
                   const onMove = (ev: MouseEvent) => {
                     const dx = (ev.clientX - startX) / scale;
-                    const dy = (ev.clientY - startY) / scale;
                     useStore.setState((s) => ({
-                      currentDesign: { ...s.currentDesign, graduationOffset: { dx: startDx + dx, dy: startDy + dy } },
+                      currentDesign: { ...s.currentDesign, graduationOffset: { dx: startDx + dx, dy: startDy } },
                     }));
                   };
                   const onUp = () => {
