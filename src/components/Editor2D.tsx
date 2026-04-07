@@ -186,6 +186,7 @@ const Editor2D = () => {
                   opacity: el.opacity / 100,
                   zIndex: el.zIndex,
                 }}
+                onClick={(e) => e.stopPropagation()}
                 onMouseDown={(e) => handleMouseDown(e, el, 'move')}
                 onTouchStart={(e) => handleTouchStart(e, el)}
               >
