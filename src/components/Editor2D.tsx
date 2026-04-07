@@ -400,19 +400,17 @@ const Editor2D = () => {
                      </div>
                    );
                  })}
-                {/* Ecocup logo below last graduation mark */}
+                {/* Ecocup logo anchored to the bottom of the grid */}
                 {(() => {
-                  const lastMark = marks[marks.length - 1];
-                  const logoY = lastMark ? lastMark.defaultY * canvasH + 28 : canvasH * 0.90;
-                  const logoX = (lastMark?.defaultX ?? 0.5) * canvasW;
-                  const logoW = 30 * scale;
+                  const logoX = canvasW * 0.5;
                   const logoH = 30 * scale;
+                  const logoW = logoH * (99 / 88);
                   return (
                     <img
                       src={ecocupLogo}
                       alt="Ecocup"
                       className="absolute pointer-events-none"
-                      style={{ left: logoX - logoW / 2, top: logoY, width: logoW, height: logoH, objectFit: 'contain' }}
+                      style={{ left: logoX - logoW / 2, bottom: 0, width: logoW, height: logoH, objectFit: 'contain' }}
                       draggable={false}
                     />
                   );

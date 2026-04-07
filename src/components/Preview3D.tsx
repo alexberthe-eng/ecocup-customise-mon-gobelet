@@ -143,19 +143,23 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
         });
 
         // Draw ecocup logo below last mark
-        const lastMark = marks[marks.length - 1];
-        if (lastMark) {
+        if (marks.length > 0) {
           const logoImg = new Image();
           logoImg.crossOrigin = 'anonymous';
           logoImg.src = ecocupLogo;
-          const logoX = lastMark.defaultX * CANVAS_W + off.dx;
-          const logoY = lastMark.defaultY * CANVAS_H + off.dy + 28;
-          const logoSize = 24;
+          const logoH = 24;
+          const drawLogo = () => {
+            const ratio = logoImg.naturalWidth && logoImg.naturalHeight ? logoImg.naturalWidth / logoImg.naturalHeight : 99 / 88;
+            const logoW = logoH * ratio;
+            const logoX = CANVAS_W * 0.5 + off.dx;
+            const logoY = CANVAS_H - logoH;
+            ctx.drawImage(logoImg, logoX - logoW / 2, logoY, logoW, logoH);
+          };
           if (logoImg.complete && logoImg.naturalWidth > 0) {
-            ctx.drawImage(logoImg, logoX - logoSize / 2, logoY, logoSize, logoSize);
+            drawLogo();
           } else {
             logoImg.onload = () => {
-              ctx.drawImage(logoImg, logoX - logoSize / 2, logoY, logoSize, logoSize);
+              drawLogo();
               if (textureRef.current) textureRef.current.needsUpdate = true;
             };
           }
