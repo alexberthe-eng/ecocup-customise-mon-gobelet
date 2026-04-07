@@ -383,7 +383,7 @@ const ContextualPanel = ({
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate">{elementName}</p>
-        <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} />
+        <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} />
       </div>
     </div>
   );
