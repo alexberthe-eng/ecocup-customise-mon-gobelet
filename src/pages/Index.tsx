@@ -102,6 +102,7 @@ const Index = () => {
       <WarningModal open={showWarning} onClose={handleWarningClose} />
       <OnboardingTour />
       <CartPanel />
+      <AssistantPopup />
     </div>
   );
 };
