@@ -109,6 +109,7 @@ const defaultDesign: Design = {
   graduation: 'standard-33cl',
   quantity: 250,
   comment: '',
+  graduationOffsets: {},
 };
 
 const PRICE_TIERS: Record<number, number> = {
