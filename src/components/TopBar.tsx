@@ -11,6 +11,7 @@ const TopBar = () => {
   const setDesignName = useStore((s) => s.setDesignName);
   const showRightPanel = useStore((s) => s.showRightPanel);
   const setShowRightPanel = useStore((s) => s.setShowRightPanel);
+  const setShowCartPanel = useStore((s) => s.setShowCartPanel);
   const isMobile = useIsMobile();
 
   const [editing, setEditing] = useState(false);
@@ -119,7 +120,7 @@ const TopBar = () => {
             </>
           )}
           <button
-            onClick={() => setShowRightPanel(!showRightPanel)}
+            onClick={() => setShowCartPanel(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
           >
             <ShoppingCart size={14} />
