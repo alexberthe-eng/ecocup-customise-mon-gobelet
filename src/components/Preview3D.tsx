@@ -149,8 +149,8 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
           logoImg.crossOrigin = 'anonymous';
           logoImg.src = ecocupLogo;
           const logoX = lastMark.defaultX * CANVAS_W + off.dx;
-          const logoY = lastMark.defaultY * CANVAS_H + off.dy + 22;
-          const logoSize = 36;
+          const logoY = lastMark.defaultY * CANVAS_H + off.dy + 18;
+          const logoSize = 24;
           if (logoImg.complete && logoImg.naturalWidth > 0) {
             ctx.drawImage(logoImg, logoX - logoSize / 2, logoY, logoSize, logoSize);
           } else {
