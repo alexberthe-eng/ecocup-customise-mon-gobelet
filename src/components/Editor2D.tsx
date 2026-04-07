@@ -5,6 +5,7 @@ import CanvasDrawer from '@/components/CanvasDrawer';
 import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getGraduationMarks } from '@/components/GraduationMarks';
+import ecocupLogo from '@/assets/ecocup-logo.png';
 
 const GRID_SIZE = 22;
 
