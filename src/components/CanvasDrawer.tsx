@@ -50,10 +50,9 @@ const MASKS: { id: MaskType; label: string; path: string }[] = [
 
 /* ─── Image Drawer ─── */
 const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
-  const [step, setStep] = useState<'mask' | 'upload'>('mask');
-  const [selectedMask, setSelectedMask] = useState<MaskType>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const { addElement, currentDesign } = useStore();
+  const [selectedFile, setSelectedFile] = useState<{ dataUrl: string; name: string } | null>(null);
+  const { addElement, currentDesign, setSelectedElementId } = useStore();
 
   const handleFile = (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
@@ -62,55 +61,76 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
     }
     const reader = new FileReader();
     reader.onload = (e) => {
-      const count = currentDesign.elements.length;
-      const offset = count * 30;
-      addElement({
-        id: crypto.randomUUID(),
-        type: 'image',
-        x: 80 + (offset % 300), y: 50 + (offset % 200), width: 150, height: 150,
-        rotation: 0, opacity: 100, color: '#000000',
-        zIndex: count,
-        src: e.target?.result as string,
-        maskType: selectedMask,
-      });
-      onClose();
+      setSelectedFile({ dataUrl: e.target?.result as string, name: file.name });
     };
     reader.readAsDataURL(file);
   };
 
-  if (step === 'mask') {
-    return (
-      <div className="p-4 pt-10">
-        <h3 className="text-sm font-semibold mb-1">Importer une image</h3>
-        <p className="text-[10px] text-muted-foreground mb-4">Choisissez une forme de masque pour votre image</p>
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          {MASKS.map((m) => (
-            <button key={m.id} onClick={() => { setSelectedMask(m.id); setStep('upload'); }}
-              className="aspect-square border-thin rounded-lg flex flex-col items-center justify-center gap-1 hover:bg-secondary/50 transition-colors">
-              <svg viewBox="0 0 100 100" className="w-10 h-10 text-foreground"><path d={m.path} fill="none" stroke="currentColor" strokeWidth="2" /></svg>
-              <span className="text-[9px] text-muted-foreground">{m.label}</span>
-            </button>
-          ))}
-          <div className="aspect-square border border-dashed rounded-lg flex items-center justify-center text-[9px] text-muted-foreground opacity-50">Admin</div>
-        </div>
-      </div>
-    );
-  }
+  const handleAdd = () => {
+    if (!selectedFile) return;
+    const count = currentDesign.elements.length;
+    const offset = count * 30;
+    const newId = crypto.randomUUID();
+    addElement({
+      id: newId,
+      type: 'image',
+      x: 80 + (offset % 300), y: 50 + (offset % 200), width: 150, height: 150,
+      rotation: 0, opacity: 100, color: '#000000',
+      zIndex: count,
+      src: selectedFile.dataUrl,
+    });
+    setSelectedElementId(newId);
+    onClose();
+  };
 
   return (
-    <div className="p-4 pt-10">
-      <h3 className="text-sm font-semibold mb-3">Importer votre image</h3>
-      <div className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:bg-secondary/30 transition-colors"
+    <div className="p-5 pt-10 flex flex-col h-full">
+      <h3 className="text-sm font-semibold mb-4">Importez votre visuel</h3>
+
+      <div
+        className="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:bg-secondary/30 transition-colors mb-4"
         onClick={() => fileRef.current?.click()}
         onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file) handleFile(file); }}>
-        <p className="text-xs text-muted-foreground mb-2">Glissez votre photo ici</p>
-        <button className="text-xs border-thin rounded-md px-4 py-2 hover:bg-secondary">Importer votre image</button>
-        <p className="text-[9px] text-muted-foreground mt-3">PNG, JPG, SVG — max 10 Mo — max 4000px</p>
+        onDrop={(e) => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file) handleFile(file); }}
+      >
+        {selectedFile ? (
+          <div className="flex flex-col items-center gap-2">
+            <img src={selectedFile.dataUrl} alt="" className="max-h-24 object-contain rounded" />
+            <p className="text-[10px] text-muted-foreground truncate max-w-full">{selectedFile.name}</p>
+            <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }} className="text-[10px] text-destructive hover:underline">Supprimer</button>
+          </div>
+        ) : (
+          <>
+            <p className="text-sm font-medium mb-1">Déposer-glisser</p>
+            <p className="text-xs text-muted-foreground mb-3">ou</p>
+            <button className="inline-flex items-center gap-2 text-xs bg-primary text-primary-foreground rounded-lg px-5 py-2.5 font-medium hover:opacity-90 transition-opacity">
+              Importer votre image
+            </button>
+          </>
+        )}
       </div>
-      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/svg+xml" className="hidden"
+
+      <div className="text-[11px] text-foreground mb-1">
+        <span className="font-medium">Formats de fichier :</span> PNG, JPG
+      </div>
+      <div className="text-[11px] text-foreground mb-4">
+        <span className="font-medium">Taille de fichier :</span> 10 Mo max.
+      </div>
+
+      <p className="text-[11px] text-muted-foreground text-center mb-4">
+        Importez un fichier image à ajouter à votre design.
+      </p>
+
+      <button
+        onClick={handleAdd}
+        disabled={!selectedFile}
+        className="w-full py-3 rounded-xl text-sm font-semibold bg-primary text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity mt-auto"
+      >
+        Ajouter au design
+      </button>
+
+      <input ref={fileRef} type="file" accept="image/png,image/jpeg" className="hidden"
         onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFile(file); }} />
-      <button onClick={() => setStep('mask')} className="text-[10px] text-muted-foreground mt-3 hover:underline">← Changer le masque</button>
     </div>
   );
 };
