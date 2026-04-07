@@ -21,12 +21,6 @@ export interface DesignElement {
   maskType?: MaskType;
 }
 
-export interface GradOffset {
-  /** Offset in pixels from default position */
-  dx: number;
-  dy: number;
-}
-
 export interface Design {
   id: string;
   name: string;
@@ -35,8 +29,8 @@ export interface Design {
   graduation: string;
   quantity: number;
   comment: string;
-  /** Per-graduation-mark offsets keyed by mark id */
-  graduationOffsets: Record<string, GradOffset>;
+  /** Single offset for the entire graduation block (pixels) */
+  graduationOffset: { dx: number; dy: number };
 }
 
 export type ActiveTab = '2d' | '3d' | 'bat';
@@ -109,7 +103,7 @@ const defaultDesign: Design = {
   graduation: 'standard-33cl',
   quantity: 250,
   comment: '',
-  graduationOffsets: {},
+  graduationOffset: { dx: 0, dy: 0 },
 };
 
 const PRICE_TIERS: Record<number, number> = {

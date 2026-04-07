@@ -346,53 +346,62 @@ const Editor2D = () => {
             );
           })}
 
-          {/* Graduation marks overlay — draggable */}
+          {/* Graduation marks overlay — draggable as a single block */}
           {showGraduation && (() => {
             const marks = getGraduationMarks(currentDesign.graduation);
             const scale = isMobile ? 340 / 600 : 1;
             const canvasW = (isMobile ? 340 : 600);
             const canvasH = (isMobile ? 227 : 400);
-            const offsets = currentDesign.graduationOffsets;
-            return marks.map((mark) => {
-              const off = offsets[mark.id] ?? { dx: 0, dy: 0 };
-              const x = mark.defaultX * canvasW + off.dx * scale;
-              const y = mark.defaultY * canvasH + off.dy * scale;
-              const lineW = canvasW * 0.08;
-              return (
-                <div
-                  key={mark.id}
-                  className="absolute cursor-move select-none"
-                  style={{ left: x - lineW / 2 - 10, top: y - 4, zIndex: 999 }}
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    const startX = e.clientX;
-                    const startY = e.clientY;
-                    const startDx = off.dx;
-                    const startDy = off.dy;
-                    const onMove = (ev: MouseEvent) => {
-                      const dx = (ev.clientX - startX) / scale;
-                      const dy = (ev.clientY - startY) / scale;
-                      const newOffsets = { ...useStore.getState().currentDesign.graduationOffsets, [mark.id]: { dx: startDx + dx, dy: startDy + dy } };
-                      useStore.setState((s) => ({ currentDesign: { ...s.currentDesign, graduationOffsets: newOffsets } }));
-                    };
-                    const onUp = () => {
-                      window.removeEventListener('mousemove', onMove);
-                      window.removeEventListener('mouseup', onUp);
-                      pushHistory();
-                    };
-                    window.addEventListener('mousemove', onMove);
-                    window.addEventListener('mouseup', onUp);
-                  }}
-                >
-                  <div className="flex items-center justify-center">
-                    <div className="h-px bg-foreground/40" style={{ width: lineW }} />
-                  </div>
-                  <p className="text-center text-foreground/60 font-medium whitespace-nowrap" style={{ fontSize: 10 * scale }}>
-                    {mark.label}
-                  </p>
-                </div>
-              );
-            });
+            const off = currentDesign.graduationOffset;
+            return (
+              <div
+                className="absolute cursor-move select-none"
+                style={{
+                  left: off.dx * scale,
+                  top: off.dy * scale,
+                  width: canvasW,
+                  height: canvasH,
+                  zIndex: 999,
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  const startX = e.clientX;
+                  const startY = e.clientY;
+                  const startDx = off.dx;
+                  const startDy = off.dy;
+                  const onMove = (ev: MouseEvent) => {
+                    const dx = (ev.clientX - startX) / scale;
+                    const dy = (ev.clientY - startY) / scale;
+                    useStore.setState((s) => ({
+                      currentDesign: { ...s.currentDesign, graduationOffset: { dx: startDx + dx, dy: startDy + dy } },
+                    }));
+                  };
+                  const onUp = () => {
+                    window.removeEventListener('mousemove', onMove);
+                    window.removeEventListener('mouseup', onUp);
+                    pushHistory();
+                  };
+                  window.addEventListener('mousemove', onMove);
+                  window.addEventListener('mouseup', onUp);
+                }}
+              >
+                {marks.map((mark) => {
+                  const y = mark.defaultY * canvasH;
+                  const x = mark.defaultX * canvasW;
+                  const lineW = canvasW * 0.08;
+                  return (
+                    <div key={mark.id} className="absolute pointer-events-none" style={{ left: x - lineW / 2 - 10, top: y - 4 }}>
+                      <div className="flex items-center justify-center">
+                        <div className="h-px bg-foreground/40" style={{ width: lineW }} />
+                      </div>
+                      <p className="text-center text-foreground/60 font-medium whitespace-nowrap" style={{ fontSize: 10 * scale }}>
+                        {mark.label}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            );
           })()}
 
           {/* Graduation mask overlay */}
