@@ -234,6 +234,7 @@ const Editor2D = () => {
             return (
               <div
                 key={el.id}
+                data-element-id={el.id}
                 className="absolute cursor-move"
                 style={{
                   left: el.x * scale,
