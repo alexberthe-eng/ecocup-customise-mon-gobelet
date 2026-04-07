@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ShoppingCart, Save, Share2, Menu, Check, X, LogOut, Loader2, Copy } from 'lucide-react';
+import { ShoppingCart, Save, Share2, Menu, Check, X, LogOut, Loader2, Copy, User } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,11 +42,38 @@ const TopBar = () => {
     }
   }, [editing, designName]);
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     if (!user) {
       setShowAuth(true);
-    } else {
-      setEditing(true);
+      return;
+    }
+    // Save design to database
+    try {
+      let thumbnailUrl: string | undefined;
+      const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+      if (canvasEl) {
+        const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
+        const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
+        const fileName = `${user.id}/${crypto.randomUUID()}.png`;
+        await supabase.storage.from('design-thumbnails').upload(fileName, blob, { contentType: 'image/png' });
+        const { data: urlData } = supabase.storage.from('design-thumbnails').getPublicUrl(fileName);
+        thumbnailUrl = urlData.publicUrl;
+      }
+
+      const currentDesign = useStore.getState().currentDesign;
+      const { error } = await supabase.from('saved_designs').insert({
+        user_id: user.id,
+        design_name: currentDesign.name,
+        cup_color: currentDesign.cupColor,
+        design_data: currentDesign as any,
+        thumbnail_url: thumbnailUrl,
+      });
+
+      if (error) throw error;
+      toast.success('Design sauvegardé !', { description: 'Retrouvez-le dans votre espace client.' });
+    } catch (err) {
+      console.error(err);
+      toast.error('Erreur lors de la sauvegarde');
     }
   };
 
