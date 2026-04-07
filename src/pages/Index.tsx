@@ -20,9 +20,7 @@ const Index = () => {
 
   const handleWarningClose = () => {
     setShowWarning(false);
-    if (!tourCompleted) {
-      setTimeout(startTour, 400);
-    }
+    setTimeout(startTour, 400);
   };
 
   return (
