@@ -11,7 +11,6 @@ const CANVAS_H = 400;
 function CupMesh() {
   const cupColor = useStore((s) => s.currentDesign.cupColor);
   const elements = useStore((s) => s.currentDesign.elements);
-  const meshRef = useRef<THREE.Mesh>(null);
 
   const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
@@ -44,23 +43,72 @@ function CupMesh() {
     return tex;
   }, [cupColor, elements]);
 
-  const geometry = useMemo(() => {
-    return new THREE.CylinderGeometry(1.1, 0.85, 2.2, 64, 1, true);
-  }, []);
+  const cupMaterial = useMemo(() => (
+    <meshPhysicalMaterial
+      map={texture}
+      side={THREE.DoubleSide}
+      transparent
+      opacity={0.92}
+      roughness={0.3}
+      metalness={0.05}
+      clearcoat={0.4}
+      clearcoatRoughness={0.2}
+    />
+  ), [texture]);
+
+  const solidMaterial = useMemo(() => (
+    <meshPhysicalMaterial
+      color={cupColor}
+      side={THREE.DoubleSide}
+      transparent
+      opacity={0.92}
+      roughness={0.3}
+      metalness={0.05}
+      clearcoat={0.4}
+      clearcoatRoughness={0.2}
+    />
+  ), [cupColor]);
+
+  // Dimensions
+  const topR = 1.1;
+  const botR = 0.85;
+  const h = 2.2;
+  const rimThickness = 0.04;
+  const rimHeight = 0.08;
 
   return (
-    <mesh ref={meshRef} geometry={geometry}>
-      <meshPhysicalMaterial
-        map={texture}
-        side={THREE.DoubleSide}
-        transparent
-        opacity={0.92}
-        roughness={0.3}
-        metalness={0.05}
-        clearcoat={0.4}
-        clearcoatRoughness={0.2}
-      />
-    </mesh>
+    <group>
+      {/* Cup body (open cylinder) */}
+      <mesh geometry={new THREE.CylinderGeometry(topR, botR, h, 64, 1, true)}>
+        {cupMaterial}
+      </mesh>
+
+      {/* Bottom disc */}
+      <mesh position={[0, -h / 2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[botR, 64]} />
+        {solidMaterial}
+      </mesh>
+
+      {/* Top rim — torus around the top edge */}
+      <mesh position={[0, h / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[topR, rimThickness, 16, 64]} />
+        <meshPhysicalMaterial
+          color={cupColor}
+          roughness={0.2}
+          metalness={0.05}
+          clearcoat={0.6}
+          clearcoatRoughness={0.15}
+        />
+      </mesh>
+
+      {/* Inner rim lip — slight inward ring for realism */}
+      <mesh
+        geometry={new THREE.CylinderGeometry(topR - rimThickness * 2, topR, rimHeight, 64, 1, true)}
+        position={[0, h / 2 - rimHeight / 2, 0]}
+      >
+        {solidMaterial}
+      </mesh>
+    </group>
   );
 }
 
