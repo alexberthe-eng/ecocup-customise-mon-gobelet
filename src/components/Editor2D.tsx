@@ -324,7 +324,7 @@ const ContextualPanel = ({
   canvasRef: React.RefObject<HTMLDivElement>;
   isMobile: boolean;
 }) => {
-  const { updateElement, removeElement, moveElementLayer, pushHistory } = useStore();
+  const { updateElement, removeElement, moveElementLayer, pushHistory, addElement, setSelectedElementId } = useStore();
 
   const update = (updates: Partial<DesignElement>) => {
     updateElement(element.id, updates);
