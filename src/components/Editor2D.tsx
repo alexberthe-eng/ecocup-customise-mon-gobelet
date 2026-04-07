@@ -402,7 +402,7 @@ const Editor2D = () => {
                  })}
                 {/* Ecocup logo anchored to the bottom of the grid */}
                 {(() => {
-                  const logoX = canvasW * 0.42;
+                  const logoX = (marks[0]?.defaultX ?? 0.5) * canvasW;
                   const logoH = 30 * scale;
                   const logoW = logoH * (99 / 88);
                   return (
