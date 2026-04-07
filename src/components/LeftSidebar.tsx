@@ -4,9 +4,6 @@ import { useStore, ActiveTool } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { useStore, ActiveTool } from '@/store/useStore';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?: boolean; tooltip: string }[] = [
   { id: 'color', icon: Palette, label: 'Gobelet', tooltip: 'Changer la couleur du gobelet' },
