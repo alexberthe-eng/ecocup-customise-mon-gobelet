@@ -162,11 +162,13 @@ export const useStore = create<AppState>((set, get) => ({
     } else if (tool === 'text') {
       // Directly add a text element and select it
       const newId = crypto.randomUUID();
+      const count = s.currentDesign.elements.length;
+      const offset = count * 30;
       const el: DesignElement = {
         id: newId,
         type: 'text',
-        x: 200,
-        y: 170,
+        x: 100 + (offset % 300),
+        y: 80 + (offset % 200),
         width: 200,
         height: 60,
         rotation: 0,
