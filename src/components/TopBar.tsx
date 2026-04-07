@@ -14,7 +14,7 @@ const TopBar = () => {
       <div className="flex items-center gap-2 md:gap-4 min-w-0">
         <span className="font-bold text-sm tracking-wide shrink-0">ECOCUP®</span>
         {!isMobile && (
-          <span className="text-xs text-muted-foreground truncate">— Gobelet personnalisé par vos soins – ECO 30 Digital</span>
+          <span className="text-sm font-medium text-foreground truncate">Gobelet personnalisé par vos soins – ECO 30 Digital</span>
         )}
       </div>
       <div className="flex items-center gap-1.5 md:gap-2">
