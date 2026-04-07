@@ -120,7 +120,7 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
       // Draw graduation marks on texture
       if (showGraduation) {
         const marks = getGraduationMarks(graduation);
-        const offsets = useStore.getState().currentDesign.graduationOffsets;
+        const offsets = graduationOffsets;
         ctx.save();
         marks.forEach((mark) => {
           const off = offsets[mark.id] ?? { dx: 0, dy: 0 };
