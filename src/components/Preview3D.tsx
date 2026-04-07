@@ -44,7 +44,7 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
   const cupColor = useStore((s) => s.currentDesign.cupColor);
   const elements = useStore((s) => s.currentDesign.elements);
   const graduation = useStore((s) => s.currentDesign.graduation);
-  const graduationOffsets = useStore((s) => s.currentDesign.graduationOffsets);
+  const graduationOffset = useStore((s) => s.currentDesign.graduationOffset);
   const showGraduation = useStore((s) => s.showGraduation);
   const selectedElementId = useStore((s) => s.selectedElementId);
   const setSelectedElementId = useStore((s) => s.setSelectedElementId);
