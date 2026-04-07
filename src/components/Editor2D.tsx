@@ -67,11 +67,20 @@ const Editor2D = () => {
           let newY = dragRef.current.elY + dy;
           if (grid) { newX = snapToGrid(newX); newY = snapToGrid(newY); }
           updateElement(dragRef.current.id, { x: newX, y: newY });
-        } else {
+        } else if (dragRef.current.type === 'resize') {
           let newW = Math.max(20, el.width + dx);
           let newH = Math.max(20, el.height + dy);
           if (grid) { newW = Math.max(GRID_SIZE, snapToGrid(newW)); newH = Math.max(GRID_SIZE, snapToGrid(newH)); }
           updateElement(dragRef.current.id, { width: newW, height: newH });
+        } else if (dragRef.current.type === 'rotate') {
+          const angle = Math.atan2(
+            ev.clientY - dragRef.current.centerY!,
+            ev.clientX - dragRef.current.centerX!
+          );
+          const angleDeg = angle * (180 / Math.PI);
+          const delta = angleDeg - dragRef.current.startAngle!;
+          const newRotation = Math.round(dragRef.current.startRotation! + delta);
+          updateElement(dragRef.current.id, { rotation: newRotation });
         }
       };
 
