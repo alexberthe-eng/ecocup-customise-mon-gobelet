@@ -116,11 +116,36 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
         ctx.restore();
       });
 
+      // Draw graduation marks on texture
+      if (showGraduation) {
+        const marks = getGraduationMarks(graduation);
+        ctx.save();
+        marks.forEach((mark) => {
+          const y = mark.positionY * CANVAS_H;
+          const lineW = CANVAS_W * 0.06;
+          const cx = CANVAS_W / 2;
+
+          ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(cx - lineW / 2, y);
+          ctx.lineTo(cx + lineW / 2, y);
+          ctx.stroke();
+
+          ctx.fillStyle = 'rgba(0,0,0,0.55)';
+          ctx.font = '600 11px system-ui';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText(mark.label, cx, y + 3);
+        });
+        ctx.restore();
+      }
+
       if (textureRef.current) {
         textureRef.current.needsUpdate = true;
       }
     });
-  }, [cupColor, elements]);
+  }, [cupColor, elements, showGraduation, graduation]);
 
   const texture = useMemo(() => {
     const tex = new THREE.CanvasTexture(offscreenCanvas.current!);
