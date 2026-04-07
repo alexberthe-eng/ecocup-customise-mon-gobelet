@@ -93,8 +93,11 @@ const LeftSidebar = () => {
                     : 'text-muted-foreground'
                 }`}
               >
-                <Icon size={18} />
-                <span>{tool.label}</span>
+                <div className="relative">
+                  <Icon size={18} />
+                  {tool.showPlus && <Plus size={9} strokeWidth={3} className="absolute -top-0.5 -right-1.5 text-accent" />}
+                </div>
+                <span className="truncate max-w-[56px]">{tool.label}</span>
               </button>
               {tool.id === 'color' && showColorPopover && <ColorPopover position="above" />}
             </div>
@@ -130,8 +133,11 @@ const LeftSidebar = () => {
                     : 'text-muted-foreground hover:bg-secondary'
                 }`}
               >
-                <Icon size={18} />
-                <span>{tool.label}</span>
+                <div className="relative">
+                  <Icon size={18} />
+                  {tool.showPlus && <Plus size={9} strokeWidth={3} className="absolute -top-0.5 -right-1.5 text-accent" />}
+                </div>
+                <span className="truncate max-w-[56px]">{tool.label}</span>
               </button>
               {tool.id === 'color' && showColorPopover && <ColorPopover position="side" />}
             </div>
