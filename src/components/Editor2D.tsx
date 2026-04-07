@@ -299,6 +299,14 @@ const Editor2D = () => {
                       </div>
                       <div className="w-px h-2 bg-accent" />
                     </div>
+                    {/* Close / deselect handle */}
+                    <div
+                      className="absolute -top-3 -right-3 w-5 h-5 rounded-full bg-destructive flex items-center justify-center cursor-pointer shadow-sm hover:scale-110 transition-transform"
+                      onClick={(e) => { e.stopPropagation(); setSelectedElementId(null); }}
+                      onMouseDown={(e) => e.stopPropagation()}
+                    >
+                      <X size={10} className="text-destructive-foreground" />
+                    </div>
                   </>
                 )}
               </div>
