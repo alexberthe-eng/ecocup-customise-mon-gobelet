@@ -12,6 +12,7 @@ const CartPanel = () => {
     removeFromCart,
     editCartDesign,
     updateCartDesignName,
+    updateCartDesignQuantity,
   } = useStore();
 
   const isMobile = useIsMobile();
@@ -108,8 +109,17 @@ const CartPanel = () => {
                         className="text-xs font-medium bg-transparent w-full outline-none truncate"
                       />
                     </div>
-                    <div className="text-[11px] text-muted-foreground mb-1">
-                      {d.quantity} gobelets × {unitPrice.toFixed(2)} €
+                    <div className="mb-1">
+                      <select
+                        value={d.quantity}
+                        onChange={(e) => updateCartDesignQuantity(d.id, Number(e.target.value))}
+                        className="text-[11px] border-thin rounded px-1.5 py-0.5 bg-background"
+                      >
+                        {[125, 250, 500, 1000, 2500, 5000].map((q) => (
+                          <option key={q} value={q}>{q} gobelets</option>
+                        ))}
+                      </select>
+                      <span className="text-[11px] text-muted-foreground ml-1">× {unitPrice.toFixed(2)} €</span>
                     </div>
                     <div className="text-xs font-medium">
                       {itemTotal.toFixed(2)} € HT
