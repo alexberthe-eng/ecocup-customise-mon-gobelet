@@ -1,6 +1,6 @@
 import { useRef, useCallback, useMemo, useState } from 'react';
 import { useStore, DesignElement } from '@/store/useStore';
-import { Trash2, Undo2, Redo2, RotateCw } from 'lucide-react';
+import { Trash2, Undo2, Redo2, RotateCw, Copy } from 'lucide-react';
 import CanvasDrawer from '@/components/CanvasDrawer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -324,10 +324,22 @@ const ContextualPanel = ({
   canvasRef: React.RefObject<HTMLDivElement>;
   isMobile: boolean;
 }) => {
-  const { updateElement, removeElement, moveElementLayer, pushHistory } = useStore();
+  const { updateElement, removeElement, moveElementLayer, pushHistory, addElement, setSelectedElementId } = useStore();
 
   const update = (updates: Partial<DesignElement>) => {
     updateElement(element.id, updates);
+  };
+
+  const handleDuplicate = () => {
+    const newId = crypto.randomUUID();
+    const newEl: DesignElement = {
+      ...JSON.parse(JSON.stringify(element)),
+      id: newId,
+      x: element.x + 20,
+      y: element.y + 20,
+    };
+    addElement(newEl);
+    setSelectedElementId(newId);
   };
 
   const elementName =
@@ -345,7 +357,7 @@ const ContextualPanel = ({
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate">{elementName}</p>
-        <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} />
+        <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} />
       </div>
     );
   }
@@ -371,7 +383,7 @@ const ContextualPanel = ({
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate">{elementName}</p>
-        <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} />
+        <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} />
       </div>
     </div>
   );
@@ -384,12 +396,14 @@ const ContextualPanelFields = ({
   pushHistory,
   moveElementLayer,
   removeElement,
+  onDuplicate,
 }: {
   element: DesignElement;
   update: (u: Partial<DesignElement>) => void;
   pushHistory: () => void;
   moveElementLayer: (id: string, dir: 'top' | 'up' | 'down' | 'bottom') => void;
   removeElement: (id: string) => void;
+  onDuplicate: () => void;
 }) => (
   <>
     {element.type === 'text' && (
@@ -448,9 +462,14 @@ const ContextualPanelFields = ({
       <button onClick={() => moveElementLayer(element.id, 'down')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↓ Arrière</button>
       <button onClick={() => moveElementLayer(element.id, 'bottom')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↓↓ Fond</button>
     </div>
-    <button onClick={() => removeElement(element.id)} className="flex items-center gap-1 text-[10px] text-destructive hover:underline">
-      <Trash2 size={10} /> Supprimer
-    </button>
+    <div className="flex items-center gap-3">
+      <button onClick={onDuplicate} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground hover:underline">
+        <Copy size={10} /> Dupliquer
+      </button>
+      <button onClick={() => removeElement(element.id)} className="flex items-center gap-1 text-[10px] text-destructive hover:underline">
+        <Trash2 size={10} /> Supprimer
+      </button>
+    </div>
   </>
 );
 
