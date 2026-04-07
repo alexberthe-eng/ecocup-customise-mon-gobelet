@@ -95,7 +95,7 @@ const defaultDesign: Design = {
   id: crypto.randomUUID(),
   name: 'Design 1',
   elements: [],
-  cupColor: '#FFFFFF',
+  cupColor: '#f2f2f2',
   graduation: 'standard-33cl',
   quantity: 250,
   comment: '',
