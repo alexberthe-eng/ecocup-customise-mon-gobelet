@@ -1,5 +1,5 @@
 import { useStore, DesignElement } from '@/store/useStore';
-import { Trash2, Copy, X } from 'lucide-react';
+import { Trash2, Copy, X, Check } from 'lucide-react';
 
 /** Shared fields for contextual panel (used in 2D editor, 3D preview, etc.) */
 export const ElementPanelFields = ({
@@ -9,6 +9,7 @@ export const ElementPanelFields = ({
   moveElementLayer,
   removeElement,
   onDuplicate,
+  onValidate,
 }: {
   element: DesignElement;
   update: (u: Partial<DesignElement>) => void;
@@ -16,6 +17,7 @@ export const ElementPanelFields = ({
   moveElementLayer: (id: string, dir: 'top' | 'up' | 'down' | 'bottom') => void;
   removeElement: (id: string) => void;
   onDuplicate: () => void;
+  onValidate: () => void;
 }) => (
   <>
     {element.type === 'text' && (
