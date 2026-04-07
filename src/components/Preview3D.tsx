@@ -22,8 +22,10 @@ function getCupProps(cupColor: string) {
 function CupMesh() {
   const cupColor = useStore((s) => s.currentDesign.cupColor);
   const elements = useStore((s) => s.currentDesign.elements);
+  const setSelectedElementId = useStore((s) => s.setSelectedElementId);
   const textureRef = useRef<THREE.CanvasTexture | null>(null);
   const offscreenCanvas = useRef<HTMLCanvasElement | null>(null);
+  const bodyMeshRef = useRef<THREE.Mesh>(null);
 
   // Create offscreen canvas once
   if (!offscreenCanvas.current) {
@@ -39,7 +41,6 @@ function CupMesh() {
 
     const sorted = [...elements].sort((a, b) => a.zIndex - b.zIndex);
 
-    // Collect image elements that need loading
     const imageEls = sorted.filter((el) => (el.type === 'image' || el.type === 'svg') && el.src);
     const imagePromises = imageEls.map(
       (el) =>
@@ -47,7 +48,7 @@ function CupMesh() {
           const img = new Image();
           img.crossOrigin = 'anonymous';
           img.onload = () => resolve({ el, img });
-          img.onerror = () => resolve({ el, img }); // still resolve to not block
+          img.onerror = () => resolve({ el, img });
           img.src = el.src!;
         })
     );
@@ -94,6 +95,37 @@ function CupMesh() {
     return tex;
   }, []);
 
+  // Click handler: map UV to canvas coords and find element
+  const handleClick = useCallback(
+    (e: any) => {
+      e.stopPropagation();
+      const uv = e.uv as THREE.Vector2 | undefined;
+      if (!uv) {
+        setSelectedElementId(null);
+        return;
+      }
+
+      const canvasX = uv.x * CANVAS_W;
+      const canvasY = (1 - uv.y) * CANVAS_H;
+
+      // Check elements from top (highest zIndex) to bottom
+      const sorted = [...elements].sort((a, b) => b.zIndex - a.zIndex);
+      for (const el of sorted) {
+        if (
+          canvasX >= el.x &&
+          canvasX <= el.x + el.width &&
+          canvasY >= el.y &&
+          canvasY <= el.y + el.height
+        ) {
+          setSelectedElementId(el.id);
+          return;
+        }
+      }
+      setSelectedElementId(null);
+    },
+    [elements, setSelectedElementId]
+  );
+
   const { color: matColor, opacity: matOpacity } = getCupProps(cupColor);
 
   const topR = 1.1;
@@ -104,8 +136,12 @@ function CupMesh() {
 
   return (
     <group>
-      {/* Cup body — textured */}
-      <mesh geometry={new THREE.CylinderGeometry(topR, botR, h, 64, 1, true)}>
+      {/* Cup body — textured, clickable */}
+      <mesh
+        ref={bodyMeshRef}
+        geometry={new THREE.CylinderGeometry(topR, botR, h, 64, 1, true)}
+        onClick={handleClick}
+      >
         <meshPhysicalMaterial
           map={texture}
           side={THREE.DoubleSide}
