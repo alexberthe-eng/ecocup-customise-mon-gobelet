@@ -3,6 +3,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore, DesignElement } from '@/store/useStore';
+import { getGraduationMarks } from '@/components/GraduationMarks';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -42,6 +43,8 @@ function uvToCanvas(uv: THREE.Vector2) {
 function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean) => void }) {
   const cupColor = useStore((s) => s.currentDesign.cupColor);
   const elements = useStore((s) => s.currentDesign.elements);
+  const graduation = useStore((s) => s.currentDesign.graduation);
+  const showGraduation = useStore((s) => s.showGraduation);
   const selectedElementId = useStore((s) => s.selectedElementId);
   const setSelectedElementId = useStore((s) => s.setSelectedElementId);
   const updateElement = useStore((s) => s.updateElement);
