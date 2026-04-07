@@ -1,6 +1,6 @@
 import { useRef, useCallback, useMemo, useState } from 'react';
 import { useStore, DesignElement } from '@/store/useStore';
-import { Trash2, Undo2, Redo2 } from 'lucide-react';
+import { Trash2, Undo2, Redo2, RotateCw } from 'lucide-react';
 import CanvasDrawer from '@/components/CanvasDrawer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
