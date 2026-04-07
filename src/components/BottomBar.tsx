@@ -1,5 +1,6 @@
 import { Undo2, Redo2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const BottomBar = () => {
   const undo = useStore((s) => s.undo);
@@ -7,9 +8,13 @@ const BottomBar = () => {
   const historyIndex = useStore((s) => s.historyIndex);
   const historyLength = useStore((s) => s.history.length);
   const cupColor = useStore((s) => s.currentDesign.cupColor);
+  const isMobile = useIsMobile();
+
+  // On mobile, undo/redo is shown inline in the tab bar area, not as a separate bar
+  if (isMobile) return null;
 
   return (
-    <footer className="h-10 flex items-center justify-between px-4 border-t border-thin bg-background">
+    <footer className="h-10 flex items-center justify-between px-4 border-t border-thin bg-background shrink-0">
       <div className="flex items-center gap-2">
         <div
           className="w-6 h-8 rounded border-thin"
@@ -35,7 +40,7 @@ const BottomBar = () => {
           <Redo2 size={14} />
         </button>
       </div>
-      <span className="text-[10px] text-muted-foreground">
+      <span className="text-[10px] text-muted-foreground hidden lg:block">
         Cliquez sur un élément pour le modifier
       </span>
     </footer>

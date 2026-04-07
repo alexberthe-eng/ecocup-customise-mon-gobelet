@@ -43,6 +43,7 @@ interface AppState {
   activeTool: ActiveTool;
   openDrawer: OpenDrawer;
   showColorPopover: boolean;
+  showRightPanel: boolean;
   gridVisible: boolean;
   tourCompleted: boolean;
   showTour: boolean;
@@ -58,6 +59,7 @@ interface AppState {
   setActiveTool: (tool: ActiveTool) => void;
   setOpenDrawer: (d: OpenDrawer) => void;
   setShowColorPopover: (v: boolean) => void;
+  setShowRightPanel: (v: boolean) => void;
   setGridVisible: (v: boolean) => void;
   setSelectedElementId: (id: string | null) => void;
   setCupColor: (color: string) => void;
@@ -121,6 +123,7 @@ export const useStore = create<AppState>((set, get) => ({
   activeTool: null,
   openDrawer: null,
   showColorPopover: false,
+  showRightPanel: false,
   gridVisible: true,
   tourCompleted: localStorage.getItem('tourCompleted') === 'true',
   showTour: false,
@@ -135,6 +138,7 @@ export const useStore = create<AppState>((set, get) => ({
   setActiveTool: (tool) => set((s) => ({ activeTool: s.activeTool === tool ? null : tool })),
   setOpenDrawer: (d) => set({ openDrawer: d }),
   setShowColorPopover: (v) => set({ showColorPopover: v }),
+  setShowRightPanel: (v) => set({ showRightPanel: v }),
   setGridVisible: (v) => set({ gridVisible: v }),
   setSelectedElementId: (id) => set({ selectedElementId: id }),
   setCupColor: (color) => {

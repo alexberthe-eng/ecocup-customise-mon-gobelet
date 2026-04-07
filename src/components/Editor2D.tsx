@@ -1,10 +1,9 @@
 import { useRef, useCallback, useMemo } from 'react';
 import { useStore, DesignElement } from '@/store/useStore';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Undo2, Redo2 } from 'lucide-react';
 import CanvasDrawer from '@/components/CanvasDrawer';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-const CANVAS_W = 600;
-const CANVAS_H = 400;
 const GRID_SIZE = 22;
 
 const snapToGrid = (val: number) => Math.round(val / GRID_SIZE) * GRID_SIZE;
@@ -18,9 +17,15 @@ const Editor2D = () => {
     updateElement,
     removeElement,
     pushHistory,
+    undo,
+    redo,
+    historyIndex,
+    history,
   } = useStore();
 
+  const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{
     id: string;
     startX: number;
@@ -56,18 +61,12 @@ const Editor2D = () => {
         if (dragRef.current.type === 'move') {
           let newX = dragRef.current.elX + dx;
           let newY = dragRef.current.elY + dy;
-          if (grid) {
-            newX = snapToGrid(newX);
-            newY = snapToGrid(newY);
-          }
+          if (grid) { newX = snapToGrid(newX); newY = snapToGrid(newY); }
           updateElement(dragRef.current.id, { x: newX, y: newY });
         } else {
           let newW = Math.max(20, el.width + dx);
           let newH = Math.max(20, el.height + dy);
-          if (grid) {
-            newW = Math.max(GRID_SIZE, snapToGrid(newW));
-            newH = Math.max(GRID_SIZE, snapToGrid(newH));
-          }
+          if (grid) { newW = Math.max(GRID_SIZE, snapToGrid(newW)); newH = Math.max(GRID_SIZE, snapToGrid(newH)); }
           updateElement(dragRef.current.id, { width: newW, height: newH });
         }
       };
@@ -85,12 +84,52 @@ const Editor2D = () => {
     [setSelectedElementId, updateElement, pushHistory]
   );
 
+  // Touch support for mobile
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent, el: DesignElement) => {
+      e.stopPropagation();
+      setSelectedElementId(el.id);
+      const touch = e.touches[0];
+      const grid = useStore.getState().gridVisible;
+      dragRef.current = {
+        id: el.id,
+        startX: touch.clientX,
+        startY: touch.clientY,
+        elX: el.x,
+        elY: el.y,
+        type: 'move',
+      };
+
+      const handleTouchMove = (ev: TouchEvent) => {
+        ev.preventDefault();
+        if (!dragRef.current) return;
+        const t = ev.touches[0];
+        const dx = t.clientX - dragRef.current.startX;
+        const dy = t.clientY - dragRef.current.startY;
+        let newX = dragRef.current.elX + dx;
+        let newY = dragRef.current.elY + dy;
+        if (grid) { newX = snapToGrid(newX); newY = snapToGrid(newY); }
+        updateElement(dragRef.current.id, { x: newX, y: newY });
+      };
+
+      const handleTouchEnd = () => {
+        dragRef.current = null;
+        pushHistory();
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleTouchEnd);
+      };
+
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
+    },
+    [setSelectedElementId, updateElement, pushHistory]
+  );
+
   const sortedElements = useMemo(
     () => [...currentDesign.elements].sort((a, b) => a.zIndex - b.zIndex),
     [currentDesign.elements]
   );
 
-  // CSS grid background
   const gridBg = gridVisible
     ? {
         backgroundImage:
@@ -101,37 +140,54 @@ const Editor2D = () => {
     : {};
 
   return (
-    <div className="flex-1 flex flex-col relative">
-      {/* Canvas */}
-      <div className="flex-1 flex items-center justify-center bg-secondary/30 overflow-hidden" data-tour="canvas">
+    <div className="flex-1 flex flex-col relative" ref={wrapperRef}>
+      {/* Mobile undo/redo bar */}
+      {isMobile && (
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-thin bg-background">
+          <div className="flex items-center gap-1">
+            <button onClick={undo} disabled={historyIndex <= 0} className="p-1.5 rounded hover:bg-secondary disabled:opacity-30">
+              <Undo2 size={14} />
+            </button>
+            <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-1.5 rounded hover:bg-secondary disabled:opacity-30">
+              <Redo2 size={14} />
+            </button>
+          </div>
+          <span className="text-[9px] text-muted-foreground">Touchez un élément pour le modifier</span>
+        </div>
+      )}
+
+      {/* Canvas - scales on mobile */}
+      <div className="flex-1 flex items-center justify-center bg-secondary/30 overflow-auto p-2 md:p-0" data-tour="canvas">
         <div
           ref={canvasRef}
-          className="relative bg-background rounded-xl border-thin overflow-hidden"
+          className="relative bg-background rounded-xl border-thin overflow-hidden shrink-0"
           style={{
-            width: CANVAS_W,
-            height: CANVAS_H,
+            width: isMobile ? 340 : 600,
+            height: isMobile ? 227 : 400,
             backgroundColor: currentDesign.cupColor,
             ...gridBg,
           }}
           onClick={() => setSelectedElementId(null)}
+          onTouchStart={() => setSelectedElementId(null)}
         >
-          {/* Elements */}
           {sortedElements.map((el) => {
+            const scale = isMobile ? 340 / 600 : 1;
             const isSelected = el.id === selectedElementId;
             return (
               <div
                 key={el.id}
                 className="absolute cursor-move"
                 style={{
-                  left: el.x,
-                  top: el.y,
-                  width: el.width,
-                  height: el.height,
+                  left: el.x * scale,
+                  top: el.y * scale,
+                  width: el.width * scale,
+                  height: el.height * scale,
                   transform: `rotate(${el.rotation}deg)`,
                   opacity: el.opacity / 100,
                   zIndex: el.zIndex,
                 }}
                 onMouseDown={(e) => handleMouseDown(e, el, 'move')}
+                onTouchStart={(e) => handleTouchStart(e, el)}
               >
                 {el.type === 'text' && (
                   <div
@@ -139,7 +195,7 @@ const Editor2D = () => {
                     style={{
                       color: el.color,
                       fontFamily: el.fontFamily || 'system-ui',
-                      fontSize: el.fontSize || 16,
+                      fontSize: (el.fontSize || 16) * scale,
                       fontWeight: 600,
                     }}
                   >
@@ -153,20 +209,19 @@ const Editor2D = () => {
                   <img src={el.src} alt="" className="w-full h-full object-contain pointer-events-none" draggable={false} />
                 )}
 
-                {/* Selection handles */}
                 {isSelected && (
                   <>
                     <div className="absolute inset-0 border-2 border-accent rounded pointer-events-none" />
                     {[
-                      { top: -4, left: -4, cursor: 'nw-resize' },
-                      { top: -4, right: -4, cursor: 'ne-resize' },
-                      { bottom: -4, left: -4, cursor: 'sw-resize' },
-                      { bottom: -4, right: -4, cursor: 'se-resize' },
+                      { top: -4, left: -4 },
+                      { top: -4, right: -4 },
+                      { bottom: -4, left: -4 },
+                      { bottom: -4, right: -4 },
                     ].map((pos, i) => (
                       <div
                         key={i}
-                        className="absolute w-2.5 h-2.5 bg-accent rounded-sm border border-accent-foreground"
-                        style={{ ...pos } as React.CSSProperties}
+                        className="absolute w-2.5 h-2.5 bg-accent rounded-sm border border-accent-foreground cursor-se-resize"
+                        style={pos as React.CSSProperties}
                         onMouseDown={(e) => handleMouseDown(e, el, 'resize')}
                       />
                     ))}
@@ -178,10 +233,9 @@ const Editor2D = () => {
         </div>
       </div>
 
-      {/* Contextual panel for selected element — positioned relative to canvas container */}
-      {selectedElement && <ContextualPanel element={selectedElement} canvasRef={canvasRef} />}
+      {/* Contextual panel */}
+      {selectedElement && <ContextualPanel element={selectedElement} canvasRef={canvasRef} isMobile={isMobile} />}
 
-      {/* Drawer overlay (inside canvas area only) */}
       <CanvasDrawer />
     </div>
   );
@@ -190,9 +244,11 @@ const Editor2D = () => {
 const ContextualPanel = ({
   element,
   canvasRef,
+  isMobile,
 }: {
   element: DesignElement;
   canvasRef: React.RefObject<HTMLDivElement>;
+  isMobile: boolean;
 }) => {
   const { updateElement, removeElement, moveElementLayer, pushHistory } = useStore();
 
@@ -200,7 +256,6 @@ const ContextualPanel = ({
     updateElement(element.id, updates);
   };
 
-  // Get element name
   const elementName =
     element.type === 'text'
       ? `Texte : "${(element.text || '').slice(0, 15)}"`
@@ -208,190 +263,121 @@ const ContextualPanel = ({
       ? 'Image'
       : 'SVG';
 
-  // Position the panel to the right of the element, with arrow
+  // On mobile: fixed bottom sheet. On desktop: floating next to element.
+  if (isMobile) {
+    return (
+      <div
+        className="absolute bottom-0 left-0 right-0 bg-background border-t border-thin shadow-lg p-3 z-20 max-h-[50%] overflow-y-auto animate-fade-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate">{elementName}</p>
+        <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} />
+      </div>
+    );
+  }
+
   const panelLeft = Math.min(element.x + element.width + 24, 420);
   const panelTop = Math.max(element.y - 10, 10);
-
-  // Arrow vertical position (center of element relative to panel)
   const arrowTop = Math.max(20, Math.min(element.y + element.height / 2 - panelTop, 60));
 
   return (
     <div
       className="absolute z-20 pointer-events-none"
       style={{
-        left: canvasRef.current
-          ? canvasRef.current.offsetLeft + panelLeft
-          : panelLeft,
-        top: canvasRef.current
-          ? canvasRef.current.offsetTop + panelTop
-          : panelTop,
+        left: canvasRef.current ? canvasRef.current.offsetLeft + panelLeft : panelLeft,
+        top: canvasRef.current ? canvasRef.current.offsetTop + panelTop : panelTop,
       }}
     >
-      {/* Arrow */}
       <div
         className="absolute -left-[6px] w-3 h-3 bg-background border-l border-b border-thin rotate-45 z-10"
         style={{ top: arrowTop }}
       />
-
-      {/* Panel */}
       <div
         className="bg-background border-thin rounded-xl shadow-lg p-3 min-w-[220px] pointer-events-auto animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Title */}
-        <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate">
-          {elementName}
-        </p>
-
-        {/* Text-specific fields */}
-        {element.type === 'text' && (
-          <>
-            <label className="block text-[10px] mb-2">
-              <span className="text-muted-foreground">Contenu</span>
-              <input
-                type="text"
-                value={element.text || ''}
-                onChange={(e) => update({ text: e.target.value })}
-                onBlur={pushHistory}
-                className="w-full border-thin rounded px-1.5 py-1 bg-background text-xs mt-0.5"
-              />
-            </label>
-            <div className="grid grid-cols-2 gap-2 text-[10px] mb-2">
-              <label>
-                <span className="text-muted-foreground">Police</span>
-                <select
-                  value={element.fontFamily || 'system-ui'}
-                  onChange={(e) => update({ fontFamily: e.target.value })}
-                  className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5"
-                >
-                  <option value="system-ui">System</option>
-                  <option value="serif">Serif</option>
-                  <option value="monospace">Mono</option>
-                  <option value="cursive">Cursive</option>
-                </select>
-              </label>
-              <label>
-                <span className="text-muted-foreground">Taille</span>
-                <input
-                  type="number"
-                  value={element.fontSize || 16}
-                  onChange={(e) => update({ fontSize: Number(e.target.value) })}
-                  onBlur={pushHistory}
-                  className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5"
-                />
-              </label>
-            </div>
-          </>
-        )}
-
-        {/* Dimensions */}
-        <div className="grid grid-cols-2 gap-2 text-[10px] mb-2">
-          <label>
-            <span className="text-muted-foreground">Largeur (px)</span>
-            <input
-              type="number"
-              value={Math.round(element.width)}
-              onChange={(e) => update({ width: Number(e.target.value) })}
-              onBlur={pushHistory}
-              className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5"
-            />
-          </label>
-          <label>
-            <span className="text-muted-foreground">Hauteur (px)</span>
-            <input
-              type="number"
-              value={Math.round(element.height)}
-              onChange={(e) => update({ height: Number(e.target.value) })}
-              onBlur={pushHistory}
-              className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5"
-            />
-          </label>
-        </div>
-
-        {/* Rotation */}
-        <label className="block text-[10px] mb-2">
-          <span className="text-muted-foreground">Rotation (°)</span>
-          <input
-            type="number"
-            value={element.rotation}
-            onChange={(e) => update({ rotation: Number(e.target.value) })}
-            onBlur={pushHistory}
-            className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5"
-          />
-        </label>
-
-        {/* Opacity slider */}
-        <label className="block text-[10px] mb-2">
-          <div className="flex justify-between text-muted-foreground">
-            <span>Opacité</span>
-            <span>{element.opacity}%</span>
-          </div>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={element.opacity}
-            onChange={(e) => update({ opacity: Number(e.target.value) })}
-            onMouseUp={pushHistory}
-            className="w-full h-1.5 accent-accent cursor-pointer mt-1"
-          />
-        </label>
-
-        {/* Color picker for text/SVG */}
-        {(element.type === 'text' || element.type === 'svg') && (
-          <label className="block text-[10px] mb-2">
-            <span className="text-muted-foreground">Couleur</span>
-            <div className="flex gap-2 items-center mt-0.5">
-              <input
-                type="color"
-                value={element.color}
-                onChange={(e) => update({ color: e.target.value })}
-                onBlur={pushHistory}
-                className="w-6 h-6 rounded cursor-pointer border-thin"
-              />
-              <span className="text-[9px] text-muted-foreground font-mono">{element.color}</span>
-            </div>
-          </label>
-        )}
-
-        {/* Layer controls — 2×2 grid */}
-        <div className="grid grid-cols-2 gap-1 text-[9px] mb-2">
-          <button
-            onClick={() => moveElementLayer(element.id, 'top')}
-            className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center"
-          >
-            ↑↑ Premier
-          </button>
-          <button
-            onClick={() => moveElementLayer(element.id, 'up')}
-            className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center"
-          >
-            ↑ Avant
-          </button>
-          <button
-            onClick={() => moveElementLayer(element.id, 'down')}
-            className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center"
-          >
-            ↓ Arrière
-          </button>
-          <button
-            onClick={() => moveElementLayer(element.id, 'bottom')}
-            className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center"
-          >
-            ↓↓ Fond
-          </button>
-        </div>
-
-        {/* Delete */}
-        <button
-          onClick={() => removeElement(element.id)}
-          className="flex items-center gap-1 text-[10px] text-destructive hover:underline"
-        >
-          <Trash2 size={10} /> Supprimer
-        </button>
+        <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate">{elementName}</p>
+        <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} />
       </div>
     </div>
   );
 };
+
+/** Shared fields for contextual panel (used in both mobile sheet and desktop floating) */
+const ContextualPanelFields = ({
+  element,
+  update,
+  pushHistory,
+  moveElementLayer,
+  removeElement,
+}: {
+  element: DesignElement;
+  update: (u: Partial<DesignElement>) => void;
+  pushHistory: () => void;
+  moveElementLayer: (id: string, dir: 'top' | 'up' | 'down' | 'bottom') => void;
+  removeElement: (id: string) => void;
+}) => (
+  <>
+    {element.type === 'text' && (
+      <>
+        <label className="block text-[10px] mb-2">
+          <span className="text-muted-foreground">Contenu</span>
+          <input type="text" value={element.text || ''} onChange={(e) => update({ text: e.target.value })} onBlur={pushHistory} className="w-full border-thin rounded px-1.5 py-1 bg-background text-xs mt-0.5" />
+        </label>
+        <div className="grid grid-cols-2 gap-2 text-[10px] mb-2">
+          <label>
+            <span className="text-muted-foreground">Police</span>
+            <select value={element.fontFamily || 'system-ui'} onChange={(e) => update({ fontFamily: e.target.value })} className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5">
+              <option value="system-ui">System</option>
+              <option value="serif">Serif</option>
+              <option value="monospace">Mono</option>
+              <option value="cursive">Cursive</option>
+            </select>
+          </label>
+          <label>
+            <span className="text-muted-foreground">Taille</span>
+            <input type="number" value={element.fontSize || 16} onChange={(e) => update({ fontSize: Number(e.target.value) })} onBlur={pushHistory} className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5" />
+          </label>
+        </div>
+      </>
+    )}
+    <div className="grid grid-cols-2 gap-2 text-[10px] mb-2">
+      <label>
+        <span className="text-muted-foreground">Largeur (px)</span>
+        <input type="number" value={Math.round(element.width)} onChange={(e) => update({ width: Number(e.target.value) })} onBlur={pushHistory} className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5" />
+      </label>
+      <label>
+        <span className="text-muted-foreground">Hauteur (px)</span>
+        <input type="number" value={Math.round(element.height)} onChange={(e) => update({ height: Number(e.target.value) })} onBlur={pushHistory} className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5" />
+      </label>
+    </div>
+    <label className="block text-[10px] mb-2">
+      <span className="text-muted-foreground">Rotation (°)</span>
+      <input type="number" value={element.rotation} onChange={(e) => update({ rotation: Number(e.target.value) })} onBlur={pushHistory} className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5" />
+    </label>
+    <label className="block text-[10px] mb-2">
+      <div className="flex justify-between text-muted-foreground"><span>Opacité</span><span>{element.opacity}%</span></div>
+      <input type="range" min={0} max={100} value={element.opacity} onChange={(e) => update({ opacity: Number(e.target.value) })} onMouseUp={pushHistory} className="w-full h-1.5 accent-accent cursor-pointer mt-1" />
+    </label>
+    {(element.type === 'text' || element.type === 'svg') && (
+      <label className="block text-[10px] mb-2">
+        <span className="text-muted-foreground">Couleur</span>
+        <div className="flex gap-2 items-center mt-0.5">
+          <input type="color" value={element.color} onChange={(e) => update({ color: e.target.value })} onBlur={pushHistory} className="w-6 h-6 rounded cursor-pointer border-thin" />
+          <span className="text-[9px] text-muted-foreground font-mono">{element.color}</span>
+        </div>
+      </label>
+    )}
+    <div className="grid grid-cols-2 gap-1 text-[9px] mb-2">
+      <button onClick={() => moveElementLayer(element.id, 'top')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↑↑ Premier</button>
+      <button onClick={() => moveElementLayer(element.id, 'up')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↑ Avant</button>
+      <button onClick={() => moveElementLayer(element.id, 'down')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↓ Arrière</button>
+      <button onClick={() => moveElementLayer(element.id, 'bottom')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↓↓ Fond</button>
+    </div>
+    <button onClick={() => removeElement(element.id)} className="flex items-center gap-1 text-[10px] text-destructive hover:underline">
+      <Trash2 size={10} /> Supprimer
+    </button>
+  </>
+);
 
 export default Editor2D;
