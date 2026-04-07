@@ -173,9 +173,13 @@ const TopBar = () => {
                 <Save size={14} />
                 <span className="hidden md:inline">Sauvegarder</span>
               </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors">
-                <Share2 size={14} />
-                <span className="hidden md:inline">Partager</span>
+              <button
+                onClick={handleShare}
+                disabled={sharing}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                {sharing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
+                <span className="hidden md:inline">{sharing ? 'Partage...' : 'Partager'}</span>
               </button>
               {user && (
                 <button
@@ -207,6 +211,38 @@ const TopBar = () => {
           )}
         </div>
       </header>
+
+      {/* Share URL modal */}
+      {shareUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShareUrl(null)}>
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm">Lien de partage</h3>
+              <button onClick={() => setShareUrl(null)} className="p-1 rounded hover:bg-secondary">
+                <X size={14} />
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Partagez ce lien avec votre famille ou vos amis. Il est valide pendant 7 jours.
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={shareUrl}
+                className="flex-1 text-xs border-thin rounded-md px-3 py-2 bg-background truncate"
+                onFocus={(e) => e.target.select()}
+              />
+              <button
+                onClick={handleCopyLink}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity shrink-0"
+              >
+                <Copy size={12} />
+                Copier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AuthModal open={showAuth} onClose={() => setShowAuth(false)} onSuccess={handleAuthSuccess} />
     </>
