@@ -1,5 +1,5 @@
 import { useStore, DesignElement } from '@/store/useStore';
-import { Trash2, Copy, X } from 'lucide-react';
+import { Trash2, Copy, X, Check } from 'lucide-react';
 
 /** Shared fields for contextual panel (used in 2D editor, 3D preview, etc.) */
 export const ElementPanelFields = ({
@@ -9,6 +9,7 @@ export const ElementPanelFields = ({
   moveElementLayer,
   removeElement,
   onDuplicate,
+  onValidate,
 }: {
   element: DesignElement;
   update: (u: Partial<DesignElement>) => void;
@@ -16,6 +17,7 @@ export const ElementPanelFields = ({
   moveElementLayer: (id: string, dir: 'top' | 'up' | 'down' | 'bottom') => void;
   removeElement: (id: string) => void;
   onDuplicate: () => void;
+  onValidate: () => void;
 }) => (
   <>
     {element.type === 'text' && (
@@ -82,6 +84,13 @@ export const ElementPanelFields = ({
         <Trash2 size={10} /> Supprimer
       </button>
     </div>
+    <button
+      onClick={onValidate}
+      className="w-full mt-3 flex items-center justify-center gap-1.5 bg-primary text-primary-foreground text-[11px] py-2 rounded-md hover:opacity-90 transition-opacity font-medium"
+    >
+      <Check size={12} />
+      Valider
+    </button>
   </>
 );
 
@@ -128,7 +137,7 @@ export const ElementPanel = ({
           <X size={12} className="text-muted-foreground" />
         </button>
         <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate pr-5">{elementName}</p>
-        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} />
+        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} onValidate={() => setSelectedElementId(null)} />
       </div>
     );
   }
@@ -146,7 +155,7 @@ export const ElementPanel = ({
           <X size={12} className="text-muted-foreground" />
         </button>
         <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate pr-5">{elementName}</p>
-        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} />
+        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} onValidate={() => setSelectedElementId(null)} />
       </div>
     </div>
   );
