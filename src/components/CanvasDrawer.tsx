@@ -141,7 +141,9 @@ const MotifDrawerContent = ({ onClose }: { onClose: () => void }) => {
     const blob = new Blob([svgString], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const newId = crypto.randomUUID();
-    addElement({ id: newId, type: 'svg', x: 200, y: 150, width: 80, height: 80, rotation: 0, opacity: 100, color: '#111111', zIndex: currentDesign.elements.length, src: url });
+    const count = currentDesign.elements.length;
+    const offset = count * 30;
+    addElement({ id: newId, type: 'svg', x: 120 + (offset % 300), y: 60 + (offset % 200), width: 80, height: 80, rotation: 0, opacity: 100, color: '#111111', zIndex: count, src: url });
     setSelectedElementId(newId);
     onClose();
   };
