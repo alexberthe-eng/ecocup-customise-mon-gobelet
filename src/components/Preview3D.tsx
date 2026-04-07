@@ -119,11 +119,13 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
       // Draw graduation marks on texture
       if (showGraduation) {
         const marks = getGraduationMarks(graduation);
+        const offsets = useStore.getState().currentDesign.graduationOffsets;
         ctx.save();
         marks.forEach((mark) => {
-          const y = mark.positionY * CANVAS_H;
+          const off = offsets[mark.id] ?? { dx: 0, dy: 0 };
+          const cx = mark.defaultX * CANVAS_W + off.dx;
+          const y = mark.defaultY * CANVAS_H + off.dy;
           const lineW = CANVAS_W * 0.06;
-          const cx = CANVAS_W / 2;
 
           ctx.strokeStyle = 'rgba(0,0,0,0.45)';
           ctx.lineWidth = 1;
