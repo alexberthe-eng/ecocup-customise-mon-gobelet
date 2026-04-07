@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle } from 'lucide-react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus } from 'lucide-react';
 import { useStore, ActiveTool } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const tools: { id: ActiveTool; icon: React.ElementType; label: string }[] = [
-  { id: 'color', icon: Palette, label: 'Couleur' },
+const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?: boolean }[] = [
+  { id: 'color', icon: Palette, label: 'Couleur du gobelet' },
   { id: 'image', icon: ImagePlus, label: 'Image' },
-  { id: 'text', icon: Type, label: 'Texte' },
-  { id: 'motif', icon: Shapes, label: 'Motif' },
-  { id: 'collection', icon: BookOpen, label: 'Collection' },
+  { id: 'text', icon: Type, label: 'Texte', showPlus: true },
+  { id: 'motif', icon: Shapes, label: 'Motif', showPlus: true },
+  { id: 'collection', icon: BookOpen, label: 'Collection', showPlus: true },
 ];
 
 const ColorPopover = ({ position }: { position: 'side' | 'above' }) => {
