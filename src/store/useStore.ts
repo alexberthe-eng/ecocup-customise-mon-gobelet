@@ -85,6 +85,7 @@ interface AppState {
   removeFromCart: (id: string) => void;
   editCartDesign: (id: string) => void;
   updateCartDesignName: (id: string, name: string) => void;
+  updateCartDesignQuantity: (id: string, quantity: number) => void;
 
   undo: () => void;
   redo: () => void;
@@ -308,6 +309,12 @@ export const useStore = create<AppState>((set, get) => ({
   updateCartDesignName: (id, name) => {
     set((s) => ({
       cart: s.cart.map((d) => (d.id === id ? { ...d, name } : d)),
+    }));
+  },
+
+  updateCartDesignQuantity: (id, quantity) => {
+    set((s) => ({
+      cart: s.cart.map((d) => (d.id === id ? { ...d, quantity } : d)),
     }));
   },
 
