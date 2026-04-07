@@ -222,8 +222,9 @@ const Editor2D = () => {
       {/* Canvas - scales on mobile */}
       <div className="flex-1 flex items-center justify-center bg-secondary/30 overflow-auto p-2 md:p-0" data-tour="canvas">
         <div
+          key={currentDesign.id}
           ref={canvasRef}
-          className="relative bg-background rounded-xl border-thin overflow-hidden shrink-0"
+          className="relative bg-background rounded-xl border-thin overflow-hidden shrink-0 animate-scale-in"
           data-editor-canvas
           style={{
             width: isMobile ? 340 : 600,
