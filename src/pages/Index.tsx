@@ -11,6 +11,7 @@ import CartPanel from '@/components/CartPanel';
 import OnboardingTour from '@/components/OnboardingTour';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import WarningModal from '@/components/WarningModal';
+import AssistantPopup from '@/components/AssistantPopup';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
 const Index = () => {
