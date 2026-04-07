@@ -7,6 +7,7 @@ import { getGraduationMarks } from '@/components/GraduationMarks';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ecocupLogo from '@/assets/ecocup-logo.png';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
@@ -140,6 +141,26 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
           ctx.textBaseline = 'top';
           ctx.fillText(mark.label, cx, y + 3);
         });
+
+        // Draw ecocup logo below last mark
+        const lastMark = marks[marks.length - 1];
+        if (lastMark) {
+          const logoImg = new Image();
+          logoImg.crossOrigin = 'anonymous';
+          logoImg.src = ecocupLogo;
+          const logoX = lastMark.defaultX * CANVAS_W + off.dx;
+          const logoY = lastMark.defaultY * CANVAS_H + off.dy + 22;
+          const logoSize = 36;
+          if (logoImg.complete && logoImg.naturalWidth > 0) {
+            ctx.drawImage(logoImg, logoX - logoSize / 2, logoY, logoSize, logoSize);
+          } else {
+            logoImg.onload = () => {
+              ctx.drawImage(logoImg, logoX - logoSize / 2, logoY, logoSize, logoSize);
+              if (textureRef.current) textureRef.current.needsUpdate = true;
+            };
+          }
+        }
+
         ctx.restore();
       }
 

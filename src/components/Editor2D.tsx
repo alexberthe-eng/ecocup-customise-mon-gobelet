@@ -5,6 +5,7 @@ import CanvasDrawer from '@/components/CanvasDrawer';
 import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getGraduationMarks } from '@/components/GraduationMarks';
+import ecocupLogo from '@/assets/ecocup-logo.png';
 
 const GRID_SIZE = 22;
 
@@ -386,21 +387,38 @@ const Editor2D = () => {
                 }}
               >
                 {marks.map((mark) => {
-                  const y = mark.defaultY * canvasH;
-                  const x = mark.defaultX * canvasW;
-                  const lineW = canvasW * 0.08;
+                   const y = mark.defaultY * canvasH;
+                   const x = mark.defaultX * canvasW;
+                   const lineW = canvasW * 0.08;
+                   return (
+                     <div key={mark.id} className="absolute pointer-events-none" style={{ left: x - lineW / 2 - 10, top: y - 4 }}>
+                       <div className="flex items-center justify-center">
+                         <div className="h-px bg-foreground/40" style={{ width: lineW }} />
+                       </div>
+                       <p className="text-center text-foreground/60 font-medium whitespace-nowrap" style={{ fontSize: 10 * scale }}>
+                         {mark.label}
+                       </p>
+                     </div>
+                   );
+                 })}
+                {/* Ecocup logo below graduation marks */}
+                {(() => {
+                  const lastMark = marks[marks.length - 1];
+                  const logoY = lastMark ? lastMark.defaultY * canvasH + 22 : canvasH * 0.85;
+                  const logoX = (lastMark?.defaultX ?? 0.5) * canvasW;
+                  const logoW = 50 * scale;
+                  const logoH = 50 * scale;
                   return (
-                    <div key={mark.id} className="absolute pointer-events-none" style={{ left: x - lineW / 2 - 10, top: y - 4 }}>
-                      <div className="flex items-center justify-center">
-                        <div className="h-px bg-foreground/40" style={{ width: lineW }} />
-                      </div>
-                      <p className="text-center text-foreground/60 font-medium whitespace-nowrap" style={{ fontSize: 10 * scale }}>
-                        {mark.label}
-                      </p>
-                    </div>
+                    <img
+                      src={ecocupLogo}
+                      alt="Ecocup"
+                      className="absolute pointer-events-none"
+                      style={{ left: logoX - logoW / 2, top: logoY, width: logoW, height: logoH, objectFit: 'contain' }}
+                      draggable={false}
+                    />
                   );
-                })}
-              </div>
+                })()}
+               </div>
             );
           })()}
 
