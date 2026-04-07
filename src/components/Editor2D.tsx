@@ -4,6 +4,7 @@ import { Trash2, Undo2, Redo2, RotateCw, Copy, X } from 'lucide-react';
 import CanvasDrawer from '@/components/CanvasDrawer';
 import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getGraduationMarks } from '@/components/GraduationMarks';
 
 const GRID_SIZE = 22;
 
@@ -22,6 +23,8 @@ const Editor2D = () => {
     redo,
     historyIndex,
     history,
+    showGraduation,
+    showGraduationMask,
   } = useStore();
 
   const isMobile = useIsMobile();
