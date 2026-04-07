@@ -1,6 +1,6 @@
-import { useRef, useCallback, useMemo } from 'react';
+import { useRef, useCallback, useMemo, useState } from 'react';
 import { useStore, DesignElement } from '@/store/useStore';
-import { Trash2, Undo2, Redo2 } from 'lucide-react';
+import { Trash2, Undo2, Redo2, RotateCw } from 'lucide-react';
 import CanvasDrawer from '@/components/CanvasDrawer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -32,7 +32,11 @@ const Editor2D = () => {
     startY: number;
     elX: number;
     elY: number;
-    type: 'move' | 'resize';
+    type: 'move' | 'resize' | 'rotate';
+    startAngle?: number;
+    startRotation?: number;
+    centerX?: number;
+    centerY?: number;
   } | null>(null);
 
   const selectedElement = useMemo(
@@ -63,11 +67,20 @@ const Editor2D = () => {
           let newY = dragRef.current.elY + dy;
           if (grid) { newX = snapToGrid(newX); newY = snapToGrid(newY); }
           updateElement(dragRef.current.id, { x: newX, y: newY });
-        } else {
+        } else if (dragRef.current.type === 'resize') {
           let newW = Math.max(20, el.width + dx);
           let newH = Math.max(20, el.height + dy);
           if (grid) { newW = Math.max(GRID_SIZE, snapToGrid(newW)); newH = Math.max(GRID_SIZE, snapToGrid(newH)); }
           updateElement(dragRef.current.id, { width: newW, height: newH });
+        } else if (dragRef.current.type === 'rotate') {
+          const angle = Math.atan2(
+            ev.clientY - dragRef.current.centerY!,
+            ev.clientX - dragRef.current.centerX!
+          );
+          const angleDeg = angle * (180 / Math.PI);
+          const delta = angleDeg - dragRef.current.startAngle!;
+          const newRotation = Math.round(dragRef.current.startRotation! + delta);
+          updateElement(dragRef.current.id, { rotation: newRotation });
         }
       };
 
@@ -84,7 +97,52 @@ const Editor2D = () => {
     [setSelectedElementId, updateElement, pushHistory]
   );
 
-  // Touch support for mobile
+  const handleRotateStart = useCallback(
+    (e: React.MouseEvent, el: DesignElement) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const scale = useStore.getState().gridVisible ? 1 : 1; // just to enter callback
+      const elDiv = (e.target as HTMLElement).closest('[data-element-id]') as HTMLElement;
+      const rect = elDiv?.getBoundingClientRect();
+      if (!rect) return;
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+
+      dragRef.current = {
+        id: el.id,
+        startX: e.clientX,
+        startY: e.clientY,
+        elX: el.x,
+        elY: el.y,
+        type: 'rotate',
+        startAngle,
+        startRotation: el.rotation,
+        centerX,
+        centerY,
+      };
+
+      const handleMouseMove = (ev: MouseEvent) => {
+        if (!dragRef.current || dragRef.current.type !== 'rotate') return;
+        const angle = Math.atan2(ev.clientY - centerY, ev.clientX - centerX) * (180 / Math.PI);
+        const delta = angle - dragRef.current.startAngle!;
+        const newRotation = Math.round(dragRef.current.startRotation! + delta);
+        updateElement(dragRef.current.id, { rotation: newRotation });
+      };
+
+      const handleMouseUp = () => {
+        dragRef.current = null;
+        pushHistory();
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    },
+    [updateElement, pushHistory]
+  );
+
   const handleTouchStart = useCallback(
     (e: React.TouchEvent, el: DesignElement) => {
       e.stopPropagation();
@@ -176,6 +234,7 @@ const Editor2D = () => {
             return (
               <div
                 key={el.id}
+                data-element-id={el.id}
                 className="absolute cursor-move"
                 style={{
                   left: el.x * scale,
@@ -226,6 +285,20 @@ const Editor2D = () => {
                         onMouseDown={(e) => handleMouseDown(e, el, 'resize')}
                       />
                     ))}
+                    {/* Rotation handle */}
+                    <div
+                      className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto"
+                      style={{ top: -32 }}
+                    >
+                      <div
+                        className="w-5 h-5 rounded-full bg-accent border border-accent-foreground flex items-center justify-center cursor-grab active:cursor-grabbing shadow-sm"
+                        onMouseDown={(e) => handleRotateStart(e, el)}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <RotateCw size={10} className="text-accent-foreground" />
+                      </div>
+                      <div className="w-px h-2 bg-accent" />
+                    </div>
                   </>
                 )}
               </div>
