@@ -31,6 +31,8 @@ export interface Design {
   comment: string;
   /** Single offset for the entire graduation block (pixels) */
   graduationOffset: { dx: number; dy: number };
+  /** Base64 thumbnail captured when adding to cart */
+  thumbnail?: string;
 }
 
 export type ActiveTab = '2d' | '3d' | 'bat';
@@ -79,7 +81,7 @@ interface AppState {
   removeElement: (id: string) => void;
   moveElementLayer: (id: string, direction: 'top' | 'up' | 'down' | 'bottom') => void;
 
-  addToCart: () => void;
+  addToCart: (thumbnail?: string) => void;
   removeFromCart: (id: string) => void;
   editCartDesign: (id: string) => void;
   updateCartDesignName: (id: string, name: string) => void;
@@ -270,9 +272,10 @@ export const useStore = create<AppState>((set, get) => ({
     get().pushHistory();
   },
 
-  addToCart: () => {
+  addToCart: (thumbnail?: string) => {
     set((s) => {
       const snapshot = JSON.parse(JSON.stringify(s.currentDesign));
+      snapshot.thumbnail = thumbnail || undefined;
       const newDesign: Design = {
         ...defaultDesign,
         id: crypto.randomUUID(),

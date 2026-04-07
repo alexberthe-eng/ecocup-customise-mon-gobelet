@@ -1,6 +1,7 @@
 import { useStore, getUnitPrice } from '@/store/useStore';
 import { X, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
@@ -30,8 +31,16 @@ const RightPanel = () => {
 
   if (!isDesktop && !showRightPanel) return null;
 
-  const handleAddToCart = () => {
-    addToCart();
+  const handleAddToCart = async () => {
+    let thumbnail: string | undefined;
+    try {
+      const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+      if (canvasEl) {
+        const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
+        thumbnail = canvas.toDataURL('image/png');
+      }
+    } catch {}
+    addToCart(thumbnail);
     toast.success('Design ajouté au panier ✓', {
       description: 'Vous pouvez créer un nouveau visuel.',
     });
