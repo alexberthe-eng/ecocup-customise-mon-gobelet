@@ -31,6 +31,8 @@ export interface Design {
   comment: string;
   /** Single offset for the entire graduation block (pixels) */
   graduationOffset: { dx: number; dy: number };
+  /** Base64 thumbnail captured when adding to cart */
+  thumbnail?: string;
 }
 
 export type ActiveTab = '2d' | '3d' | 'bat';
