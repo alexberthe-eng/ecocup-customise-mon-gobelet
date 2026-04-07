@@ -9,9 +9,12 @@ import Preview3D from '@/components/Preview3D';
 import PreviewBAT from '@/components/PreviewBAT';
 import OnboardingTour from '@/components/OnboardingTour';
 import ToggleSwitch from '@/components/ToggleSwitch';
+import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
 const Index = () => {
   const { activeTab, setActiveTab, tourCompleted, startTour, gridVisible, setGridVisible } = useStore();
+  const isMobile = useIsMobile();
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     if (!tourCompleted) {
@@ -23,22 +26,24 @@ const Index = () => {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <TopBar />
+
       <div className="flex-1 flex overflow-hidden">
-        <LeftSidebar />
+        {/* Desktop sidebar (hidden on mobile — toolbar is at bottom) */}
+        {!isMobile && <LeftSidebar />}
 
         {/* Center area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           {/* Tab bar */}
-          <div className="flex items-center border-b border-thin px-4 bg-background">
+          <div className="flex items-center border-b border-thin px-2 md:px-4 bg-background overflow-x-auto shrink-0">
             {([
-              { id: '2d' as const, label: 'Édition 2D' },
-              { id: '3d' as const, label: 'Vue 3D 360°' },
-              { id: 'bat' as const, label: 'Aperçu BAT' },
+              { id: '2d' as const, label: isMobile ? '2D' : 'Édition 2D' },
+              { id: '3d' as const, label: isMobile ? '3D' : 'Vue 3D 360°' },
+              { id: 'bat' as const, label: isMobile ? 'BAT' : 'Aperçu BAT' },
             ]).map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
+                className={`px-3 md:px-4 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-accent text-accent'
                     : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -48,14 +53,9 @@ const Index = () => {
               </button>
             ))}
 
-            {/* Grid toggle — visible only on 2D tab */}
             {activeTab === '2d' && (
-              <div className="ml-auto">
-                <ToggleSwitch
-                  label="Grille"
-                  checked={gridVisible}
-                  onChange={setGridVisible}
-                />
+              <div className="ml-auto shrink-0">
+                <ToggleSwitch label="Grille" checked={gridVisible} onChange={setGridVisible} />
               </div>
             )}
           </div>
@@ -68,9 +68,16 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Desktop right panel (on mobile/tablet it's an overlay triggered by cart button) */}
         <RightPanel />
       </div>
+
+      {/* Desktop bottom bar */}
       <BottomBar />
+
+      {/* Mobile bottom toolbar */}
+      {isMobile && <LeftSidebar />}
+
       <OnboardingTour />
     </div>
   );

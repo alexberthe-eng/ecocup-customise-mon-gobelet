@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle } from 'lucide-react';
 import { useStore, ActiveTool } from '@/store/useStore';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const tools: { id: ActiveTool; icon: React.ElementType; label: string }[] = [
   { id: 'color', icon: Palette, label: 'Couleur' },
@@ -10,7 +11,7 @@ const tools: { id: ActiveTool; icon: React.ElementType; label: string }[] = [
   { id: 'collection', icon: BookOpen, label: 'Collection' },
 ];
 
-const ColorPopover = () => {
+const ColorPopover = ({ position }: { position: 'side' | 'above' }) => {
   const { currentDesign, setCupColor, setShowColorPopover } = useStore();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -24,10 +25,14 @@ const ColorPopover = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [setShowColorPopover]);
 
+  const posClass = position === 'above'
+    ? 'bottom-full left-0 mb-2'
+    : 'left-[72px] top-0';
+
   return (
     <div
       ref={ref}
-      className="absolute left-[72px] top-0 w-[180px] bg-background border-thin rounded-xl shadow-lg p-3 z-50 animate-scale-in"
+      className={`absolute ${posClass} w-[180px] bg-background border-thin rounded-xl shadow-lg p-3 z-50 animate-scale-in`}
     >
       <h4 className="text-xs font-semibold mb-2">Couleur du gobelet</h4>
       <div className="flex gap-2">
@@ -63,12 +68,51 @@ const ColorPopover = () => {
   );
 };
 
+/** Desktop: vertical sidebar. Mobile: horizontal bottom toolbar */
 const LeftSidebar = () => {
   const activeTool = useStore((s) => s.activeTool);
   const showColorPopover = useStore((s) => s.showColorPopover);
   const handleToolClick = useStore((s) => s.handleToolClick);
   const startTour = useStore((s) => s.startTour);
+  const isMobile = useIsMobile();
 
+  if (isMobile) {
+    return (
+      <nav className="h-14 flex items-center justify-around border-t border-thin bg-background shrink-0 relative">
+        {tools.map((tool) => {
+          const Icon = tool.icon;
+          const isActive = activeTool === tool.id;
+          return (
+            <div key={tool.id} className="relative">
+              <button
+                data-tour={tool.id === 'color' ? 'color' : tool.id === 'image' ? 'image' : undefined}
+                onClick={() => handleToolClick(tool.id)}
+                className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] transition-colors ${
+                  isActive
+                    ? 'bg-accent/20 text-accent'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                <Icon size={18} />
+                <span>{tool.label}</span>
+              </button>
+              {tool.id === 'color' && showColorPopover && <ColorPopover position="above" />}
+            </div>
+          );
+        })}
+        <button
+          data-tour="aide"
+          onClick={startTour}
+          className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] text-muted-foreground"
+        >
+          <HelpCircle size={18} />
+          <span>Aide</span>
+        </button>
+      </nav>
+    );
+  }
+
+  // Desktop / tablet: vertical sidebar
   return (
     <aside className="w-[68px] flex flex-col items-center py-3 border-r border-thin bg-background shrink-0 relative">
       <div className="flex flex-col gap-1 flex-1">
@@ -89,7 +133,7 @@ const LeftSidebar = () => {
                 <Icon size={18} />
                 <span>{tool.label}</span>
               </button>
-              {tool.id === 'color' && showColorPopover && <ColorPopover />}
+              {tool.id === 'color' && showColorPopover && <ColorPopover position="side" />}
             </div>
           );
         })}
