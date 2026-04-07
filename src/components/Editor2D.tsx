@@ -403,7 +403,8 @@ const Editor2D = () => {
                   window.addEventListener('mousemove', onMove);
                   window.addEventListener('mouseup', onUp);
                 }}
-              >
+                >
+                </div>
                 {marks.map((mark) => {
                    const y = mark.defaultY * canvasH;
                    const x = mark.defaultX * canvasW;
