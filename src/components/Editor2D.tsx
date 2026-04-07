@@ -97,7 +97,52 @@ const Editor2D = () => {
     [setSelectedElementId, updateElement, pushHistory]
   );
 
-  // Touch support for mobile
+  const handleRotateStart = useCallback(
+    (e: React.MouseEvent, el: DesignElement) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const scale = useStore.getState().gridVisible ? 1 : 1; // just to enter callback
+      const elDiv = (e.target as HTMLElement).closest('[data-element-id]') as HTMLElement;
+      const rect = elDiv?.getBoundingClientRect();
+      if (!rect) return;
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const startAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+
+      dragRef.current = {
+        id: el.id,
+        startX: e.clientX,
+        startY: e.clientY,
+        elX: el.x,
+        elY: el.y,
+        type: 'rotate',
+        startAngle,
+        startRotation: el.rotation,
+        centerX,
+        centerY,
+      };
+
+      const handleMouseMove = (ev: MouseEvent) => {
+        if (!dragRef.current || dragRef.current.type !== 'rotate') return;
+        const angle = Math.atan2(ev.clientY - centerY, ev.clientX - centerX) * (180 / Math.PI);
+        const delta = angle - dragRef.current.startAngle!;
+        const newRotation = Math.round(dragRef.current.startRotation! + delta);
+        updateElement(dragRef.current.id, { rotation: newRotation });
+      };
+
+      const handleMouseUp = () => {
+        dragRef.current = null;
+        pushHistory();
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    },
+    [updateElement, pushHistory]
+  );
+
   const handleTouchStart = useCallback(
     (e: React.TouchEvent, el: DesignElement) => {
       e.stopPropagation();
