@@ -81,7 +81,7 @@ interface AppState {
   removeElement: (id: string) => void;
   moveElementLayer: (id: string, direction: 'top' | 'up' | 'down' | 'bottom') => void;
 
-  addToCart: () => void;
+  addToCart: (thumbnail?: string) => void;
   removeFromCart: (id: string) => void;
   editCartDesign: (id: string) => void;
   updateCartDesignName: (id: string, name: string) => void;
@@ -272,9 +272,10 @@ export const useStore = create<AppState>((set, get) => ({
     get().pushHistory();
   },
 
-  addToCart: () => {
+  addToCart: (thumbnail?: string) => {
     set((s) => {
       const snapshot = JSON.parse(JSON.stringify(s.currentDesign));
+      snapshot.thumbnail = thumbnail || undefined;
       const newDesign: Design = {
         ...defaultDesign,
         id: crypto.randomUUID(),
