@@ -7,6 +7,7 @@ import { getGraduationMarks } from '@/components/GraduationMarks';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ecocupLogo from '@/assets/ecocup-logo.png';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
