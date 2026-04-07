@@ -390,10 +390,13 @@ const ContextualPanel = ({
         style={{ top: arrowTop }}
       />
       <div
-        className="bg-background border-thin rounded-xl shadow-lg p-3 min-w-[220px] pointer-events-auto animate-scale-in"
+        className="relative bg-background border-thin rounded-xl shadow-lg p-3 min-w-[220px] pointer-events-auto animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate">{elementName}</p>
+        <button onClick={() => setSelectedElementId(null)} className="absolute top-2 right-2 p-0.5 rounded hover:bg-secondary">
+          <X size={12} className="text-muted-foreground" />
+        </button>
+        <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate pr-5">{elementName}</p>
         <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} />
       </div>
     </div>
