@@ -14,7 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      shared_designs: {
+        Row: {
+          created_at: string
+          cup_color: string
+          design_name: string
+          expires_at: string
+          id: string
+          image_url: string
+        }
+        Insert: {
+          created_at?: string
+          cup_color?: string
+          design_name?: string
+          expires_at?: string
+          id?: string
+          image_url: string
+        }
+        Update: {
+          created_at?: string
+          cup_color?: string
+          design_name?: string
+          expires_at?: string
+          id?: string
+          image_url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

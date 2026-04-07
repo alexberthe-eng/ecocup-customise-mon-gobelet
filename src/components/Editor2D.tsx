@@ -224,6 +224,7 @@ const Editor2D = () => {
         <div
           ref={canvasRef}
           className="relative bg-background rounded-xl border-thin overflow-hidden shrink-0"
+          data-editor-canvas
           style={{
             width: isMobile ? 340 : 600,
             height: isMobile ? 227 : 400,

@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
-import { ShoppingCart, Save, Share2, Menu, Check, X, LogOut } from 'lucide-react';
+import { ShoppingCart, Save, Share2, Menu, Check, X, LogOut, Loader2, Copy } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import AuthModal from '@/components/AuthModal';
+import html2canvas from 'html2canvas';
+import { toast } from 'sonner';
 
 const TopBar = () => {
   const cart = useStore((s) => s.cart);
   const designName = useStore((s) => s.currentDesign.name);
+  const cupColor = useStore((s) => s.currentDesign.cupColor);
   const setDesignName = useStore((s) => s.setDesignName);
   const showRightPanel = useStore((s) => s.showRightPanel);
   const setShowRightPanel = useStore((s) => s.setShowRightPanel);
@@ -18,6 +21,8 @@ const TopBar = () => {
   const [editValue, setEditValue] = useState(designName);
   const [showAuth, setShowAuth] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -62,6 +67,70 @@ const TopBar = () => {
     await supabase.auth.signOut();
   };
 
+  const handleShare = async () => {
+    setSharing(true);
+    setShareUrl(null);
+    try {
+      // Capture the 2D canvas
+      const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+      if (!canvasEl) {
+        toast.error('Impossible de capturer le design');
+        setSharing(false);
+        return;
+      }
+
+      const canvas = await html2canvas(canvasEl, {
+        backgroundColor: null,
+        useCORS: true,
+        scale: 2,
+      });
+
+      const blob = await new Promise<Blob>((resolve) =>
+        canvas.toBlob((b) => resolve(b!), 'image/png')
+      );
+
+      const fileName = `${crypto.randomUUID()}.png`;
+      const { error: uploadError } = await supabase.storage
+        .from('shared-designs')
+        .upload(fileName, blob, { contentType: 'image/png' });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('shared-designs')
+        .getPublicUrl(fileName);
+
+      const { data, error } = await supabase
+        .from('shared_designs')
+        .insert({
+          design_name: designName,
+          cup_color: cupColor,
+          image_url: urlData.publicUrl,
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      const url = `${window.location.origin}/share/${data.id}`;
+      setShareUrl(url);
+      toast.success('Lien de partage créé !', {
+        description: 'Valide pendant 7 jours.',
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error('Erreur lors du partage');
+    }
+    setSharing(false);
+  };
+
+  const handleCopyLink = () => {
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success('Lien copié !');
+    }
+  };
+
   return (
     <>
       <header className="h-12 flex items-center justify-between px-3 md:px-4 border-b border-thin shrink-0">
@@ -104,9 +173,13 @@ const TopBar = () => {
                 <Save size={14} />
                 <span className="hidden md:inline">Sauvegarder</span>
               </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors">
-                <Share2 size={14} />
-                <span className="hidden md:inline">Partager</span>
+              <button
+                onClick={handleShare}
+                disabled={sharing}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors disabled:opacity-50"
+              >
+                {sharing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
+                <span className="hidden md:inline">{sharing ? 'Partage...' : 'Partager'}</span>
               </button>
               {user && (
                 <button
@@ -138,6 +211,38 @@ const TopBar = () => {
           )}
         </div>
       </header>
+
+      {/* Share URL modal */}
+      {shareUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShareUrl(null)}>
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm">Lien de partage</h3>
+              <button onClick={() => setShareUrl(null)} className="p-1 rounded hover:bg-secondary">
+                <X size={14} />
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Partagez ce lien avec votre famille ou vos amis. Il est valide pendant 7 jours.
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={shareUrl}
+                className="flex-1 text-xs border-thin rounded-md px-3 py-2 bg-background truncate"
+                onFocus={(e) => e.target.select()}
+              />
+              <button
+                onClick={handleCopyLink}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity shrink-0"
+              >
+                <Copy size={12} />
+                Copier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AuthModal open={showAuth} onClose={() => setShowAuth(false)} onSuccess={handleAuthSuccess} />
     </>
