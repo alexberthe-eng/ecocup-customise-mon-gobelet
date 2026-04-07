@@ -36,12 +36,13 @@ const Index = () => {
           {/* Tab bar */}
           <div className="flex items-center border-b border-thin px-2 md:px-4 bg-background overflow-x-auto shrink-0">
             {([
-              { id: '2d' as const, label: isMobile ? '2D' : 'Édition 2D' },
-              { id: '3d' as const, label: isMobile ? '3D' : 'Vue 3D 360°' },
-              { id: 'bat' as const, label: isMobile ? 'BAT' : 'Aperçu BAT' },
+              { id: '2d' as const, label: isMobile ? '2D' : 'Édition 2D', tour: 'tabs-2d-3d' },
+              { id: '3d' as const, label: isMobile ? '3D' : 'Vue 3D 360°', tour: 'tabs-2d-3d' },
+              { id: 'bat' as const, label: isMobile ? 'BAT' : 'Aperçu BAT', tour: 'tab-bat' },
             ]).map((tab) => (
               <button
                 key={tab.id}
+                data-tour={tab.tour}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-3 md:px-4 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === tab.id
