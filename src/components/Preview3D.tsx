@@ -4,6 +4,8 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '@/store/useStore';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ElementPanel } from '@/components/ElementPanel';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
@@ -167,6 +169,13 @@ function CupMesh() {
 
 const Preview3D = () => {
   const controlsRef = useRef<any>(null);
+  const { currentDesign, selectedElementId, setSelectedElementId } = useStore();
+  const isMobile = useIsMobile();
+
+  const selectedElement = useMemo(
+    () => currentDesign.elements.find((el) => el.id === selectedElementId),
+    [currentDesign.elements, selectedElementId]
+  );
 
   const handleZoom = useCallback((direction: 'in' | 'out') => {
     const controls = controlsRef.current;
@@ -206,6 +215,48 @@ const Preview3D = () => {
           zoomSpeed={0.6}
         />
       </Canvas>
+
+      {/* Element list for selecting/editing */}
+      {currentDesign.elements.length > 0 && (
+        <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm border-thin rounded-xl shadow-lg p-2 z-10 max-w-[180px]">
+          <p className="text-[9px] font-semibold text-muted-foreground mb-1.5 px-1">Éléments</p>
+          <div className="flex flex-col gap-0.5">
+            {currentDesign.elements
+              .slice()
+              .sort((a, b) => b.zIndex - a.zIndex)
+              .map((el) => {
+                const label =
+                  el.type === 'text'
+                    ? `Texte : "${(el.text || '').slice(0, 12)}"`
+                    : el.type === 'image'
+                    ? 'Image'
+                    : 'SVG';
+                return (
+                  <button
+                    key={el.id}
+                    onClick={() => setSelectedElementId(selectedElementId === el.id ? null : el.id)}
+                    className={`text-left text-[10px] px-2 py-1.5 rounded-lg transition-colors truncate ${
+                      selectedElementId === el.id
+                        ? 'bg-accent text-accent-foreground'
+                        : 'hover:bg-secondary text-foreground'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* Property panel for selected element */}
+      {selectedElement && (
+        <ElementPanel
+          element={selectedElement}
+          isMobile={isMobile}
+          anchor={!isMobile ? { left: 200, top: 10 } : undefined}
+        />
+      )}
 
       {/* Zoom buttons */}
       <div className="absolute bottom-4 right-4 flex flex-col gap-1">
