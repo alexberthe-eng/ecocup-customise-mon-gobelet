@@ -2,13 +2,14 @@ import { useEffect, useRef } from 'react';
 import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus } from 'lucide-react';
 import { useStore, ActiveTool } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?: boolean }[] = [
-  { id: 'color', icon: Palette, label: 'Couleur du gobelet' },
-  { id: 'image', icon: ImagePlus, label: 'Image' },
-  { id: 'text', icon: Type, label: 'Texte', showPlus: true },
-  { id: 'motif', icon: Shapes, label: 'Motif', showPlus: true },
-  { id: 'collection', icon: BookOpen, label: 'Collection', showPlus: true },
+const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?: boolean; tooltip: string }[] = [
+  { id: 'color', icon: Palette, label: 'Couleur du gobelet', tooltip: 'Changer la couleur du gobelet' },
+  { id: 'image', icon: ImagePlus, label: 'Image', tooltip: 'Ajouter une image' },
+  { id: 'text', icon: Type, label: 'Texte', showPlus: true, tooltip: 'Ajouter du texte' },
+  { id: 'motif', icon: Shapes, label: 'Motif', showPlus: true, tooltip: 'Ajouter un motif' },
+  { id: 'collection', icon: BookOpen, label: 'Collection', showPlus: true, tooltip: 'Choisir une collection' },
 ];
 
 const ColorPopover = ({ position }: { position: 'side' | 'above' }) => {
