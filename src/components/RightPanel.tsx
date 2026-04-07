@@ -25,6 +25,7 @@ const RightPanel = () => {
 
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const unitPrice = getUnitPrice(currentDesign.quantity);
   const subtotal = unitPrice * currentDesign.quantity;
@@ -41,12 +42,10 @@ const RightPanel = () => {
       }
     } catch {}
     addToCart(thumbnail);
-    toast.success('Design ajouté au panier ✓', {
-      description: 'Vous pouvez créer un nouveau visuel.',
-    });
     if (!isDesktop) {
       setShowRightPanel(false);
     }
+    setShowConfirmModal(true);
   };
 
   const panelContent = (
