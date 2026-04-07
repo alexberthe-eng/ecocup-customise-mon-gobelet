@@ -11,20 +11,20 @@ export interface GradMark {
 
 const GRADUATIONS: Record<string, GradMark[]> = {
   'standard-33cl': [
-    { id: 'g-25cl', label: '25 cl', defaultY: 0.45, defaultX: 0.5 },
-    { id: 'g-12.5cl', label: '12,5 cl', defaultY: 0.65, defaultX: 0.5 },
-    { id: 'g-5cl', label: '5 cl', defaultY: 0.82, defaultX: 0.5 },
+    { id: 'g-25cl', label: '25 cl', defaultY: 0.12, defaultX: 0.5 },
+    { id: 'g-12.5cl', label: '12,5 cl', defaultY: 0.50, defaultX: 0.5 },
+    { id: 'g-5cl', label: '5 cl', defaultY: 0.72, defaultX: 0.5 },
   ],
   'standard-25cl': [
-    { id: 'g-20cl', label: '20 cl', defaultY: 0.45, defaultX: 0.5 },
-    { id: 'g-12.5cl', label: '12,5 cl', defaultY: 0.63, defaultX: 0.5 },
-    { id: 'g-5cl', label: '5 cl', defaultY: 0.80, defaultX: 0.5 },
+    { id: 'g-20cl', label: '20 cl', defaultY: 0.12, defaultX: 0.5 },
+    { id: 'g-12.5cl', label: '12,5 cl', defaultY: 0.48, defaultX: 0.5 },
+    { id: 'g-5cl', label: '5 cl', defaultY: 0.70, defaultX: 0.5 },
   ],
   'pinte-50cl': [
-    { id: 'g-50cl', label: '50 cl', defaultY: 0.38, defaultX: 0.5 },
-    { id: 'g-25cl', label: '25 cl', defaultY: 0.56, defaultX: 0.5 },
-    { id: 'g-12.5cl', label: '12,5 cl', defaultY: 0.72, defaultX: 0.5 },
-    { id: 'g-5cl', label: '5 cl', defaultY: 0.84, defaultX: 0.5 },
+    { id: 'g-50cl', label: '50 cl', defaultY: 0.08, defaultX: 0.5 },
+    { id: 'g-25cl', label: '25 cl', defaultY: 0.35, defaultX: 0.5 },
+    { id: 'g-12.5cl', label: '12,5 cl', defaultY: 0.55, defaultX: 0.5 },
+    { id: 'g-5cl', label: '5 cl', defaultY: 0.72, defaultX: 0.5 },
   ],
 };
 
