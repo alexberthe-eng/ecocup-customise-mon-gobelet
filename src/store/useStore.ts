@@ -33,15 +33,33 @@ export interface Design {
   graduationOffset: { dx: number; dy: number };
   /** Base64 thumbnail captured when adding to cart */
   thumbnail?: string;
+  productType: string;
+  capacity: string;
 }
 
 export type ActiveTab = '2d' | '3d' | 'bat';
 export type ActiveTool = 'color' | 'image' | 'text' | 'motif' | 'collection' | 'aide' | null;
 export type OpenDrawer = 'image' | 'motif' | 'collection' | null;
 
+/** Capacity options per product type */
+export const PRODUCT_CAPACITIES: Record<string, { label: string; capacities: string[] }> = {
+  'gobelet-eco': { label: 'Gobelet Eco', capacities: ['25cl', '30cl', '33cl', '50cl'] },
+  'verre-champagne': { label: 'Verre à champagne', capacities: ['15cl', '20cl'] },
+  'mug': { label: 'Mug', capacities: ['25cl', '35cl'] },
+  'gobelet-carton': { label: 'Gobelet carton', capacities: ['20cl', '25cl', '33cl'] },
+};
+
+/** Default graduation for a given capacity */
+const capacityToGraduation = (cap: string): string => {
+  if (cap === '50cl') return 'pinte-50cl';
+  if (cap === '25cl') return 'standard-25cl';
+  return 'standard-33cl';
+};
+
 interface AppState {
   currentDesign: Design;
   cart: Design[];
+  globalComment: string;
 
   activeTab: ActiveTab;
   activeTool: ActiveTool;
@@ -75,9 +93,12 @@ interface AppState {
   setDesignName: (name: string) => void;
   setShowGraduation: (v: boolean) => void;
   setShowGraduationMask: (v: boolean) => void;
+  setProductType: (t: string) => void;
+  setCapacity: (c: string) => void;
+  setGlobalComment: (c: string) => void;
 
   addElement: (el: DesignElement) => void;
-  updateElement: (id: string, updates: Partial<DesignElement>) => void;
+  updateElement: (id: string, updates: Partial<DesignElement>, saveHistory?: boolean) => void;
   removeElement: (id: string) => void;
   moveElementLayer: (id: string, direction: 'top' | 'up' | 'down' | 'bottom') => void;
 
@@ -109,6 +130,8 @@ const defaultDesign: Design = {
   quantity: 250,
   comment: '',
   graduationOffset: { dx: 0, dy: 0 },
+  productType: 'gobelet-eco',
+  capacity: '33cl',
 };
 
 const PRICE_TIERS: Record<number, number> = {
@@ -118,6 +141,7 @@ const PRICE_TIERS: Record<number, number> = {
   1000: 1.60,
   2500: 1.25,
   5000: 0.98,
+  10000: 0.82,
 };
 
 export const getUnitPrice = (quantity: number): number => {
@@ -127,6 +151,7 @@ export const getUnitPrice = (quantity: number): number => {
 export const useStore = create<AppState>((set, get) => ({
   currentDesign: { ...defaultDesign },
   cart: [],
+  globalComment: '',
   activeTab: '2d',
   activeTool: null,
   openDrawer: null,
@@ -161,16 +186,31 @@ export const useStore = create<AppState>((set, get) => ({
   setDesignName: (name) => set((s) => ({ currentDesign: { ...s.currentDesign, name } })),
   setShowGraduation: (v) => set({ showGraduation: v }),
   setShowGraduationMask: (v) => set({ showGraduationMask: v }),
+  setGlobalComment: (c) => set({ globalComment: c }),
+
+  setProductType: (t) => {
+    const caps = PRODUCT_CAPACITIES[t]?.capacities ?? ['33cl'];
+    const newCap = caps[0];
+    const newGrad = capacityToGraduation(newCap);
+    set((s) => ({
+      currentDesign: { ...s.currentDesign, productType: t, capacity: newCap, graduation: newGrad },
+    }));
+  },
+
+  setCapacity: (c) => {
+    const newGrad = capacityToGraduation(c);
+    set((s) => ({
+      currentDesign: { ...s.currentDesign, capacity: c, graduation: newGrad },
+    }));
+  },
 
   handleToolClick: (tool) => {
     const s = get();
-    // Close everything first
     set({ showColorPopover: false, openDrawer: null });
 
     if (tool === 'color') {
       set({ showColorPopover: !s.showColorPopover, activeTool: 'color' });
     } else if (tool === 'text') {
-      // Directly add a text element and select it
       const newId = crypto.randomUUID();
       const count = s.currentDesign.elements.length;
       const offset = count * 30;
@@ -198,7 +238,6 @@ export const useStore = create<AppState>((set, get) => ({
         },
         selectedElementId: newId,
       });
-      // Push history after state update
       setTimeout(() => get().pushHistory(), 0);
     } else if (tool === 'image') {
       set({ openDrawer: 'image', activeTool: 'image' });
@@ -221,7 +260,7 @@ export const useStore = create<AppState>((set, get) => ({
     get().pushHistory();
   },
 
-  updateElement: (id, updates) => {
+  updateElement: (id, updates, saveHistory) => {
     set((s) => ({
       currentDesign: {
         ...s.currentDesign,
@@ -230,6 +269,9 @@ export const useStore = create<AppState>((set, get) => ({
         ),
       },
     }));
+    if (saveHistory) {
+      get().pushHistory();
+    }
   },
 
   removeElement: (id) => {

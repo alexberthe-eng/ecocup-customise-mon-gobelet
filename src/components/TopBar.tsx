@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ShoppingCart, Save, Share2, Menu, Check, X, LogOut, Loader2, Copy, User } from 'lucide-react';
-import { useStore } from '@/store/useStore';
+import { useStore, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import AuthModal from '@/components/AuthModal';
@@ -11,6 +11,8 @@ const TopBar = () => {
   const cart = useStore((s) => s.cart);
   const designName = useStore((s) => s.currentDesign.name);
   const cupColor = useStore((s) => s.currentDesign.cupColor);
+  const productType = useStore((s) => s.currentDesign.productType);
+  const capacity = useStore((s) => s.currentDesign.capacity);
   const setDesignName = useStore((s) => s.setDesignName);
   const showRightPanel = useStore((s) => s.showRightPanel);
   const setShowRightPanel = useStore((s) => s.setShowRightPanel);
@@ -24,6 +26,8 @@ const TopBar = () => {
   const [sharing, setSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const productLabel = PRODUCT_CAPACITIES[productType]?.label ?? 'Gobelet';
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -47,7 +51,6 @@ const TopBar = () => {
       setShowAuth(true);
       return;
     }
-    // Save design to database
     try {
       let thumbnailUrl: string | undefined;
       const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
@@ -98,7 +101,6 @@ const TopBar = () => {
     setSharing(true);
     setShareUrl(null);
     try {
-      // Capture the 2D canvas
       const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
       if (!canvasEl) {
         toast.error('Impossible de capturer le design');
@@ -106,47 +108,22 @@ const TopBar = () => {
         return;
       }
 
-      const canvas = await html2canvas(canvasEl, {
-        backgroundColor: null,
-        useCORS: true,
-        scale: 2,
-      });
-
-      const blob = await new Promise<Blob>((resolve) =>
-        canvas.toBlob((b) => resolve(b!), 'image/png')
-      );
-
+      const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 2 });
+      const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
       const fileName = `${crypto.randomUUID()}.png`;
-      const { error: uploadError } = await supabase.storage
-        .from('shared-designs')
-        .upload(fileName, blob, { contentType: 'image/png' });
-
+      const { error: uploadError } = await supabase.storage.from('shared-designs').upload(fileName, blob, { contentType: 'image/png' });
       if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from('shared-designs').getPublicUrl(fileName);
 
-      const { data: urlData } = supabase.storage
-        .from('shared-designs')
-        .getPublicUrl(fileName);
-
-      const insertData: any = {
-          design_name: designName,
-          cup_color: cupColor,
-          image_url: urlData.publicUrl,
-        };
+      const insertData: any = { design_name: designName, cup_color: cupColor, image_url: urlData.publicUrl };
       if (user) insertData.user_id = user.id;
 
-      const { data, error } = await supabase
-        .from('shared_designs')
-        .insert(insertData)
-        .select('id')
-        .single();
-
+      const { data, error } = await supabase.from('shared_designs').insert(insertData).select('id').single();
       if (error) throw error;
 
       const url = `${window.location.origin}/share/${data.id}`;
       setShareUrl(url);
-      toast.success('Lien de partage créé !', {
-        description: 'Valide pendant 7 jours.',
-      });
+      toast.success('Lien de partage créé !', { description: 'Valide pendant 7 jours.' });
     } catch (err) {
       console.error(err);
       toast.error('Erreur lors du partage');
@@ -167,8 +144,8 @@ const TopBar = () => {
         <div className="flex items-center gap-2 md:gap-4 min-w-0">
           <span className="font-bold text-sm tracking-wide shrink-0">ECOCUP®</span>
           {!isMobile && !editing && (
-            <span className="text-sm font-medium text-foreground truncate">
-              {designName}
+            <span className="text-[11px] text-muted-foreground truncate">
+              — {productLabel} {capacity}
             </span>
           )}
           {!isMobile && editing && (

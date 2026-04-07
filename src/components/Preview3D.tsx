@@ -9,6 +9,7 @@ import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import CanvasDrawer from '@/components/CanvasDrawer';
 import ecocupLogo from '@/assets/ecocup-logo.png';
+import { applyClipToCtx } from '@/lib/clipPaths';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
@@ -113,7 +114,15 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
           ctx.fillText(el.text, 0, 0);
         } else if ((el.type === 'image' || el.type === 'svg') && imgMap.has(el.id)) {
           const img = imgMap.get(el.id)!;
-          ctx.drawImage(img, -el.width / 2, -el.height / 2, el.width, el.height);
+          if (el.maskType && el.maskType !== 'rectangle') {
+            ctx.save();
+            ctx.translate(-el.width / 2, -el.height / 2);
+            applyClipToCtx(ctx, el.maskType, el.width, el.height);
+            ctx.drawImage(img, 0, 0, el.width, el.height);
+            ctx.restore();
+          } else {
+            ctx.drawImage(img, -el.width / 2, -el.height / 2, el.width, el.height);
+          }
         }
 
         ctx.restore();

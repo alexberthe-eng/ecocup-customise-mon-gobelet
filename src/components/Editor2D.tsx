@@ -6,6 +6,7 @@ import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getGraduationMarks } from '@/components/GraduationMarks';
 import ecocupLogo from '@/assets/ecocup-logo.png';
+import { getClipPath } from '@/lib/clipPaths';
 
 const GRID_SIZE = 22;
 
@@ -37,7 +38,10 @@ const Editor2D = () => {
     startY: number;
     elX: number;
     elY: number;
+    elW: number;
+    elH: number;
     type: 'move' | 'resize' | 'rotate';
+    corner?: 'tl' | 'tr' | 'bl' | 'br';
     startAngle?: number;
     startRotation?: number;
     centerX?: number;
@@ -50,7 +54,7 @@ const Editor2D = () => {
   );
 
   const handleMouseDown = useCallback(
-    (e: React.MouseEvent, el: DesignElement, type: 'move' | 'resize' = 'move') => {
+    (e: React.MouseEvent, el: DesignElement, type: 'move' | 'resize' = 'move', corner?: 'tl' | 'tr' | 'bl' | 'br') => {
       e.stopPropagation();
       setSelectedElementId(el.id);
       const grid = useStore.getState().gridVisible;
@@ -60,7 +64,10 @@ const Editor2D = () => {
         startY: e.clientY,
         elX: el.x,
         elY: el.y,
+        elW: el.width,
+        elH: el.height,
         type,
+        corner,
       };
 
       const handleMouseMove = (ev: MouseEvent) => {
@@ -73,10 +80,32 @@ const Editor2D = () => {
           if (grid) { newX = snapToGrid(newX); newY = snapToGrid(newY); }
           updateElement(dragRef.current.id, { x: newX, y: newY });
         } else if (dragRef.current.type === 'resize') {
-          let newW = Math.max(20, el.width + dx);
-          let newH = Math.max(20, el.height + dy);
+          const c = dragRef.current.corner || 'br';
+          let newX = dragRef.current.elX;
+          let newY = dragRef.current.elY;
+          let newW = dragRef.current.elW;
+          let newH = dragRef.current.elH;
+
+          if (c === 'br') {
+            newW = Math.max(20, dragRef.current.elW + dx);
+            newH = Math.max(20, dragRef.current.elH + dy);
+          } else if (c === 'bl') {
+            newX = dragRef.current.elX + dx;
+            newW = Math.max(20, dragRef.current.elW - dx);
+            newH = Math.max(20, dragRef.current.elH + dy);
+          } else if (c === 'tr') {
+            newY = dragRef.current.elY + dy;
+            newW = Math.max(20, dragRef.current.elW + dx);
+            newH = Math.max(20, dragRef.current.elH - dy);
+          } else if (c === 'tl') {
+            newX = dragRef.current.elX + dx;
+            newY = dragRef.current.elY + dy;
+            newW = Math.max(20, dragRef.current.elW - dx);
+            newH = Math.max(20, dragRef.current.elH - dy);
+          }
+
           if (grid) { newW = Math.max(GRID_SIZE, snapToGrid(newW)); newH = Math.max(GRID_SIZE, snapToGrid(newH)); }
-          updateElement(dragRef.current.id, { width: newW, height: newH });
+          updateElement(dragRef.current.id, { x: newX, y: newY, width: newW, height: newH });
         } else if (dragRef.current.type === 'rotate') {
           const angle = Math.atan2(
             ev.clientY - dragRef.current.centerY!,
@@ -120,6 +149,8 @@ const Editor2D = () => {
         startY: e.clientY,
         elX: el.x,
         elY: el.y,
+        elW: el.width,
+        elH: el.height,
         type: 'rotate',
         startAngle,
         startRotation: el.rotation,
@@ -160,6 +191,8 @@ const Editor2D = () => {
         startY: touch.clientY,
         elX: el.x,
         elY: el.y,
+        elW: el.width,
+        elH: el.height,
         type: 'move',
       };
 
@@ -299,7 +332,13 @@ const Editor2D = () => {
                   </div>
                 )}
                 {el.type === 'image' && el.src && (
-                  <img src={el.src} alt="" className="w-full h-full object-contain pointer-events-none" draggable={false} />
+                  <img
+                    src={el.src}
+                    alt=""
+                    className="w-full h-full object-contain pointer-events-none"
+                    draggable={false}
+                    style={el.maskType ? { clipPath: getClipPath(el.maskType) } : undefined}
+                  />
                 )}
                 {el.type === 'svg' && el.src && (
                   <img src={el.src} alt="" className="w-full h-full object-contain pointer-events-none" draggable={false} />
@@ -308,17 +347,17 @@ const Editor2D = () => {
                 {isSelected && (
                   <>
                     <div className="absolute inset-0 border-2 border-accent rounded pointer-events-none" />
-                    {[
-                      { top: -4, left: -4 },
-                      { top: -4, right: -4 },
-                      { bottom: -4, left: -4 },
-                      { bottom: -4, right: -4 },
-                    ].map((pos, i) => (
+                    {([
+                      { pos: { top: -4, left: -4 }, corner: 'tl' as const, cursor: 'nwse-resize' },
+                      { pos: { top: -4, right: -4 }, corner: 'tr' as const, cursor: 'nesw-resize' },
+                      { pos: { bottom: -4, left: -4 }, corner: 'bl' as const, cursor: 'nesw-resize' },
+                      { pos: { bottom: -4, right: -4 }, corner: 'br' as const, cursor: 'nwse-resize' },
+                    ]).map(({ pos, corner, cursor }, i) => (
                       <div
                         key={i}
-                        className="absolute w-2.5 h-2.5 bg-accent rounded-sm border border-accent-foreground cursor-se-resize"
-                        style={pos as React.CSSProperties}
-                        onMouseDown={(e) => handleMouseDown(e, el, 'resize')}
+                        className="absolute w-2.5 h-2.5 bg-accent rounded-sm border border-accent-foreground"
+                        style={{ ...pos, cursor } as React.CSSProperties}
+                        onMouseDown={(e) => handleMouseDown(e, el, 'resize', corner)}
                       />
                     ))}
                     {/* Rotation handle */}

@@ -4,15 +4,19 @@ import { X, Pencil, Trash2, FileText } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 
+const QUANTITIES = [125, 250, 500, 1000, 2500, 5000, 10000];
+
 const CartPanel = () => {
   const {
     cart,
     showCartPanel,
+    globalComment,
     setShowCartPanel,
     removeFromCart,
     editCartDesign,
     updateCartDesignName,
     updateCartDesignQuantity,
+    setGlobalComment,
   } = useStore();
 
   const isMobile = useIsMobile();
@@ -115,7 +119,7 @@ const CartPanel = () => {
                         onChange={(e) => updateCartDesignQuantity(d.id, Number(e.target.value))}
                         className="text-[11px] border-thin rounded px-1.5 py-0.5 bg-background"
                       >
-                        {[125, 250, 500, 1000, 2500, 5000].map((q) => (
+                        {QUANTITIES.map((q) => (
                           <option key={q} value={q}>{q} gobelets</option>
                         ))}
                       </select>
@@ -151,6 +155,19 @@ const CartPanel = () => {
             );
           })}
         </div>
+
+        {/* Global comment */}
+        {cart.length > 0 && (
+          <div className="p-4 border-b border-thin">
+            <h3 className="text-xs font-semibold mb-2">Commentaire global pour toute la commande</h3>
+            <textarea
+              value={globalComment}
+              onChange={(e) => setGlobalComment(e.target.value)}
+              placeholder="Ex : livraison impérative avant le 15, facturation au nom de..."
+              className="w-full text-xs border-thin rounded-md px-2 py-1.5 bg-background resize-none h-16"
+            />
+          </div>
+        )}
 
         {/* Footer */}
         {cart.length > 0 && (

@@ -52,6 +52,7 @@ const MASKS: { id: MaskType; label: string; path: string }[] = [
 const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<{ dataUrl: string; name: string } | null>(null);
+  const [selectedMask, setSelectedMask] = useState<MaskType>(null);
   const { addElement, currentDesign, setSelectedElementId } = useStore();
 
   const handleFile = (file: File) => {
@@ -78,6 +79,7 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
       rotation: 0, opacity: 100, color: '#000000',
       zIndex: count,
       src: selectedFile.dataUrl,
+      maskType: selectedMask,
     });
     setSelectedElementId(newId);
     onClose();
@@ -120,6 +122,25 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
       <p className="text-[11px] text-muted-foreground text-center mb-4">
         Importez un fichier image à ajouter à votre design.
       </p>
+
+      {/* Mask selector */}
+      <div className="mb-4">
+        <p className="text-[11px] font-medium mb-2">Masque de forme (optionnel)</p>
+        <div className="grid grid-cols-3 gap-1.5">
+          {MASKS.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => setSelectedMask(selectedMask === m.id ? null : m.id)}
+              className={`aspect-square border rounded-lg flex flex-col items-center justify-center gap-0.5 text-[9px] transition-colors ${
+                selectedMask === m.id ? 'border-accent bg-accent/10' : 'border-border hover:bg-secondary/50'
+              }`}
+            >
+              <svg viewBox="0 0 100 100" className="w-8 h-8"><path d={m.path} fill="currentColor" /></svg>
+              {m.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <button
         onClick={handleAdd}
