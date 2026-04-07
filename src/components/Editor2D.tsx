@@ -330,6 +330,18 @@ const ContextualPanel = ({
     updateElement(element.id, updates);
   };
 
+  const handleDuplicate = () => {
+    const newId = crypto.randomUUID();
+    const newEl: DesignElement = {
+      ...JSON.parse(JSON.stringify(element)),
+      id: newId,
+      x: element.x + 20,
+      y: element.y + 20,
+    };
+    addElement(newEl);
+    setSelectedElementId(newId);
+  };
+
   const elementName =
     element.type === 'text'
       ? `Texte : "${(element.text || '').slice(0, 15)}"`
