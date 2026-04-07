@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus } from 'lucide-react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus, Headphones, Phone, MessageCircle } from 'lucide-react';
 import { useStore, ActiveTool } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?: boolean; tooltip: string }[] = [
   { id: 'color', icon: Palette, label: 'Gobelet', tooltip: 'Changer la couleur du gobelet' },
@@ -112,6 +113,50 @@ const LeftSidebar = () => {
           <HelpCircle size={18} />
           <span>Aide</span>
         </button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] text-muted-foreground">
+              <Headphones size={18} />
+              <span>Assistance</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side="top" align="center" className="w-72 p-0">
+            <div className="px-4 py-3 border-b border-border bg-secondary/50">
+              <div className="flex items-center gap-2">
+                <Headphones size={16} className="text-foreground" />
+                <span className="text-sm font-semibold text-foreground">Besoin d'aide ?</span>
+              </div>
+            </div>
+            <div className="p-4 space-y-3">
+              <p className="text-xs text-muted-foreground">Notre équipe vous accompagne.</p>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/60 text-xs text-muted-foreground">
+                <span>🕐</span>
+                <span>Lun – Ven : 9h00 – 18h00</span>
+              </div>
+              <a href="tel:+33123456789" className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary transition-colors">
+                <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                  <Phone size={16} className="text-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Appelez-nous</p>
+                  <p className="text-xs text-muted-foreground">01 23 45 67 89</p>
+                </div>
+              </a>
+              <button
+                onClick={() => window.open('mailto:contact@ecocup.com?subject=Demande%20d%27assistance', '_blank')}
+                className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary transition-colors w-full text-left"
+              >
+                <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                  <MessageCircle size={16} className="text-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Chat / Email</p>
+                  <p className="text-xs text-muted-foreground">Réponse sous 24h</p>
+                </div>
+              </button>
+            </div>
+          </PopoverContent>
+        </Popover>
       </nav>
     );
   }
