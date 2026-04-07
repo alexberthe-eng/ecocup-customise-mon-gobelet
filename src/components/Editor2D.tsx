@@ -403,7 +403,7 @@ const Editor2D = () => {
                 {/* Ecocup logo below last graduation mark */}
                 {(() => {
                   const lastMark = marks[marks.length - 1];
-                  const logoY = lastMark ? lastMark.defaultY * canvasH + 18 : canvasH * 0.85;
+                  const logoY = lastMark ? lastMark.defaultY * canvasH + 28 : canvasH * 0.90;
                   const logoX = (lastMark?.defaultX ?? 0.5) * canvasW;
                   const logoW = 30 * scale;
                   const logoH = 30 * scale;
