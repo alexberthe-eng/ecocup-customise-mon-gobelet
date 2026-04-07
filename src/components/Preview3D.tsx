@@ -126,6 +126,29 @@ function CupMesh() {
     [elements, setSelectedElementId]
   );
 
+  // Hover: check if pointer is over an element to show pointer cursor
+  const handlePointerMove = useCallback(
+    (e: any) => {
+      const uv = e.uv as THREE.Vector2 | undefined;
+      if (!uv) {
+        document.body.style.cursor = 'default';
+        return;
+      }
+      const canvasX = uv.x * CANVAS_W;
+      const canvasY = (1 - uv.y) * CANVAS_H;
+      const sorted = [...elements].sort((a, b) => b.zIndex - a.zIndex);
+      const hit = sorted.some(
+        (el) => canvasX >= el.x && canvasX <= el.x + el.width && canvasY >= el.y && canvasY <= el.y + el.height
+      );
+      document.body.style.cursor = hit ? 'pointer' : 'default';
+    },
+    [elements]
+  );
+
+  const handlePointerLeave = useCallback(() => {
+    document.body.style.cursor = 'default';
+  }, []);
+
   const { color: matColor, opacity: matOpacity } = getCupProps(cupColor);
 
   const topR = 1.1;
@@ -141,6 +164,8 @@ function CupMesh() {
         ref={bodyMeshRef}
         geometry={new THREE.CylinderGeometry(topR, botR, h, 64, 1, true)}
         onClick={handleClick}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
       >
         <meshPhysicalMaterial
           map={texture}
