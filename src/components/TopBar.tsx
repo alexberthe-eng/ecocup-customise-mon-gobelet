@@ -66,6 +66,70 @@ const TopBar = () => {
     await supabase.auth.signOut();
   };
 
+  const handleShare = async () => {
+    setSharing(true);
+    setShareUrl(null);
+    try {
+      // Capture the 2D canvas
+      const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+      if (!canvasEl) {
+        toast.error('Impossible de capturer le design');
+        setSharing(false);
+        return;
+      }
+
+      const canvas = await html2canvas(canvasEl, {
+        backgroundColor: null,
+        useCORS: true,
+        scale: 2,
+      });
+
+      const blob = await new Promise<Blob>((resolve) =>
+        canvas.toBlob((b) => resolve(b!), 'image/png')
+      );
+
+      const fileName = `${crypto.randomUUID()}.png`;
+      const { error: uploadError } = await supabase.storage
+        .from('shared-designs')
+        .upload(fileName, blob, { contentType: 'image/png' });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('shared-designs')
+        .getPublicUrl(fileName);
+
+      const { data, error } = await supabase
+        .from('shared_designs')
+        .insert({
+          design_name: designName,
+          cup_color: cupColor,
+          image_url: urlData.publicUrl,
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      const url = `${window.location.origin}/share/${data.id}`;
+      setShareUrl(url);
+      toast.success('Lien de partage créé !', {
+        description: 'Valide pendant 7 jours.',
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error('Erreur lors du partage');
+    }
+    setSharing(false);
+  };
+
+  const handleCopyLink = () => {
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success('Lien copié !');
+    }
+  };
+
   return (
     <>
       <header className="h-12 flex items-center justify-between px-3 md:px-4 border-b border-thin shrink-0">
