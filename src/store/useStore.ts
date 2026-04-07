@@ -97,7 +97,7 @@ interface AppState {
 
 const defaultDesign: Design = {
   id: crypto.randomUUID(),
-  name: 'Design 1',
+  name: 'Gobelet personnalisé par vos soins – ECO 30 Digital',
   elements: [],
   cupColor: '#f2f2f2',
   graduation: 'standard-33cl',

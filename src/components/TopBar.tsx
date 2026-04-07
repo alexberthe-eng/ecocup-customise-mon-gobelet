@@ -1,26 +1,75 @@
-import { ShoppingCart, Save, Share2, Menu } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { ShoppingCart, Save, Share2, Menu, Check, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const TopBar = () => {
   const cart = useStore((s) => s.cart);
   const designName = useStore((s) => s.currentDesign.name);
+  const setDesignName = useStore((s) => s.setDesignName);
   const showRightPanel = useStore((s) => s.showRightPanel);
   const setShowRightPanel = useStore((s) => s.setShowRightPanel);
   const isMobile = useIsMobile();
+
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(designName);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing) {
+      setEditValue(designName);
+      setTimeout(() => inputRef.current?.select(), 0);
+    }
+  }, [editing, designName]);
+
+  const handleSave = () => {
+    const trimmed = editValue.trim();
+    if (trimmed) setDesignName(trimmed);
+    setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditing(false);
+  };
 
   return (
     <header className="h-12 flex items-center justify-between px-3 md:px-4 border-b border-thin shrink-0">
       <div className="flex items-center gap-2 md:gap-4 min-w-0">
         <span className="font-bold text-sm tracking-wide shrink-0">ECOCUP®</span>
-        {!isMobile && (
-          <span className="text-sm font-medium text-foreground truncate">Gobelet personnalisé par vos soins – ECO 30 Digital</span>
+        {!isMobile && !editing && (
+          <span className="text-sm font-medium text-foreground truncate">
+            {designName}
+          </span>
+        )}
+        {!isMobile && editing && (
+          <div className="flex items-center gap-1.5">
+            <input
+              ref={inputRef}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSave();
+                if (e.key === 'Escape') handleCancel();
+              }}
+              className="text-sm font-medium border-thin rounded-md px-2 py-1 bg-background w-[320px] outline-none focus:ring-1 focus:ring-accent"
+              autoFocus
+            />
+            <button onClick={handleSave} className="p-1 rounded hover:bg-secondary text-success">
+              <Check size={14} />
+            </button>
+            <button onClick={handleCancel} className="p-1 rounded hover:bg-secondary text-muted-foreground">
+              <X size={14} />
+            </button>
+          </div>
         )}
       </div>
       <div className="flex items-center gap-1.5 md:gap-2">
         {!isMobile && (
           <>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors">
+            <button
+              onClick={() => setEditing(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+            >
               <Save size={14} />
               <span className="hidden md:inline">Sauvegarder</span>
             </button>
