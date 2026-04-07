@@ -32,20 +32,20 @@ const ColorPopover = () => {
       <h4 className="text-xs font-semibold mb-2">Couleur du gobelet</h4>
       <div className="flex gap-2">
         <button
-          onClick={() => setCupColor('#FFFFFF')}
+          onClick={() => setCupColor('#f2f2f2')}
           className={`flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all ${
-            currentDesign.cupColor === '#FFFFFF'
+            currentDesign.cupColor === '#f2f2f2'
               ? 'border-accent bg-accent/5'
               : 'border-transparent hover:bg-secondary'
           }`}
         >
-          <div className="w-10 h-10 rounded-full bg-background border-thin" />
+          <div className="w-10 h-10 rounded-full border-thin" style={{ backgroundColor: '#f2f2f2' }} />
           <span className="text-[10px]">Blanc</span>
         </button>
         <button
-          onClick={() => setCupColor('#E8E4DF')}
+          onClick={() => setCupColor('#e8f0f5')}
           className={`flex-1 flex flex-col items-center gap-1.5 p-2 rounded-lg border-2 transition-all ${
-            currentDesign.cupColor === '#E8E4DF'
+            currentDesign.cupColor === '#e8f0f5'
               ? 'border-accent bg-accent/5'
               : 'border-transparent hover:bg-secondary'
           }`}
@@ -53,7 +53,7 @@ const ColorPopover = () => {
           <div
             className="w-10 h-10 rounded-full border-thin"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.7), rgba(220,216,210,0.8))',
+              background: 'linear-gradient(135deg, rgba(232,240,245,0.9), rgba(200,220,235,0.7))',
             }}
           />
           <span className="text-[10px] text-center leading-tight">Translucide givré</span>

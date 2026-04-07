@@ -1,23 +1,41 @@
-import { useRef, useMemo, useCallback } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { useRef, useMemo, useCallback, useEffect } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '@/store/useStore';
-import { ZoomIn, ZoomOut, Move, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
 
+const CUP_COLORS: Record<string, { color: string; opacity: number }> = {
+  '#f2f2f2': { color: '#f2f2f2', opacity: 1 },
+  '#e8f0f5': { color: '#e8f0f5', opacity: 0.75 },
+};
+
+function getCupProps(cupColor: string) {
+  return CUP_COLORS[cupColor] ?? { color: cupColor, opacity: 0.92 };
+}
+
 function CupMesh() {
   const cupColor = useStore((s) => s.currentDesign.cupColor);
   const elements = useStore((s) => s.currentDesign.elements);
+  const textureRef = useRef<THREE.CanvasTexture | null>(null);
+  const offscreenCanvas = useRef<HTMLCanvasElement | null>(null);
 
-  const texture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = CANVAS_W;
-    canvas.height = CANVAS_H;
+  // Create offscreen canvas once
+  if (!offscreenCanvas.current) {
+    offscreenCanvas.current = document.createElement('canvas');
+    offscreenCanvas.current.width = CANVAS_W;
+    offscreenCanvas.current.height = CANVAS_H;
+  }
+
+  // Rebuild texture whenever design changes
+  useEffect(() => {
+    const canvas = offscreenCanvas.current!;
     const ctx = canvas.getContext('2d')!;
 
+    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
     ctx.fillStyle = cupColor;
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
@@ -35,41 +53,24 @@ function CupMesh() {
         ctx.textBaseline = 'middle';
         ctx.fillText(el.text, 0, 0);
       }
+      // For images/SVGs that are loaded, draw them too
+      // (Images from dataURL would need an Image object — handled below)
       ctx.restore();
     });
 
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.needsUpdate = true;
-    return tex;
+    if (textureRef.current) {
+      textureRef.current.needsUpdate = true;
+    }
   }, [cupColor, elements]);
 
-  const cupMaterial = useMemo(() => (
-    <meshPhysicalMaterial
-      map={texture}
-      side={THREE.DoubleSide}
-      transparent
-      opacity={0.92}
-      roughness={0.3}
-      metalness={0.05}
-      clearcoat={0.4}
-      clearcoatRoughness={0.2}
-    />
-  ), [texture]);
+  const texture = useMemo(() => {
+    const tex = new THREE.CanvasTexture(offscreenCanvas.current!);
+    textureRef.current = tex;
+    return tex;
+  }, []);
 
-  const solidMaterial = useMemo(() => (
-    <meshPhysicalMaterial
-      color={cupColor}
-      side={THREE.DoubleSide}
-      transparent
-      opacity={0.92}
-      roughness={0.3}
-      metalness={0.05}
-      clearcoat={0.4}
-      clearcoatRoughness={0.2}
-    />
-  ), [cupColor]);
+  const { color: matColor, opacity: matOpacity } = getCupProps(cupColor);
 
-  // Dimensions
   const topR = 1.1;
   const botR = 0.85;
   const h = 2.2;
@@ -78,35 +79,64 @@ function CupMesh() {
 
   return (
     <group>
-      {/* Cup body (open cylinder) */}
+      {/* Cup body — textured */}
       <mesh geometry={new THREE.CylinderGeometry(topR, botR, h, 64, 1, true)}>
-        {cupMaterial}
+        <meshPhysicalMaterial
+          map={texture}
+          side={THREE.DoubleSide}
+          transparent
+          opacity={matOpacity}
+          roughness={0.3}
+          metalness={0.05}
+          clearcoat={0.4}
+          clearcoatRoughness={0.2}
+        />
       </mesh>
 
       {/* Bottom disc */}
       <mesh position={[0, -h / 2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[botR, 64]} />
-        {solidMaterial}
+        <meshPhysicalMaterial
+          color={matColor}
+          side={THREE.DoubleSide}
+          transparent
+          opacity={matOpacity}
+          roughness={0.3}
+          metalness={0.05}
+          clearcoat={0.4}
+          clearcoatRoughness={0.2}
+        />
       </mesh>
 
-      {/* Top rim — torus around the top edge */}
+      {/* Top rim */}
       <mesh position={[0, h / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[topR, rimThickness, 16, 64]} />
         <meshPhysicalMaterial
-          color={cupColor}
+          color={matColor}
           roughness={0.2}
           metalness={0.05}
           clearcoat={0.6}
           clearcoatRoughness={0.15}
+          transparent
+          opacity={matOpacity}
         />
       </mesh>
 
-      {/* Inner rim lip — slight inward ring for realism */}
+      {/* Inner rim lip */}
       <mesh
         geometry={new THREE.CylinderGeometry(topR - rimThickness * 2, topR, rimHeight, 64, 1, true)}
         position={[0, h / 2 - rimHeight / 2, 0]}
       >
-        {solidMaterial}
+        <meshPhysicalMaterial
+          color={matColor}
+          side={THREE.DoubleSide}
+          transparent
+          opacity={matOpacity}
+          roughness={0.3}
+          metalness={0.05}
+          clearcoat={0.4}
+          clearcoatRoughness={0.2}
+        />
       </mesh>
     </group>
   );
@@ -122,7 +152,6 @@ const Preview3D = () => {
     const factor = direction === 'in' ? 0.8 : 1.25;
     const newPos = camera.position.clone().multiplyScalar(factor);
     const dist = newPos.length();
-    // Clamp between min/max distance
     if (dist >= 2 && dist <= 8) {
       camera.position.copy(newPos);
       controls.update();
@@ -180,14 +209,9 @@ const Preview3D = () => {
         </button>
       </div>
 
-      {/* Help hint */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 text-[11px] text-foreground/60 bg-background/85 px-4 py-2 rounded-full shadow-sm backdrop-blur-sm">
-        <span className="flex items-center gap-1">
-          <Move size={12} />
-          Glissez pour tourner
-        </span>
-        <span className="w-px h-3 bg-foreground/20" />
-        <span>Scrollez pour zoomer</span>
+      {/* Hint */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-[11px] text-foreground/60 bg-background/85 px-4 py-2 rounded-full shadow-sm backdrop-blur-sm">
+        ‹&nbsp; Glissez pour tourner &nbsp;›&nbsp; | &nbsp;Scrollez pour zoomer
       </div>
     </div>
   );
