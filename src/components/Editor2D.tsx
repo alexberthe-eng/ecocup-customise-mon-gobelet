@@ -6,6 +6,7 @@ import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getGraduationMarks } from '@/components/GraduationMarks';
 import ecocupLogo from '@/assets/ecocup-logo.png';
+import { getClipPath } from '@/lib/clipPaths';
 
 const GRID_SIZE = 22;
 
@@ -148,6 +149,8 @@ const Editor2D = () => {
         startY: e.clientY,
         elX: el.x,
         elY: el.y,
+        elW: el.width,
+        elH: el.height,
         type: 'rotate',
         startAngle,
         startRotation: el.rotation,
@@ -188,6 +191,8 @@ const Editor2D = () => {
         startY: touch.clientY,
         elX: el.x,
         elY: el.y,
+        elW: el.width,
+        elH: el.height,
         type: 'move',
       };
 
