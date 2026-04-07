@@ -35,32 +35,55 @@ function CupMesh() {
     const canvas = offscreenCanvas.current!;
     const ctx = canvas.getContext('2d')!;
 
-    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
-    ctx.fillStyle = cupColor;
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
     const sorted = [...elements].sort((a, b) => a.zIndex - b.zIndex);
-    sorted.forEach((el) => {
-      ctx.save();
-      ctx.translate(el.x + el.width / 2, el.y + el.height / 2);
-      ctx.rotate((el.rotation * Math.PI) / 180);
-      ctx.globalAlpha = el.opacity / 100;
 
-      if (el.type === 'text' && el.text) {
-        ctx.fillStyle = el.color;
-        ctx.font = `600 ${el.fontSize || 16}px system-ui`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(el.text, 0, 0);
+    // Collect image elements that need loading
+    const imageEls = sorted.filter((el) => (el.type === 'image' || el.type === 'svg') && el.src);
+    const imagePromises = imageEls.map(
+      (el) =>
+        new Promise<{ el: typeof el; img: HTMLImageElement }>((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => resolve({ el, img });
+          img.onerror = () => resolve({ el, img }); // still resolve to not block
+          img.src = el.src!;
+        })
+    );
+
+    Promise.all(imagePromises).then((loaded) => {
+      const imgMap = new Map<string, HTMLImageElement>();
+      loaded.forEach(({ el, img }) => {
+        if (img.complete && img.naturalWidth > 0) imgMap.set(el.id, img);
+      });
+
+      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+      ctx.fillStyle = cupColor;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      sorted.forEach((el) => {
+        ctx.save();
+        ctx.translate(el.x + el.width / 2, el.y + el.height / 2);
+        ctx.rotate((el.rotation * Math.PI) / 180);
+        ctx.globalAlpha = el.opacity / 100;
+
+        if (el.type === 'text' && el.text) {
+          ctx.fillStyle = el.color;
+          ctx.font = `600 ${el.fontSize || 16}px system-ui`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(el.text, 0, 0);
+        } else if ((el.type === 'image' || el.type === 'svg') && imgMap.has(el.id)) {
+          const img = imgMap.get(el.id)!;
+          ctx.drawImage(img, -el.width / 2, -el.height / 2, el.width, el.height);
+        }
+
+        ctx.restore();
+      });
+
+      if (textureRef.current) {
+        textureRef.current.needsUpdate = true;
       }
-      // For images/SVGs that are loaded, draw them too
-      // (Images from dataURL would need an Image object — handled below)
-      ctx.restore();
     });
-
-    if (textureRef.current) {
-      textureRef.current.needsUpdate = true;
-    }
   }, [cupColor, elements]);
 
   const texture = useMemo(() => {
