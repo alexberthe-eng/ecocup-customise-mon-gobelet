@@ -81,6 +81,7 @@ const Index = () => {
       {/* Mobile bottom toolbar */}
       {isMobile && <LeftSidebar />}
 
+      <WarningModal open={showWarning} onClose={handleWarningClose} />
       <OnboardingTour />
     </div>
   );
