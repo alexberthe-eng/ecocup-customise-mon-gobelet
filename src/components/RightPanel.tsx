@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import { useStore, getUnitPrice } from '@/store/useStore';
-import { X, ShoppingCart } from 'lucide-react';
-import { toast } from 'sonner';
+import { X, ShoppingCart, Check, Plus } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
@@ -25,6 +25,7 @@ const RightPanel = () => {
 
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const unitPrice = getUnitPrice(currentDesign.quantity);
   const subtotal = unitPrice * currentDesign.quantity;
@@ -41,12 +42,10 @@ const RightPanel = () => {
       }
     } catch {}
     addToCart(thumbnail);
-    toast.success('Design ajouté au panier ✓', {
-      description: 'Vous pouvez créer un nouveau visuel.',
-    });
     if (!isDesktop) {
       setShowRightPanel(false);
     }
+    setShowConfirmModal(true);
   };
 
   const panelContent = (
@@ -127,11 +126,44 @@ const RightPanel = () => {
     </>
   );
 
+  const confirmModal = showConfirmModal && (
+    <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowConfirmModal(false)}>
+      <div className="bg-card border border-border rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl text-center" onClick={(e) => e.stopPropagation()}>
+        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+          <Check size={24} className="text-primary" />
+        </div>
+        <h3 className="font-semibold text-sm mb-1">Design ajouté au panier ✓</h3>
+        <p className="text-xs text-muted-foreground mb-5">
+          Vous pouvez maintenant créer un nouveau visuel ou consulter votre panier pour finaliser votre commande.
+        </p>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => setShowConfirmModal(false)}
+            className="w-full flex items-center justify-center gap-1.5 bg-primary text-primary-foreground text-xs py-2.5 rounded-md hover:opacity-90 transition-opacity font-medium"
+          >
+            <Plus size={14} />
+            Créer un nouveau design
+          </button>
+          <button
+            onClick={() => { setShowConfirmModal(false); setShowCartPanel(true); }}
+            className="w-full flex items-center justify-center gap-1.5 text-xs border-thin rounded-md py-2.5 text-foreground hover:bg-secondary transition-colors font-medium"
+          >
+            <ShoppingCart size={14} />
+            Voir mon panier ({cart.length})
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   if (isDesktop) {
     return (
-      <aside className="w-[248px] border-l border-thin bg-background overflow-y-auto shrink-0" data-tour="right-panel">
-        {panelContent}
-      </aside>
+      <>
+        <aside className="w-[248px] border-l border-thin bg-background overflow-y-auto shrink-0" data-tour="right-panel">
+          {panelContent}
+        </aside>
+        {confirmModal}
+      </>
     );
   }
 
@@ -151,6 +183,7 @@ const RightPanel = () => {
       >
         {panelContent}
       </div>
+      {confirmModal}
     </>
   );
 };
