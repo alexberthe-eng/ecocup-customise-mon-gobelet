@@ -209,13 +209,32 @@ const TopBar = () => {
                 <span className="hidden md:inline">{sharing ? 'Partage...' : 'Partager'}</span>
               </button>
               {user && (
-                <button
-                  onClick={handleLogout}
+                <>
+                  <a
+                    href="/account"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+                    title="Mon espace client"
+                  >
+                    <User size={14} />
+                    <span className="hidden md:inline">Mon compte</span>
+                  </a>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+                    title="Déconnexion"
+                  >
+                    <LogOut size={14} />
+                  </button>
+                </>
+              )}
+              {!user && (
+                <a
+                  href="/auth"
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
-                  title="Déconnexion"
                 >
-                  <LogOut size={14} />
-                </button>
+                  <User size={14} />
+                  <span className="hidden md:inline">Connexion</span>
+                </a>
               )}
             </>
           )}
