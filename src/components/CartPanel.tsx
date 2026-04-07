@@ -115,7 +115,10 @@ const CartPanel = () => {
               <span>Total commande HT</span>
               <span>{cartTotal.toFixed(2)} €</span>
             </div>
-            <button className="w-full bg-primary text-primary-foreground text-xs py-3 rounded-md hover:opacity-90 transition-opacity font-medium">
+            <button className="w-full bg-primary text-primary-foreground text-xs py-3 rounded-md hover:opacity-90 transition-opacity font-medium mb-2">
+              Passer commande
+            </button>
+            <button className="w-full text-xs border-thin rounded-md py-3 text-foreground hover:bg-secondary transition-colors font-medium">
               <FileText size={14} className="inline mr-1.5" />
               Demander un devis
             </button>
