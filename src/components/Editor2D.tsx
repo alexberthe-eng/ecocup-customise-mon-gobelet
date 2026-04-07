@@ -285,6 +285,20 @@ const Editor2D = () => {
                         onMouseDown={(e) => handleMouseDown(e, el, 'resize')}
                       />
                     ))}
+                    {/* Rotation handle */}
+                    <div
+                      className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-auto"
+                      style={{ top: -32 }}
+                    >
+                      <div
+                        className="w-5 h-5 rounded-full bg-accent border border-accent-foreground flex items-center justify-center cursor-grab active:cursor-grabbing shadow-sm"
+                        onMouseDown={(e) => handleRotateStart(e, el)}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <RotateCw size={10} className="text-accent-foreground" />
+                      </div>
+                      <div className="w-px h-2 bg-accent" />
+                    </div>
                   </>
                 )}
               </div>
