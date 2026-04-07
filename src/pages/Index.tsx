@@ -8,9 +8,10 @@ import Editor2D from '@/components/Editor2D';
 import Preview3D from '@/components/Preview3D';
 import PreviewBAT from '@/components/PreviewBAT';
 import OnboardingTour from '@/components/OnboardingTour';
+import ToggleSwitch from '@/components/ToggleSwitch';
 
 const Index = () => {
-  const { activeTab, setActiveTab, tourCompleted, startTour } = useStore();
+  const { activeTab, setActiveTab, tourCompleted, startTour, gridVisible, setGridVisible } = useStore();
 
   useEffect(() => {
     if (!tourCompleted) {
@@ -28,7 +29,7 @@ const Index = () => {
         {/* Center area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Tab bar */}
-          <div className="flex border-b border-thin px-4 bg-background">
+          <div className="flex items-center border-b border-thin px-4 bg-background">
             {([
               { id: '2d' as const, label: 'Édition 2D' },
               { id: '3d' as const, label: 'Vue 3D 360°' },
@@ -46,6 +47,17 @@ const Index = () => {
                 {tab.label}
               </button>
             ))}
+
+            {/* Grid toggle — visible only on 2D tab */}
+            {activeTab === '2d' && (
+              <div className="ml-auto">
+                <ToggleSwitch
+                  label="Grille"
+                  checked={gridVisible}
+                  onChange={setGridVisible}
+                />
+              </div>
+            )}
           </div>
 
           {/* Canvas area */}

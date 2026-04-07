@@ -1,5 +1,6 @@
 import { useStore, getUnitPrice } from '@/store/useStore';
 import { Pencil, Trash2, Plus } from 'lucide-react';
+import ToggleSwitch from '@/components/ToggleSwitch';
 
 const QUANTITIES = [125, 250, 500, 1000, 2500, 5000];
 
@@ -32,24 +33,20 @@ const RightPanel = () => {
       {/* Graduation */}
       <div className="p-3 border-b border-thin">
         <h3 className="text-xs font-semibold mb-2">Graduation</h3>
-        <label className="flex items-center justify-between text-xs mb-1.5">
-          <span>Afficher graduation</span>
-          <input
-            type="checkbox"
+        <div className="mb-1.5">
+          <ToggleSwitch
+            label="Afficher graduation"
             checked={showGraduation}
-            onChange={(e) => setShowGraduation(e.target.checked)}
-            className="accent-accent"
+            onChange={setShowGraduation}
           />
-        </label>
-        <label className="flex items-center justify-between text-xs mb-2">
-          <span>Afficher masque</span>
-          <input
-            type="checkbox"
+        </div>
+        <div className="mb-2">
+          <ToggleSwitch
+            label="Afficher masque"
             checked={showGraduationMask}
-            onChange={(e) => setShowGraduationMask(e.target.checked)}
-            className="accent-accent"
+            onChange={setShowGraduationMask}
           />
-        </label>
+        </div>
         <select
           value={currentDesign.graduation}
           onChange={(e) => setGraduation(e.target.value)}

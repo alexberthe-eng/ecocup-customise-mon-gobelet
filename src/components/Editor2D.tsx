@@ -1,16 +1,18 @@
 import { useRef, useCallback, useMemo } from 'react';
 import { useStore, DesignElement } from '@/store/useStore';
-import { Grid3X3, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import CanvasDrawer from '@/components/CanvasDrawer';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
+const GRID_SIZE = 22;
+
+const snapToGrid = (val: number) => Math.round(val / GRID_SIZE) * GRID_SIZE;
 
 const Editor2D = () => {
   const {
     currentDesign,
     gridVisible,
-    setGridVisible,
     selectedElementId,
     setSelectedElementId,
     updateElement,
@@ -37,6 +39,7 @@ const Editor2D = () => {
     (e: React.MouseEvent, el: DesignElement, type: 'move' | 'resize' = 'move') => {
       e.stopPropagation();
       setSelectedElementId(el.id);
+      const grid = useStore.getState().gridVisible;
       dragRef.current = {
         id: el.id,
         startX: e.clientX,
@@ -51,15 +54,21 @@ const Editor2D = () => {
         const dx = ev.clientX - dragRef.current.startX;
         const dy = ev.clientY - dragRef.current.startY;
         if (dragRef.current.type === 'move') {
-          updateElement(dragRef.current.id, {
-            x: dragRef.current.elX + dx,
-            y: dragRef.current.elY + dy,
-          });
+          let newX = dragRef.current.elX + dx;
+          let newY = dragRef.current.elY + dy;
+          if (grid) {
+            newX = snapToGrid(newX);
+            newY = snapToGrid(newY);
+          }
+          updateElement(dragRef.current.id, { x: newX, y: newY });
         } else {
-          updateElement(dragRef.current.id, {
-            width: Math.max(20, el.width + dx),
-            height: Math.max(20, el.height + dy),
-          });
+          let newW = Math.max(20, el.width + dx);
+          let newH = Math.max(20, el.height + dy);
+          if (grid) {
+            newW = Math.max(GRID_SIZE, snapToGrid(newW));
+            newH = Math.max(GRID_SIZE, snapToGrid(newH));
+          }
+          updateElement(dragRef.current.id, { width: newW, height: newH });
         }
       };
 
@@ -81,21 +90,18 @@ const Editor2D = () => {
     [currentDesign.elements]
   );
 
+  // CSS grid background
+  const gridBg = gridVisible
+    ? {
+        backgroundImage:
+          `linear-gradient(to right, hsl(var(--foreground) / 0.08) 1px, transparent 1px),
+           linear-gradient(to bottom, hsl(var(--foreground) / 0.08) 1px, transparent 1px)`,
+        backgroundSize: `${GRID_SIZE}px ${GRID_SIZE}px`,
+      }
+    : {};
+
   return (
     <div className="flex-1 flex flex-col relative">
-      {/* Grid toggle */}
-      <div className="absolute top-2 right-2 z-10">
-        <button
-          onClick={() => setGridVisible(!gridVisible)}
-          className={`p-1.5 rounded transition-colors ${
-            gridVisible ? 'bg-accent/20 text-accent' : 'text-muted-foreground hover:bg-secondary'
-          }`}
-          title="Grille"
-        >
-          <Grid3X3 size={14} />
-        </button>
-      </div>
-
       {/* Canvas */}
       <div className="flex-1 flex items-center justify-center bg-secondary/30 overflow-hidden" data-tour="canvas">
         <div
@@ -105,21 +111,10 @@ const Editor2D = () => {
             width: CANVAS_W,
             height: CANVAS_H,
             backgroundColor: currentDesign.cupColor,
+            ...gridBg,
           }}
           onClick={() => setSelectedElementId(null)}
         >
-          {/* Grid overlay */}
-          {gridVisible && (
-            <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-10">
-              <defs>
-                <pattern id="grid" width="22" height="22" patternUnits="userSpaceOnUse">
-                  <path d="M 22 0 L 0 0 0 22" fill="none" stroke="currentColor" strokeWidth="0.5" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#grid)" />
-            </svg>
-          )}
-
           {/* Elements */}
           {sortedElements.map((el) => {
             const isSelected = el.id === selectedElementId;
@@ -163,15 +158,15 @@ const Editor2D = () => {
                   <>
                     <div className="absolute inset-0 border-2 border-accent rounded pointer-events-none" />
                     {[
-                      { top: -4, left: -4 },
-                      { top: -4, right: -4 },
-                      { bottom: -4, left: -4 },
-                      { bottom: -4, right: -4 },
+                      { top: -4, left: -4, cursor: 'nw-resize' },
+                      { top: -4, right: -4, cursor: 'ne-resize' },
+                      { bottom: -4, left: -4, cursor: 'sw-resize' },
+                      { bottom: -4, right: -4, cursor: 'se-resize' },
                     ].map((pos, i) => (
                       <div
                         key={i}
-                        className="absolute w-2.5 h-2.5 bg-accent rounded-sm border border-accent-foreground cursor-se-resize"
-                        style={pos as React.CSSProperties}
+                        className="absolute w-2.5 h-2.5 bg-accent rounded-sm border border-accent-foreground"
+                        style={{ ...pos } as React.CSSProperties}
                         onMouseDown={(e) => handleMouseDown(e, el, 'resize')}
                       />
                     ))}
@@ -183,8 +178,8 @@ const Editor2D = () => {
         </div>
       </div>
 
-      {/* Contextual panel for selected element */}
-      {selectedElement && <ContextualPanel element={selectedElement} />}
+      {/* Contextual panel for selected element — positioned relative to canvas container */}
+      {selectedElement && <ContextualPanel element={selectedElement} canvasRef={canvasRef} />}
 
       {/* Drawer overlay (inside canvas area only) */}
       <CanvasDrawer />
@@ -192,130 +187,209 @@ const Editor2D = () => {
   );
 };
 
-const ContextualPanel = ({ element }: { element: DesignElement }) => {
+const ContextualPanel = ({
+  element,
+  canvasRef,
+}: {
+  element: DesignElement;
+  canvasRef: React.RefObject<HTMLDivElement>;
+}) => {
   const { updateElement, removeElement, moveElementLayer, pushHistory } = useStore();
 
   const update = (updates: Partial<DesignElement>) => {
     updateElement(element.id, updates);
   };
 
+  // Get element name
+  const elementName =
+    element.type === 'text'
+      ? `Texte : "${(element.text || '').slice(0, 15)}"`
+      : element.type === 'image'
+      ? 'Image'
+      : 'SVG';
+
+  // Position the panel to the right of the element, with arrow
+  const panelLeft = Math.min(element.x + element.width + 24, 420);
+  const panelTop = Math.max(element.y - 10, 10);
+
+  // Arrow vertical position (center of element relative to panel)
+  const arrowTop = Math.max(20, Math.min(element.y + element.height / 2 - panelTop, 60));
+
   return (
     <div
-      className="absolute bg-background border-thin rounded-xl shadow-sm p-3 z-20 min-w-[210px]"
+      className="absolute z-20 pointer-events-none"
       style={{
-        left: Math.min(element.x + element.width + 16, 450),
-        top: Math.max(element.y, 10),
+        left: canvasRef.current
+          ? canvasRef.current.offsetLeft + panelLeft
+          : panelLeft,
+        top: canvasRef.current
+          ? canvasRef.current.offsetTop + panelTop
+          : panelTop,
       }}
-      onClick={(e) => e.stopPropagation()}
     >
-      {/* Text content field */}
-      {element.type === 'text' && (
-        <label className="block text-[10px] mb-2">
-          <span className="text-muted-foreground">Contenu</span>
-          <input
-            type="text"
-            value={element.text || ''}
-            onChange={(e) => update({ text: e.target.value })}
-            onBlur={pushHistory}
-            className="w-full border-thin rounded px-1.5 py-1 bg-background text-xs"
-          />
-        </label>
-      )}
-      {element.type === 'text' && (
+      {/* Arrow */}
+      <div
+        className="absolute -left-[6px] w-3 h-3 bg-background border-l border-b border-thin rotate-45 z-10"
+        style={{ top: arrowTop }}
+      />
+
+      {/* Panel */}
+      <div
+        className="bg-background border-thin rounded-xl shadow-lg p-3 min-w-[220px] pointer-events-auto animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Title */}
+        <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate">
+          {elementName}
+        </p>
+
+        {/* Text-specific fields */}
+        {element.type === 'text' && (
+          <>
+            <label className="block text-[10px] mb-2">
+              <span className="text-muted-foreground">Contenu</span>
+              <input
+                type="text"
+                value={element.text || ''}
+                onChange={(e) => update({ text: e.target.value })}
+                onBlur={pushHistory}
+                className="w-full border-thin rounded px-1.5 py-1 bg-background text-xs mt-0.5"
+              />
+            </label>
+            <div className="grid grid-cols-2 gap-2 text-[10px] mb-2">
+              <label>
+                <span className="text-muted-foreground">Police</span>
+                <select
+                  value={element.fontFamily || 'system-ui'}
+                  onChange={(e) => update({ fontFamily: e.target.value })}
+                  className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5"
+                >
+                  <option value="system-ui">System</option>
+                  <option value="serif">Serif</option>
+                  <option value="monospace">Mono</option>
+                  <option value="cursive">Cursive</option>
+                </select>
+              </label>
+              <label>
+                <span className="text-muted-foreground">Taille</span>
+                <input
+                  type="number"
+                  value={element.fontSize || 16}
+                  onChange={(e) => update({ fontSize: Number(e.target.value) })}
+                  onBlur={pushHistory}
+                  className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5"
+                />
+              </label>
+            </div>
+          </>
+        )}
+
+        {/* Dimensions */}
         <div className="grid grid-cols-2 gap-2 text-[10px] mb-2">
           <label>
-            <span className="text-muted-foreground">Police</span>
-            <select
-              value={element.fontFamily || 'system-ui'}
-              onChange={(e) => update({ fontFamily: e.target.value })}
-              className="w-full border-thin rounded px-1.5 py-1 bg-background"
-            >
-              <option value="system-ui">System</option>
-              <option value="serif">Serif</option>
-              <option value="monospace">Mono</option>
-              <option value="cursive">Cursive</option>
-            </select>
-          </label>
-          <label>
-            <span className="text-muted-foreground">Taille</span>
+            <span className="text-muted-foreground">Largeur (px)</span>
             <input
               type="number"
-              value={element.fontSize || 16}
-              onChange={(e) => update({ fontSize: Number(e.target.value) })}
+              value={Math.round(element.width)}
+              onChange={(e) => update({ width: Number(e.target.value) })}
               onBlur={pushHistory}
-              className="w-full border-thin rounded px-1.5 py-1 bg-background"
+              className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5"
+            />
+          </label>
+          <label>
+            <span className="text-muted-foreground">Hauteur (px)</span>
+            <input
+              type="number"
+              value={Math.round(element.height)}
+              onChange={(e) => update({ height: Number(e.target.value) })}
+              onBlur={pushHistory}
+              className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5"
             />
           </label>
         </div>
-      )}
-      <div className="grid grid-cols-2 gap-2 text-[10px] mb-2">
-        <label>
-          <span className="text-muted-foreground">Largeur</span>
-          <input
-            type="number"
-            value={Math.round(element.width)}
-            onChange={(e) => update({ width: Number(e.target.value) })}
-            onBlur={pushHistory}
-            className="w-full border-thin rounded px-1.5 py-1 bg-background"
-          />
-        </label>
-        <label>
-          <span className="text-muted-foreground">Hauteur</span>
-          <input
-            type="number"
-            value={Math.round(element.height)}
-            onChange={(e) => update({ height: Number(e.target.value) })}
-            onBlur={pushHistory}
-            className="w-full border-thin rounded px-1.5 py-1 bg-background"
-          />
-        </label>
-        <label>
-          <span className="text-muted-foreground">Rotation °</span>
+
+        {/* Rotation */}
+        <label className="block text-[10px] mb-2">
+          <span className="text-muted-foreground">Rotation (°)</span>
           <input
             type="number"
             value={element.rotation}
             onChange={(e) => update({ rotation: Number(e.target.value) })}
             onBlur={pushHistory}
-            className="w-full border-thin rounded px-1.5 py-1 bg-background"
+            className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5"
           />
         </label>
-        <label>
-          <span className="text-muted-foreground">Opacité %</span>
+
+        {/* Opacity slider */}
+        <label className="block text-[10px] mb-2">
+          <div className="flex justify-between text-muted-foreground">
+            <span>Opacité</span>
+            <span>{element.opacity}%</span>
+          </div>
           <input
-            type="number"
-            value={element.opacity}
+            type="range"
             min={0}
             max={100}
+            value={element.opacity}
             onChange={(e) => update({ opacity: Number(e.target.value) })}
-            onBlur={pushHistory}
-            className="w-full border-thin rounded px-1.5 py-1 bg-background"
+            onMouseUp={pushHistory}
+            className="w-full h-1.5 accent-accent cursor-pointer mt-1"
           />
         </label>
+
+        {/* Color picker for text/SVG */}
+        {(element.type === 'text' || element.type === 'svg') && (
+          <label className="block text-[10px] mb-2">
+            <span className="text-muted-foreground">Couleur</span>
+            <div className="flex gap-2 items-center mt-0.5">
+              <input
+                type="color"
+                value={element.color}
+                onChange={(e) => update({ color: e.target.value })}
+                onBlur={pushHistory}
+                className="w-6 h-6 rounded cursor-pointer border-thin"
+              />
+              <span className="text-[9px] text-muted-foreground font-mono">{element.color}</span>
+            </div>
+          </label>
+        )}
+
+        {/* Layer controls — 2×2 grid */}
+        <div className="grid grid-cols-2 gap-1 text-[9px] mb-2">
+          <button
+            onClick={() => moveElementLayer(element.id, 'top')}
+            className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center"
+          >
+            ↑↑ Premier
+          </button>
+          <button
+            onClick={() => moveElementLayer(element.id, 'up')}
+            className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center"
+          >
+            ↑ Avant
+          </button>
+          <button
+            onClick={() => moveElementLayer(element.id, 'down')}
+            className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center"
+          >
+            ↓ Arrière
+          </button>
+          <button
+            onClick={() => moveElementLayer(element.id, 'bottom')}
+            className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center"
+          >
+            ↓↓ Fond
+          </button>
+        </div>
+
+        {/* Delete */}
+        <button
+          onClick={() => removeElement(element.id)}
+          className="flex items-center gap-1 text-[10px] text-destructive hover:underline"
+        >
+          <Trash2 size={10} /> Supprimer
+        </button>
       </div>
-      {(element.type === 'text' || element.type === 'svg') && (
-        <label className="block text-[10px] mb-2">
-          <span className="text-muted-foreground">Couleur</span>
-          <input
-            type="color"
-            value={element.color}
-            onChange={(e) => update({ color: e.target.value })}
-            onBlur={pushHistory}
-            className="w-full h-6 rounded cursor-pointer"
-          />
-        </label>
-      )}
-      <div className="flex gap-1 text-[9px] mb-2">
-        <button onClick={() => moveElementLayer(element.id, 'top')} className="flex-1 border-thin rounded py-1 hover:bg-secondary" title="Premier plan">↑↑</button>
-        <button onClick={() => moveElementLayer(element.id, 'up')} className="flex-1 border-thin rounded py-1 hover:bg-secondary" title="En avant">↑</button>
-        <button onClick={() => moveElementLayer(element.id, 'down')} className="flex-1 border-thin rounded py-1 hover:bg-secondary" title="En arrière">↓</button>
-        <button onClick={() => moveElementLayer(element.id, 'bottom')} className="flex-1 border-thin rounded py-1 hover:bg-secondary" title="Arrière-plan">↓↓</button>
-      </div>
-      <button
-        onClick={() => removeElement(element.id)}
-        className="flex items-center gap-1 text-[10px] text-destructive hover:underline"
-      >
-        <Trash2 size={10} /> Supprimer
-      </button>
     </div>
   );
 };
