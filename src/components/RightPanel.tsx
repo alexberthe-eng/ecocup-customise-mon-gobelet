@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useStore, getUnitPrice } from '@/store/useStore';
+import { useStore, getUnitPrice, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { X, ShoppingCart, Check, Plus } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
-const QUANTITIES = [125, 250, 500, 1000, 2500, 5000];
+const QUANTITIES = [125, 250, 500, 1000, 2500, 5000, 10000];
 
 const RightPanel = () => {
   const {
@@ -18,6 +18,9 @@ const RightPanel = () => {
     setShowGraduationMask,
     setQuantity,
     setComment,
+    setGraduation,
+    setProductType,
+    setCapacity,
     addToCart,
     setShowRightPanel,
     setShowCartPanel,
@@ -29,6 +32,9 @@ const RightPanel = () => {
 
   const unitPrice = getUnitPrice(currentDesign.quantity);
   const subtotal = unitPrice * currentDesign.quantity;
+
+  const productInfo = PRODUCT_CAPACITIES[currentDesign.productType];
+  const capacities = productInfo?.capacities ?? ['33cl'];
 
   if (!isDesktop && !showRightPanel) return null;
 
@@ -60,6 +66,29 @@ const RightPanel = () => {
         </div>
       )}
 
+      {/* Votre gobelet */}
+      <div className="p-3 border-b border-thin">
+        <h3 className="text-xs font-semibold mb-2">Votre gobelet</h3>
+        <select
+          value={currentDesign.productType}
+          onChange={(e) => setProductType(e.target.value)}
+          className="w-full text-xs border-thin rounded-md px-2 py-1.5 bg-background mb-2"
+        >
+          {Object.entries(PRODUCT_CAPACITIES).map(([key, val]) => (
+            <option key={key} value={key}>{val.label}</option>
+          ))}
+        </select>
+        <select
+          value={currentDesign.capacity}
+          onChange={(e) => setCapacity(e.target.value)}
+          className="w-full text-xs border-thin rounded-md px-2 py-1.5 bg-background"
+        >
+          {capacities.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Graduation */}
       <div className="p-3 border-b border-thin">
         <h3 className="text-xs font-semibold mb-2">Graduation</h3>
@@ -69,6 +98,15 @@ const RightPanel = () => {
         <div className="mb-2">
           <ToggleSwitch label="Afficher masque" checked={showGraduationMask} onChange={setShowGraduationMask} />
         </div>
+        <select
+          value={currentDesign.graduation}
+          onChange={(e) => setGraduation(e.target.value)}
+          className="w-full text-xs border-thin rounded-md px-2 py-1.5 bg-background mt-2"
+        >
+          <option value="standard-33cl">Standard 33cl</option>
+          <option value="standard-25cl">Standard 25cl</option>
+          <option value="pinte-50cl">Pinte 50cl</option>
+        </select>
       </div>
 
       {/* Ce design */}
