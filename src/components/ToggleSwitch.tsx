@@ -12,7 +12,7 @@ const ToggleSwitch = ({ checked, onChange, label }: ToggleSwitchProps) => (
       aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ${
-        checked ? 'bg-accent' : 'bg-input'
+        checked ? 'bg-neutral-900' : 'bg-neutral-300'
       }`}
     >
       <span
