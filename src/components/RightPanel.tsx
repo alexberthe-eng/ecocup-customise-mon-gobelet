@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import { useStore, getUnitPrice } from '@/store/useStore';
-import { X, ShoppingCart } from 'lucide-react';
-import { toast } from 'sonner';
+import { X, ShoppingCart, Check, Plus } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
