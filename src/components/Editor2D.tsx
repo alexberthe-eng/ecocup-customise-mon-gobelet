@@ -228,6 +228,35 @@ const Editor2D = () => {
           }}
           onClick={() => setSelectedElementId(null)}
           onTouchStart={() => setSelectedElementId(null)}
+          onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }}
+          onDrop={(e) => {
+            e.preventDefault();
+            const motifData = e.dataTransfer.getData('application/x-motif');
+            if (!motifData) return;
+            try {
+              const data = JSON.parse(motifData);
+              const rect = canvasRef.current?.getBoundingClientRect();
+              const scale = isMobile ? 600 / 340 : 1;
+              const dropX = rect ? (e.clientX - rect.left) * scale - 40 : 100;
+              const dropY = rect ? (e.clientY - rect.top) * scale - 40 : 60;
+              const newId = crypto.randomUUID();
+              const { addElement, setSelectedElementId: selectEl } = useStore.getState();
+              addElement({
+                id: newId,
+                type: data.type || 'svg',
+                x: Math.max(0, dropX),
+                y: Math.max(0, dropY),
+                width: 80,
+                height: 80,
+                rotation: 0,
+                opacity: 100,
+                color: '#111111',
+                zIndex: currentDesign.elements.length,
+                src: data.src,
+              });
+              selectEl(newId);
+            } catch {}
+          }}
         >
           {sortedElements.map((el) => {
             const scale = isMobile ? 340 / 600 : 1;

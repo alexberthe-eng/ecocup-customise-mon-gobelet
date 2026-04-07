@@ -167,7 +167,20 @@ const MotifDrawerContent = ({ onClose }: { onClose: () => void }) => {
       </div>
       <div className="grid grid-cols-3 gap-2">
         {filtered.map((m) => (
-          <button key={m.id} onClick={() => handleSelect(m)} className="aspect-square border-thin rounded-lg flex flex-col items-center justify-center gap-1 hover:bg-secondary/50 transition-colors" title={m.name}>
+          <button
+            key={m.id}
+            onClick={() => handleSelect(m)}
+            draggable
+            onDragStart={(e) => {
+              const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="${m.path}" fill="#111111" stroke="none"/></svg>`;
+              const blob = new Blob([svgString], { type: 'image/svg+xml' });
+              const url = URL.createObjectURL(blob);
+              e.dataTransfer.setData('application/x-motif', JSON.stringify({ type: 'svg', src: url, name: m.name }));
+              e.dataTransfer.effectAllowed = 'copy';
+            }}
+            className="aspect-square border-thin rounded-lg flex flex-col items-center justify-center gap-1 hover:bg-secondary/50 transition-colors cursor-grab active:cursor-grabbing"
+            title={m.name}
+          >
             <svg viewBox="0 0 100 100" className="w-12 h-12 text-foreground"><path d={m.path} fill="currentColor" stroke="none" /></svg>
             <span className="text-[8px] text-muted-foreground truncate w-full text-center px-1">{m.name}</span>
           </button>
