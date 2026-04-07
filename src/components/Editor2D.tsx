@@ -364,53 +364,34 @@ const Editor2D = () => {
                   height: canvasH,
                   zIndex: 999,
                 }}>
-                {/* Invisible drag handle for graduation block */}
-                <div
-                  className="absolute inset-0 pointer-events-auto cursor-move"
-                  style={{ zIndex: -1 }}
-                  onMouseDown={(e) => {
-                    // Only start drag if click is near a graduation mark or logo
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const clickY = e.clientY - rect.top;
-                    const clickX = e.clientX - rect.left;
-                    const nearMark = marks.some((mark) => {
-                      const markY = mark.defaultY * canvasH;
-                      const markX = mark.defaultX * canvasW;
-                      return Math.abs(clickY - markY) < 20 && Math.abs(clickX - markX) < 60;
-                    });
-                    // Check near logo
-                    const lastMark = marks[marks.length - 1];
-                    const logoY = lastMark ? lastMark.defaultY * canvasH + 18 : canvasH * 0.90;
-                    const logoX = (lastMark?.defaultX ?? 0.5) * canvasW;
-                    const nearLogo = Math.abs(clickY - logoY - 15) < 20 && Math.abs(clickX - logoX) < 30;
-                    if (!nearMark && !nearLogo) return; // Let click pass through
-                  e.stopPropagation();
-                  const startX = e.clientX;
-                  const startY = e.clientY;
-                  const startDx = off.dx;
-                  const startDy = off.dy;
-                  const onMove = (ev: MouseEvent) => {
-                    const dx = (ev.clientX - startX) / scale;
-                    useStore.setState((s) => ({
-                      currentDesign: { ...s.currentDesign, graduationOffset: { dx: startDx + dx, dy: startDy } },
-                    }));
-                  };
-                  const onUp = () => {
-                    window.removeEventListener('mousemove', onMove);
-                    window.removeEventListener('mouseup', onUp);
-                    pushHistory();
-                  };
-                  window.addEventListener('mousemove', onMove);
-                  window.addEventListener('mouseup', onUp);
-                }}
-                >
-                </div>
                 {marks.map((mark) => {
                    const y = mark.defaultY * canvasH;
                    const x = mark.defaultX * canvasW;
                    const lineW = canvasW * 0.08;
                    return (
-                     <div key={mark.id} className="absolute pointer-events-none" style={{ left: x - lineW / 2 - 10, top: y - 4 }}>
+                     <div
+                       key={mark.id}
+                       className="absolute pointer-events-auto cursor-move"
+                       style={{ left: x - lineW / 2 - 10, top: y - 8, padding: 4 }}
+                       onMouseDown={(e) => {
+                         e.stopPropagation();
+                         const startX = e.clientX;
+                         const startDx = off.dx;
+                         const onMove = (ev: MouseEvent) => {
+                           const dx = (ev.clientX - startX) / scale;
+                           useStore.setState((s) => ({
+                             currentDesign: { ...s.currentDesign, graduationOffset: { dx: startDx + dx, dy: s.currentDesign.graduationOffset.dy } },
+                           }));
+                         };
+                         const onUp = () => {
+                           window.removeEventListener('mousemove', onMove);
+                           window.removeEventListener('mouseup', onUp);
+                           pushHistory();
+                         };
+                         window.addEventListener('mousemove', onMove);
+                         window.addEventListener('mouseup', onUp);
+                       }}
+                     >
                        <div className="flex items-center justify-center">
                          <div className="h-px bg-foreground/40" style={{ width: lineW }} />
                        </div>
@@ -429,9 +410,27 @@ const Editor2D = () => {
                     <img
                       src={ecocupLogo}
                       alt="Ecocup"
-                      className="absolute pointer-events-none"
+                      className="absolute pointer-events-auto cursor-move"
                       style={{ left: logoX - logoW / 2, bottom: 0, width: logoW, height: logoH, objectFit: 'contain' }}
                       draggable={false}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        const startX = e.clientX;
+                        const startDx = off.dx;
+                        const onMove = (ev: MouseEvent) => {
+                          const dx = (ev.clientX - startX) / scale;
+                          useStore.setState((s) => ({
+                            currentDesign: { ...s.currentDesign, graduationOffset: { dx: startDx + dx, dy: s.currentDesign.graduationOffset.dy } },
+                          }));
+                        };
+                        const onUp = () => {
+                          window.removeEventListener('mousemove', onMove);
+                          window.removeEventListener('mouseup', onUp);
+                          pushHistory();
+                        };
+                        window.addEventListener('mousemove', onMove);
+                        window.addEventListener('mouseup', onUp);
+                      }}
                     />
                   );
                 })()}
