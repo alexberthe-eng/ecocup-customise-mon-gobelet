@@ -33,15 +33,16 @@ export interface Design {
 
 export type ActiveTab = '2d' | '3d' | 'bat';
 export type ActiveTool = 'color' | 'image' | 'text' | 'motif' | 'collection' | 'aide' | null;
+export type OpenDrawer = 'image' | 'motif' | 'collection' | null;
 
 interface AppState {
-  // Current design
   currentDesign: Design;
   cart: Design[];
-  
-  // UI state
+
   activeTab: ActiveTab;
   activeTool: ActiveTool;
+  openDrawer: OpenDrawer;
+  showColorPopover: boolean;
   gridVisible: boolean;
   tourCompleted: boolean;
   showTour: boolean;
@@ -49,14 +50,14 @@ interface AppState {
   selectedElementId: string | null;
   showGraduation: boolean;
   showGraduationMask: boolean;
-  
-  // History
+
   history: Design[];
   historyIndex: number;
 
-  // Actions
   setActiveTab: (tab: ActiveTab) => void;
   setActiveTool: (tool: ActiveTool) => void;
+  setOpenDrawer: (d: OpenDrawer) => void;
+  setShowColorPopover: (v: boolean) => void;
   setGridVisible: (v: boolean) => void;
   setSelectedElementId: (id: string | null) => void;
   setCupColor: (color: string) => void;
@@ -66,25 +67,28 @@ interface AppState {
   setDesignName: (name: string) => void;
   setShowGraduation: (v: boolean) => void;
   setShowGraduationMask: (v: boolean) => void;
-  
+
   addElement: (el: DesignElement) => void;
   updateElement: (id: string, updates: Partial<DesignElement>) => void;
   removeElement: (id: string) => void;
   moveElementLayer: (id: string, direction: 'top' | 'up' | 'down' | 'bottom') => void;
-  
+
   addToCart: () => void;
   removeFromCart: (id: string) => void;
   editCartDesign: (id: string) => void;
   updateCartDesignName: (id: string, name: string) => void;
-  
+
   undo: () => void;
   redo: () => void;
   pushHistory: () => void;
-  
+
   startTour: () => void;
   nextTourStep: () => void;
   prevTourStep: () => void;
   endTour: () => void;
+
+  /** Handles sidebar tool click with new behavior rules */
+  handleToolClick: (tool: ActiveTool) => void;
 }
 
 const defaultDesign: Design = {
@@ -115,6 +119,8 @@ export const useStore = create<AppState>((set, get) => ({
   cart: [],
   activeTab: '2d',
   activeTool: null,
+  openDrawer: null,
+  showColorPopover: false,
   gridVisible: false,
   tourCompleted: localStorage.getItem('tourCompleted') === 'true',
   showTour: false,
@@ -127,6 +133,8 @@ export const useStore = create<AppState>((set, get) => ({
 
   setActiveTab: (tab) => set({ activeTab: tab, selectedElementId: null }),
   setActiveTool: (tool) => set((s) => ({ activeTool: s.activeTool === tool ? null : tool })),
+  setOpenDrawer: (d) => set({ openDrawer: d }),
+  setShowColorPopover: (v) => set({ showColorPopover: v }),
   setGridVisible: (v) => set({ gridVisible: v }),
   setSelectedElementId: (id) => set({ selectedElementId: id }),
   setCupColor: (color) => {
@@ -139,6 +147,53 @@ export const useStore = create<AppState>((set, get) => ({
   setDesignName: (name) => set((s) => ({ currentDesign: { ...s.currentDesign, name } })),
   setShowGraduation: (v) => set({ showGraduation: v }),
   setShowGraduationMask: (v) => set({ showGraduationMask: v }),
+
+  handleToolClick: (tool) => {
+    const s = get();
+    // Close everything first
+    set({ showColorPopover: false, openDrawer: null });
+
+    if (tool === 'color') {
+      set({ showColorPopover: !s.showColorPopover, activeTool: 'color' });
+    } else if (tool === 'text') {
+      // Directly add a text element and select it
+      const newId = crypto.randomUUID();
+      const el: DesignElement = {
+        id: newId,
+        type: 'text',
+        x: 200,
+        y: 170,
+        width: 200,
+        height: 60,
+        rotation: 0,
+        opacity: 100,
+        color: '#111111',
+        zIndex: s.currentDesign.elements.length,
+        text: 'Votre texte',
+        fontFamily: 'system-ui',
+        fontSize: 24,
+      };
+      set({
+        activeTool: 'text',
+        activeTab: '2d',
+        currentDesign: {
+          ...s.currentDesign,
+          elements: [...s.currentDesign.elements, el],
+        },
+        selectedElementId: newId,
+      });
+      // Push history after state update
+      setTimeout(() => get().pushHistory(), 0);
+    } else if (tool === 'image') {
+      set({ openDrawer: 'image', activeTool: 'image' });
+    } else if (tool === 'motif') {
+      set({ openDrawer: 'motif', activeTool: 'motif' });
+    } else if (tool === 'collection') {
+      set({ openDrawer: 'collection', activeTool: 'collection' });
+    } else if (tool === 'aide') {
+      get().startTour();
+    }
+  },
 
   addElement: (el) => {
     set((s) => ({
@@ -197,9 +252,7 @@ export const useStore = create<AppState>((set, get) => ({
         sorted[sortedIdx - 1].zIndex = tmp;
       }
 
-      return {
-        currentDesign: { ...s.currentDesign, elements: sorted },
-      };
+      return { currentDesign: { ...s.currentDesign, elements: sorted } };
     });
     get().pushHistory();
   },

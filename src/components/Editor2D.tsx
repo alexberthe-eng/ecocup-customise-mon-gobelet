@@ -1,6 +1,7 @@
 import { useRef, useCallback, useMemo } from 'react';
 import { useStore, DesignElement } from '@/store/useStore';
 import { Grid3X3, Trash2 } from 'lucide-react';
+import CanvasDrawer from '@/components/CanvasDrawer';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
@@ -82,7 +83,7 @@ const Editor2D = () => {
 
   return (
     <div className="flex-1 flex flex-col relative">
-      {/* Tab bar extras */}
+      {/* Grid toggle */}
       <div className="absolute top-2 right-2 z-10">
         <button
           onClick={() => setGridVisible(!gridVisible)}
@@ -151,27 +152,16 @@ const Editor2D = () => {
                   </div>
                 )}
                 {el.type === 'image' && el.src && (
-                  <img
-                    src={el.src}
-                    alt=""
-                    className="w-full h-full object-contain pointer-events-none"
-                    draggable={false}
-                  />
+                  <img src={el.src} alt="" className="w-full h-full object-contain pointer-events-none" draggable={false} />
                 )}
                 {el.type === 'svg' && el.src && (
-                  <img
-                    src={el.src}
-                    alt=""
-                    className="w-full h-full object-contain pointer-events-none"
-                    draggable={false}
-                  />
+                  <img src={el.src} alt="" className="w-full h-full object-contain pointer-events-none" draggable={false} />
                 )}
 
                 {/* Selection handles */}
                 {isSelected && (
                   <>
                     <div className="absolute inset-0 border-2 border-accent rounded pointer-events-none" />
-                    {/* Corners */}
                     {[
                       { top: -4, left: -4 },
                       { top: -4, right: -4 },
@@ -193,10 +183,11 @@ const Editor2D = () => {
         </div>
       </div>
 
-      {/* Contextual panel */}
-      {selectedElement && (
-        <ContextualPanel element={selectedElement} />
-      )}
+      {/* Contextual panel for selected element */}
+      {selectedElement && <ContextualPanel element={selectedElement} />}
+
+      {/* Drawer overlay (inside canvas area only) */}
+      <CanvasDrawer />
     </div>
   );
 };
@@ -210,13 +201,53 @@ const ContextualPanel = ({ element }: { element: DesignElement }) => {
 
   return (
     <div
-      className="absolute bg-background border-thin rounded-xl shadow-sm p-3 z-20 min-w-[200px]"
+      className="absolute bg-background border-thin rounded-xl shadow-sm p-3 z-20 min-w-[210px]"
       style={{
-        left: Math.min(element.x + element.width + 16, 500),
+        left: Math.min(element.x + element.width + 16, 450),
         top: Math.max(element.y, 10),
       }}
       onClick={(e) => e.stopPropagation()}
     >
+      {/* Text content field */}
+      {element.type === 'text' && (
+        <label className="block text-[10px] mb-2">
+          <span className="text-muted-foreground">Contenu</span>
+          <input
+            type="text"
+            value={element.text || ''}
+            onChange={(e) => update({ text: e.target.value })}
+            onBlur={pushHistory}
+            className="w-full border-thin rounded px-1.5 py-1 bg-background text-xs"
+          />
+        </label>
+      )}
+      {element.type === 'text' && (
+        <div className="grid grid-cols-2 gap-2 text-[10px] mb-2">
+          <label>
+            <span className="text-muted-foreground">Police</span>
+            <select
+              value={element.fontFamily || 'system-ui'}
+              onChange={(e) => update({ fontFamily: e.target.value })}
+              className="w-full border-thin rounded px-1.5 py-1 bg-background"
+            >
+              <option value="system-ui">System</option>
+              <option value="serif">Serif</option>
+              <option value="monospace">Mono</option>
+              <option value="cursive">Cursive</option>
+            </select>
+          </label>
+          <label>
+            <span className="text-muted-foreground">Taille</span>
+            <input
+              type="number"
+              value={element.fontSize || 16}
+              onChange={(e) => update({ fontSize: Number(e.target.value) })}
+              onBlur={pushHistory}
+              className="w-full border-thin rounded px-1.5 py-1 bg-background"
+            />
+          </label>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2 text-[10px] mb-2">
         <label>
           <span className="text-muted-foreground">Largeur</span>
@@ -274,10 +305,10 @@ const ContextualPanel = ({ element }: { element: DesignElement }) => {
         </label>
       )}
       <div className="flex gap-1 text-[9px] mb-2">
-        <button onClick={() => moveElementLayer(element.id, 'top')} className="flex-1 border-thin rounded py-1 hover:bg-secondary">↑↑</button>
-        <button onClick={() => moveElementLayer(element.id, 'up')} className="flex-1 border-thin rounded py-1 hover:bg-secondary">↑</button>
-        <button onClick={() => moveElementLayer(element.id, 'down')} className="flex-1 border-thin rounded py-1 hover:bg-secondary">↓</button>
-        <button onClick={() => moveElementLayer(element.id, 'bottom')} className="flex-1 border-thin rounded py-1 hover:bg-secondary">↓↓</button>
+        <button onClick={() => moveElementLayer(element.id, 'top')} className="flex-1 border-thin rounded py-1 hover:bg-secondary" title="Premier plan">↑↑</button>
+        <button onClick={() => moveElementLayer(element.id, 'up')} className="flex-1 border-thin rounded py-1 hover:bg-secondary" title="En avant">↑</button>
+        <button onClick={() => moveElementLayer(element.id, 'down')} className="flex-1 border-thin rounded py-1 hover:bg-secondary" title="En arrière">↓</button>
+        <button onClick={() => moveElementLayer(element.id, 'bottom')} className="flex-1 border-thin rounded py-1 hover:bg-secondary" title="Arrière-plan">↓↓</button>
       </div>
       <button
         onClick={() => removeElement(element.id)}

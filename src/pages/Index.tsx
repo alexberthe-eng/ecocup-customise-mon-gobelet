@@ -7,7 +7,6 @@ import RightPanel from '@/components/RightPanel';
 import Editor2D from '@/components/Editor2D';
 import Preview3D from '@/components/Preview3D';
 import PreviewBAT from '@/components/PreviewBAT';
-import { ToolPanel } from '@/components/ToolPanels';
 import OnboardingTour from '@/components/OnboardingTour';
 
 const Index = () => {
@@ -25,8 +24,7 @@ const Index = () => {
       <TopBar />
       <div className="flex-1 flex overflow-hidden">
         <LeftSidebar />
-        <ToolPanel />
-        
+
         {/* Center area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Tab bar */}
