@@ -36,14 +36,12 @@ const Index = () => {
           {/* Tab bar */}
           <div className="flex items-center border-b border-thin px-2 md:px-4 bg-background overflow-x-auto shrink-0 gap-3">
             {/* 2D/3D toggle */}
-            <div className="flex items-center bg-secondary rounded-lg p-0.5" data-tour="tabs-2d-3d">
+            <div className="flex items-center bg-accent/15 rounded-lg p-0.5 border border-accent/30" data-tour="tabs-2d-3d">
               <button
                 onClick={() => setActiveTab('2d')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                  activeTab === '2d' || activeTab === '3d'
-                    ? activeTab === '2d'
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
+                  activeTab === '2d'
+                    ? 'bg-accent text-accent-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -53,7 +51,7 @@ const Index = () => {
                 onClick={() => setActiveTab('3d')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                   activeTab === '3d'
-                    ? 'bg-background text-foreground shadow-sm'
+                    ? 'bg-accent text-accent-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
