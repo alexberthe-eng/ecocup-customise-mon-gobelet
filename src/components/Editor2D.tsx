@@ -396,12 +396,14 @@ const ContextualPanelFields = ({
   pushHistory,
   moveElementLayer,
   removeElement,
+  onDuplicate,
 }: {
   element: DesignElement;
   update: (u: Partial<DesignElement>) => void;
   pushHistory: () => void;
   moveElementLayer: (id: string, dir: 'top' | 'up' | 'down' | 'bottom') => void;
   removeElement: (id: string) => void;
+  onDuplicate: () => void;
 }) => (
   <>
     {element.type === 'text' && (
