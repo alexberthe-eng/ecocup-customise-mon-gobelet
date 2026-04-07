@@ -1,5 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus } from 'lucide-react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus, Headphones, Phone, MessageCircle } from 'lucide-react';
+import { useStore, ActiveTool } from '@/store/useStore';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { useStore, ActiveTool } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
