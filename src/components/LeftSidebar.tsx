@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle } from 'lucide-react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus } from 'lucide-react';
 import { useStore, ActiveTool } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const tools: { id: ActiveTool; icon: React.ElementType; label: string }[] = [
-  { id: 'color', icon: Palette, label: 'Couleur' },
+const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?: boolean }[] = [
+  { id: 'color', icon: Palette, label: 'Couleur du gobelet' },
   { id: 'image', icon: ImagePlus, label: 'Image' },
-  { id: 'text', icon: Type, label: 'Texte' },
-  { id: 'motif', icon: Shapes, label: 'Motif' },
-  { id: 'collection', icon: BookOpen, label: 'Collection' },
+  { id: 'text', icon: Type, label: 'Texte', showPlus: true },
+  { id: 'motif', icon: Shapes, label: 'Motif', showPlus: true },
+  { id: 'collection', icon: BookOpen, label: 'Collection', showPlus: true },
 ];
 
 const ColorPopover = ({ position }: { position: 'side' | 'above' }) => {
@@ -93,8 +93,11 @@ const LeftSidebar = () => {
                     : 'text-muted-foreground'
                 }`}
               >
-                <Icon size={18} />
-                <span>{tool.label}</span>
+                <div className="relative">
+                  <Icon size={18} />
+                  {tool.showPlus && <Plus size={9} strokeWidth={3} className="absolute -top-0.5 -right-1.5 text-accent" />}
+                </div>
+                <span className="truncate max-w-[56px]">{tool.label}</span>
               </button>
               {tool.id === 'color' && showColorPopover && <ColorPopover position="above" />}
             </div>
@@ -130,8 +133,11 @@ const LeftSidebar = () => {
                     : 'text-muted-foreground hover:bg-secondary'
                 }`}
               >
-                <Icon size={18} />
-                <span>{tool.label}</span>
+                <div className="relative">
+                  <Icon size={18} />
+                  {tool.showPlus && <Plus size={9} strokeWidth={3} className="absolute -top-0.5 -right-1.5 text-accent" />}
+                </div>
+                <span className="truncate max-w-[56px]">{tool.label}</span>
               </button>
               {tool.id === 'color' && showColorPopover && <ColorPopover position="side" />}
             </div>
