@@ -345,6 +345,35 @@ const Editor2D = () => {
               </div>
             );
           })}
+
+          {/* Graduation marks overlay */}
+          {showGraduation && (() => {
+            const marks = getGraduationMarks(currentDesign.graduation);
+            const scale = isMobile ? 340 / 600 : 1;
+            const canvasW = (isMobile ? 340 : 600);
+            const canvasH = (isMobile ? 227 : 400);
+            return marks.map((mark) => {
+              const y = mark.positionY * canvasH;
+              return (
+                <div key={mark.label} className="absolute left-0 right-0 pointer-events-none" style={{ top: y }}>
+                  <div className="flex items-center justify-center gap-1">
+                    <div className="h-px bg-foreground/40" style={{ width: canvasW * 0.08 }} />
+                  </div>
+                  <p className="text-center text-foreground/60 font-medium select-none" style={{ fontSize: 10 * scale }}>
+                    {mark.label}
+                  </p>
+                </div>
+              );
+            });
+          })()}
+
+          {/* Graduation mask overlay */}
+          {showGraduationMask && (
+            <div className="absolute inset-0 pointer-events-none" style={{
+              background: 'repeating-linear-gradient(45deg, transparent, transparent 8px, hsl(var(--foreground) / 0.04) 8px, hsl(var(--foreground) / 0.04) 16px)',
+              borderRadius: 'inherit',
+            }} />
+          )}
         </div>
       </div>
 
