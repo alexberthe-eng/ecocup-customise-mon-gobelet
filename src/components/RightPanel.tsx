@@ -109,9 +109,12 @@ const RightPanel = () => {
             </button>
           </div>
         ))}
-        <button className="w-full text-xs border border-dashed rounded-md py-2 text-muted-foreground hover:bg-secondary/50 transition-colors">
+        <button
+          onClick={addToCart}
+          className="w-full text-xs border border-dashed rounded-md py-2 text-muted-foreground hover:bg-secondary/50 transition-colors"
+        >
           <Plus size={12} className="inline mr-1" />
-          Créer un 2e design
+          {cart.length === 0 ? 'Créer un 2e design' : `Créer un ${cart.length + 2}e design`}
         </button>
         {cart.length > 0 && (
           <div className="flex justify-between text-xs font-semibold mt-2 pt-2 border-t border-thin">
