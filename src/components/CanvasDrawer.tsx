@@ -177,6 +177,7 @@ const MotifDrawerContent = ({ onClose }: { onClose: () => void }) => {
               const url = URL.createObjectURL(blob);
               e.dataTransfer.setData('application/x-motif', JSON.stringify({ type: 'svg', src: url, name: m.name }));
               e.dataTransfer.effectAllowed = 'copy';
+              setTimeout(() => onClose(), 0);
             }}
             className="aspect-square border-thin rounded-lg flex flex-col items-center justify-center gap-1 hover:bg-secondary/50 transition-colors cursor-grab active:cursor-grabbing"
             title={m.name}
