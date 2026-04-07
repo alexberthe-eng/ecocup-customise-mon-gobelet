@@ -1,27 +1,30 @@
 /** Graduation mark definitions for different cup sizes */
 
 export interface GradMark {
+  id: string;
   label: string;
-  /** Position as fraction from bottom (0) to top (1) of the canvas/cup */
-  positionY: number;
+  /** Default position as fraction from top (0) to bottom (1) of the canvas */
+  defaultY: number;
+  /** Default X as fraction (0-1), 0.5 = center */
+  defaultX: number;
 }
 
 const GRADUATIONS: Record<string, GradMark[]> = {
   'standard-33cl': [
-    { label: '25 cl', positionY: 0.22 },
-    { label: '12,5 cl', positionY: 0.52 },
-    { label: '5 cl', positionY: 0.72 },
+    { id: 'g-25cl', label: '25 cl', defaultY: 0.22, defaultX: 0.5 },
+    { id: 'g-12.5cl', label: '12,5 cl', defaultY: 0.52, defaultX: 0.5 },
+    { id: 'g-5cl', label: '5 cl', defaultY: 0.72, defaultX: 0.5 },
   ],
   'standard-25cl': [
-    { label: '20 cl', positionY: 0.22 },
-    { label: '12,5 cl', positionY: 0.48 },
-    { label: '5 cl', positionY: 0.68 },
+    { id: 'g-20cl', label: '20 cl', defaultY: 0.22, defaultX: 0.5 },
+    { id: 'g-12.5cl', label: '12,5 cl', defaultY: 0.48, defaultX: 0.5 },
+    { id: 'g-5cl', label: '5 cl', defaultY: 0.68, defaultX: 0.5 },
   ],
   'pinte-50cl': [
-    { label: '50 cl', positionY: 0.12 },
-    { label: '25 cl', positionY: 0.42 },
-    { label: '12,5 cl', positionY: 0.62 },
-    { label: '5 cl', positionY: 0.78 },
+    { id: 'g-50cl', label: '50 cl', defaultY: 0.12, defaultX: 0.5 },
+    { id: 'g-25cl', label: '25 cl', defaultY: 0.42, defaultX: 0.5 },
+    { id: 'g-12.5cl', label: '12,5 cl', defaultY: 0.62, defaultX: 0.5 },
+    { id: 'g-5cl', label: '5 cl', defaultY: 0.78, defaultX: 0.5 },
   ],
 };
 
