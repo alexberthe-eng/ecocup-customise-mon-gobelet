@@ -21,6 +21,10 @@ const AssistantPopup = () => {
             <p className="text-xs text-muted-foreground">
               Notre équipe est disponible pour vous accompagner dans la personnalisation de vos gobelets.
             </p>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/60 text-xs text-muted-foreground">
+              <span>🕐</span>
+              <span>Lun – Ven : 9h00 – 18h00</span>
+            </div>
             <a
               href="tel:+33123456789"
               className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary transition-colors group"
