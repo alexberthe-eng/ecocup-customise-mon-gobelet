@@ -62,12 +62,14 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
     }
     const reader = new FileReader();
     reader.onload = (e) => {
+      const count = currentDesign.elements.length;
+      const offset = count * 30;
       addElement({
         id: crypto.randomUUID(),
         type: 'image',
-        x: 100, y: 100, width: 150, height: 150,
+        x: 80 + (offset % 300), y: 50 + (offset % 200), width: 150, height: 150,
         rotation: 0, opacity: 100, color: '#000000',
-        zIndex: currentDesign.elements.length,
+        zIndex: count,
         src: e.target?.result as string,
         maskType: selectedMask,
       });
