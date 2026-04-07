@@ -34,25 +34,45 @@ const Index = () => {
         {/* Center area */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           {/* Tab bar */}
-          <div className="flex items-center border-b border-thin px-2 md:px-4 bg-background overflow-x-auto shrink-0">
-            {([
-              { id: '2d' as const, label: isMobile ? '2D' : 'Édition 2D', tour: 'tabs-2d-3d' },
-              { id: '3d' as const, label: isMobile ? '3D' : 'Vue 3D 360°', tour: 'tabs-2d-3d' },
-              { id: 'bat' as const, label: isMobile ? 'BAT' : 'Aperçu BAT', tour: 'tab-bat' },
-            ]).map((tab) => (
+          <div className="flex items-center border-b border-thin px-2 md:px-4 bg-background overflow-x-auto shrink-0 gap-3">
+            {/* 2D/3D toggle */}
+            <div className="flex items-center bg-secondary rounded-lg p-0.5" data-tour="tabs-2d-3d">
               <button
-                key={tab.id}
-                data-tour={tab.tour}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3 md:px-4 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'border-accent text-accent'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                onClick={() => setActiveTab('2d')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  activeTab === '2d' || activeTab === '3d'
+                    ? activeTab === '2d'
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {tab.label}
+                {isMobile ? '2D' : 'Édition 2D'}
               </button>
-            ))}
+              <button
+                onClick={() => setActiveTab('3d')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  activeTab === '3d'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {isMobile ? '3D' : 'Vue 3D 360°'}
+              </button>
+            </div>
+
+            {/* BAT tab */}
+            <button
+              data-tour="tab-bat"
+              onClick={() => setActiveTab('bat')}
+              className={`px-3 md:px-4 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'bat'
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {isMobile ? 'BAT' : 'Aperçu BAT'}
+            </button>
 
             {activeTab === '2d' && (
               <div className="ml-auto shrink-0">
