@@ -368,6 +368,7 @@ const ContextualPanel = ({
           <X size={12} className="text-muted-foreground" />
         </button>
         <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate pr-5">{elementName}</p>
+        <ContextualPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} />
       </div>
     );
   }
