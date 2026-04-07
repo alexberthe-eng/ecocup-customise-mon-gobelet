@@ -20,6 +20,8 @@ const TopBar = () => {
   const [editValue, setEditValue] = useState(designName);
   const [showAuth, setShowAuth] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
