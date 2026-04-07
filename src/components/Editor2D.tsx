@@ -356,15 +356,34 @@ const Editor2D = () => {
             const off = currentDesign.graduationOffset;
             return (
               <div
-                className="absolute cursor-move select-none"
+                className="absolute pointer-events-none select-none"
                 style={{
                   left: off.dx * scale,
                   top: off.dy * scale,
                   width: canvasW,
                   height: canvasH,
                   zIndex: 999,
-                }}
-                onMouseDown={(e) => {
+                }}>
+                {/* Invisible drag handle for graduation block */}
+                <div
+                  className="absolute inset-0 pointer-events-auto cursor-move"
+                  style={{ zIndex: -1 }}
+                  onMouseDown={(e) => {
+                    // Only start drag if click is near a graduation mark or logo
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickY = e.clientY - rect.top;
+                    const clickX = e.clientX - rect.left;
+                    const nearMark = marks.some((mark) => {
+                      const markY = mark.defaultY * canvasH;
+                      const markX = mark.defaultX * canvasW;
+                      return Math.abs(clickY - markY) < 20 && Math.abs(clickX - markX) < 60;
+                    });
+                    // Check near logo
+                    const lastMark = marks[marks.length - 1];
+                    const logoY = lastMark ? lastMark.defaultY * canvasH + 18 : canvasH * 0.90;
+                    const logoX = (lastMark?.defaultX ?? 0.5) * canvasW;
+                    const nearLogo = Math.abs(clickY - logoY - 15) < 20 && Math.abs(clickX - logoX) < 30;
+                    if (!nearMark && !nearLogo) return; // Let click pass through
                   e.stopPropagation();
                   const startX = e.clientX;
                   const startY = e.clientY;
@@ -384,7 +403,8 @@ const Editor2D = () => {
                   window.addEventListener('mousemove', onMove);
                   window.addEventListener('mouseup', onUp);
                 }}
-              >
+                >
+                </div>
                 {marks.map((mark) => {
                    const y = mark.defaultY * canvasH;
                    const x = mark.defaultX * canvasW;
