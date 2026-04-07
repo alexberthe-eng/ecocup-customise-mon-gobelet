@@ -1,0 +1,289 @@
+import { create } from 'zustand';
+
+export type ElementType = 'image' | 'text' | 'svg';
+export type MaskType = 'rectangle' | 'circle' | 'polaroid' | 'star' | 'badge' | 'drop' | null;
+
+export interface DesignElement {
+  id: string;
+  type: ElementType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+  color: string;
+  zIndex: number;
+  src?: string;
+  text?: string;
+  fontFamily?: string;
+  fontSize?: number;
+  maskType?: MaskType;
+}
+
+export interface Design {
+  id: string;
+  name: string;
+  elements: DesignElement[];
+  cupColor: string;
+  graduation: string;
+  quantity: number;
+  comment: string;
+}
+
+export type ActiveTab = '2d' | '3d' | 'bat';
+export type ActiveTool = 'color' | 'image' | 'text' | 'motif' | 'collection' | 'aide' | null;
+
+interface AppState {
+  // Current design
+  currentDesign: Design;
+  cart: Design[];
+  
+  // UI state
+  activeTab: ActiveTab;
+  activeTool: ActiveTool;
+  gridVisible: boolean;
+  tourCompleted: boolean;
+  showTour: boolean;
+  tourStep: number;
+  selectedElementId: string | null;
+  showGraduation: boolean;
+  showGraduationMask: boolean;
+  
+  // History
+  history: Design[];
+  historyIndex: number;
+
+  // Actions
+  setActiveTab: (tab: ActiveTab) => void;
+  setActiveTool: (tool: ActiveTool) => void;
+  setGridVisible: (v: boolean) => void;
+  setSelectedElementId: (id: string | null) => void;
+  setCupColor: (color: string) => void;
+  setGraduation: (g: string) => void;
+  setQuantity: (q: number) => void;
+  setComment: (c: string) => void;
+  setDesignName: (name: string) => void;
+  setShowGraduation: (v: boolean) => void;
+  setShowGraduationMask: (v: boolean) => void;
+  
+  addElement: (el: DesignElement) => void;
+  updateElement: (id: string, updates: Partial<DesignElement>) => void;
+  removeElement: (id: string) => void;
+  moveElementLayer: (id: string, direction: 'top' | 'up' | 'down' | 'bottom') => void;
+  
+  addToCart: () => void;
+  removeFromCart: (id: string) => void;
+  editCartDesign: (id: string) => void;
+  updateCartDesignName: (id: string, name: string) => void;
+  
+  undo: () => void;
+  redo: () => void;
+  pushHistory: () => void;
+  
+  startTour: () => void;
+  nextTourStep: () => void;
+  prevTourStep: () => void;
+  endTour: () => void;
+}
+
+const defaultDesign: Design = {
+  id: crypto.randomUUID(),
+  name: 'Design 1',
+  elements: [],
+  cupColor: '#FFFFFF',
+  graduation: 'standard-33cl',
+  quantity: 250,
+  comment: '',
+};
+
+const PRICE_TIERS: Record<number, number> = {
+  125: 2.80,
+  250: 2.40,
+  500: 1.95,
+  1000: 1.60,
+  2500: 1.25,
+  5000: 0.98,
+};
+
+export const getUnitPrice = (quantity: number): number => {
+  return PRICE_TIERS[quantity] ?? 1.60;
+};
+
+export const useStore = create<AppState>((set, get) => ({
+  currentDesign: { ...defaultDesign },
+  cart: [],
+  activeTab: '2d',
+  activeTool: null,
+  gridVisible: false,
+  tourCompleted: localStorage.getItem('tourCompleted') === 'true',
+  showTour: false,
+  tourStep: 0,
+  selectedElementId: null,
+  showGraduation: true,
+  showGraduationMask: false,
+  history: [{ ...defaultDesign }],
+  historyIndex: 0,
+
+  setActiveTab: (tab) => set({ activeTab: tab, selectedElementId: null }),
+  setActiveTool: (tool) => set((s) => ({ activeTool: s.activeTool === tool ? null : tool })),
+  setGridVisible: (v) => set({ gridVisible: v }),
+  setSelectedElementId: (id) => set({ selectedElementId: id }),
+  setCupColor: (color) => {
+    set((s) => ({ currentDesign: { ...s.currentDesign, cupColor: color } }));
+    get().pushHistory();
+  },
+  setGraduation: (g) => set((s) => ({ currentDesign: { ...s.currentDesign, graduation: g } })),
+  setQuantity: (q) => set((s) => ({ currentDesign: { ...s.currentDesign, quantity: q } })),
+  setComment: (c) => set((s) => ({ currentDesign: { ...s.currentDesign, comment: c } })),
+  setDesignName: (name) => set((s) => ({ currentDesign: { ...s.currentDesign, name } })),
+  setShowGraduation: (v) => set({ showGraduation: v }),
+  setShowGraduationMask: (v) => set({ showGraduationMask: v }),
+
+  addElement: (el) => {
+    set((s) => ({
+      currentDesign: {
+        ...s.currentDesign,
+        elements: [...s.currentDesign.elements, el],
+      },
+    }));
+    get().pushHistory();
+  },
+
+  updateElement: (id, updates) => {
+    set((s) => ({
+      currentDesign: {
+        ...s.currentDesign,
+        elements: s.currentDesign.elements.map((el) =>
+          el.id === id ? { ...el, ...updates } : el
+        ),
+      },
+    }));
+  },
+
+  removeElement: (id) => {
+    set((s) => ({
+      currentDesign: {
+        ...s.currentDesign,
+        elements: s.currentDesign.elements.filter((el) => el.id !== id),
+      },
+      selectedElementId: s.selectedElementId === id ? null : s.selectedElementId,
+    }));
+    get().pushHistory();
+  },
+
+  moveElementLayer: (id, direction) => {
+    set((s) => {
+      const elements = [...s.currentDesign.elements];
+      const idx = elements.findIndex((el) => el.id === id);
+      if (idx === -1) return s;
+
+      const sorted = elements.sort((a, b) => a.zIndex - b.zIndex);
+      const sortedIdx = sorted.findIndex((el) => el.id === id);
+
+      if (direction === 'top') {
+        const maxZ = Math.max(...elements.map((e) => e.zIndex));
+        sorted[sortedIdx].zIndex = maxZ + 1;
+      } else if (direction === 'bottom') {
+        const minZ = Math.min(...elements.map((e) => e.zIndex));
+        sorted[sortedIdx].zIndex = minZ - 1;
+      } else if (direction === 'up' && sortedIdx < sorted.length - 1) {
+        const tmp = sorted[sortedIdx].zIndex;
+        sorted[sortedIdx].zIndex = sorted[sortedIdx + 1].zIndex;
+        sorted[sortedIdx + 1].zIndex = tmp;
+      } else if (direction === 'down' && sortedIdx > 0) {
+        const tmp = sorted[sortedIdx].zIndex;
+        sorted[sortedIdx].zIndex = sorted[sortedIdx - 1].zIndex;
+        sorted[sortedIdx - 1].zIndex = tmp;
+      }
+
+      return {
+        currentDesign: { ...s.currentDesign, elements: sorted },
+      };
+    });
+    get().pushHistory();
+  },
+
+  addToCart: () => {
+    set((s) => {
+      const snapshot = JSON.parse(JSON.stringify(s.currentDesign));
+      const newDesign: Design = {
+        ...defaultDesign,
+        id: crypto.randomUUID(),
+        name: `Design ${s.cart.length + 2}`,
+      };
+      return {
+        cart: [...s.cart, snapshot],
+        currentDesign: newDesign,
+        selectedElementId: null,
+      };
+    });
+  },
+
+  removeFromCart: (id) => {
+    set((s) => ({ cart: s.cart.filter((d) => d.id !== id) }));
+  },
+
+  editCartDesign: (id) => {
+    set((s) => {
+      const design = s.cart.find((d) => d.id === id);
+      if (!design) return s;
+      const currentSnapshot = JSON.parse(JSON.stringify(s.currentDesign));
+      return {
+        currentDesign: JSON.parse(JSON.stringify(design)),
+        cart: s.cart.map((d) => (d.id === id ? currentSnapshot : d)),
+      };
+    });
+  },
+
+  updateCartDesignName: (id, name) => {
+    set((s) => ({
+      cart: s.cart.map((d) => (d.id === id ? { ...d, name } : d)),
+    }));
+  },
+
+  pushHistory: () => {
+    set((s) => {
+      const newHistory = s.history.slice(0, s.historyIndex + 1);
+      newHistory.push(JSON.parse(JSON.stringify(s.currentDesign)));
+      return { history: newHistory, historyIndex: newHistory.length - 1 };
+    });
+  },
+
+  undo: () => {
+    set((s) => {
+      if (s.historyIndex <= 0) return s;
+      const newIndex = s.historyIndex - 1;
+      return {
+        historyIndex: newIndex,
+        currentDesign: JSON.parse(JSON.stringify(s.history[newIndex])),
+      };
+    });
+  },
+
+  redo: () => {
+    set((s) => {
+      if (s.historyIndex >= s.history.length - 1) return s;
+      const newIndex = s.historyIndex + 1;
+      return {
+        historyIndex: newIndex,
+        currentDesign: JSON.parse(JSON.stringify(s.history[newIndex])),
+      };
+    });
+  },
+
+  startTour: () => set({ showTour: true, tourStep: 0 }),
+  nextTourStep: () =>
+    set((s) => {
+      if (s.tourStep >= 3) {
+        localStorage.setItem('tourCompleted', 'true');
+        return { showTour: false, tourCompleted: true };
+      }
+      return { tourStep: s.tourStep + 1 };
+    }),
+  prevTourStep: () => set((s) => ({ tourStep: Math.max(0, s.tourStep - 1) })),
+  endTour: () => {
+    localStorage.setItem('tourCompleted', 'true');
+    set({ showTour: false, tourCompleted: true });
+  },
+}));
