@@ -5,7 +5,7 @@ const AssistantPopup = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
       {open && (
         <div className="bg-card border border-border rounded-xl shadow-xl w-72 overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-secondary/50">
@@ -21,6 +21,10 @@ const AssistantPopup = () => {
             <p className="text-xs text-muted-foreground">
               Notre équipe est disponible pour vous accompagner dans la personnalisation de vos gobelets.
             </p>
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/60 text-xs text-muted-foreground">
+              <span>🕐</span>
+              <span>Lun – Ven : 9h00 – 18h00</span>
+            </div>
             <a
               href="tel:+33123456789"
               className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary transition-colors group"
