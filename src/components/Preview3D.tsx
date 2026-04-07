@@ -4,6 +4,8 @@ import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '@/store/useStore';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ElementPanel } from '@/components/ElementPanel';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
