@@ -14,6 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
+      orders: {
+        Row: {
+          created_at: string
+          designs: Json
+          id: string
+          notes: string
+          status: Database["public"]["Enums"]["order_status"]
+          total_amount: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          designs?: Json
+          id?: string
+          notes?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total_amount?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          designs?: Json
+          id?: string
+          notes?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          total_amount?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          address: string
+          city: string
+          company: string
+          created_at: string
+          full_name: string
+          id: string
+          phone: string
+          postal_code: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          city?: string
+          company?: string
+          created_at?: string
+          full_name?: string
+          id: string
+          phone?: string
+          postal_code?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          city?: string
+          company?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          postal_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      saved_designs: {
+        Row: {
+          created_at: string
+          cup_color: string
+          design_data: Json
+          design_name: string
+          id: string
+          thumbnail_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cup_color?: string
+          design_data?: Json
+          design_name?: string
+          id?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cup_color?: string
+          design_data?: Json
+          design_name?: string
+          id?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shared_designs: {
         Row: {
           created_at: string
@@ -22,6 +121,7 @@ export type Database = {
           expires_at: string
           id: string
           image_url: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -30,6 +130,7 @@ export type Database = {
           expires_at?: string
           id?: string
           image_url: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -38,6 +139,7 @@ export type Database = {
           expires_at?: string
           id?: string
           image_url?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -49,7 +151,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      order_status: "pending" | "confirmed" | "shipped" | "delivered"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -176,6 +278,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      order_status: ["pending", "confirmed", "shipped", "delivered"],
+    },
   },
 } as const
