@@ -462,9 +462,14 @@ const ContextualPanelFields = ({
       <button onClick={() => moveElementLayer(element.id, 'down')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↓ Arrière</button>
       <button onClick={() => moveElementLayer(element.id, 'bottom')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↓↓ Fond</button>
     </div>
-    <button onClick={() => removeElement(element.id)} className="flex items-center gap-1 text-[10px] text-destructive hover:underline">
-      <Trash2 size={10} /> Supprimer
-    </button>
+    <div className="flex items-center gap-3">
+      <button onClick={onDuplicate} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground hover:underline">
+        <Copy size={10} /> Dupliquer
+      </button>
+      <button onClick={() => removeElement(element.id)} className="flex items-center gap-1 text-[10px] text-destructive hover:underline">
+        <Trash2 size={10} /> Supprimer
+      </button>
+    </div>
   </>
 );
 
