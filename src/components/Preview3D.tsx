@@ -151,7 +151,7 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
           const drawLogo = () => {
             const ratio = logoImg.naturalWidth && logoImg.naturalHeight ? logoImg.naturalWidth / logoImg.naturalHeight : 99 / 88;
             const logoW = logoH * ratio;
-            const logoX = CANVAS_W * 0.42 + off.dx;
+            const logoX = (marks[0]?.defaultX ?? 0.5) * CANVAS_W + off.dx;
             const logoY = CANVAS_H - logoH;
             ctx.drawImage(logoImg, logoX - logoW / 2, logoY, logoW, logoH);
           };
