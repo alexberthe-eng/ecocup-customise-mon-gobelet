@@ -120,10 +120,9 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
       // Draw graduation marks on texture
       if (showGraduation) {
         const marks = getGraduationMarks(graduation);
-        const offsets = graduationOffsets;
+        const off = graduationOffset;
         ctx.save();
         marks.forEach((mark) => {
-          const off = offsets[mark.id] ?? { dx: 0, dy: 0 };
           const cx = mark.defaultX * CANVAS_W + off.dx;
           const y = mark.defaultY * CANVAS_H + off.dy;
           const lineW = CANVAS_W * 0.06;
@@ -148,7 +147,7 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
         textureRef.current.needsUpdate = true;
       }
     });
-  }, [cupColor, elements, showGraduation, graduation, graduationOffsets]);
+  }, [cupColor, elements, showGraduation, graduation, graduationOffset]);
 
   const texture = useMemo(() => {
     const tex = new THREE.CanvasTexture(offscreenCanvas.current!);
