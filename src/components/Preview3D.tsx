@@ -9,6 +9,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
+const GRID_SIZE = 22;
+const snapToGrid = (val: number) => Math.round(val / GRID_SIZE) * GRID_SIZE;
 
 const CUP_COLORS: Record<string, { color: string; opacity: number }> = {
   '#f2f2f2': { color: '#f2f2f2', opacity: 1 },
@@ -163,10 +165,14 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
         const pos = uvToCanvas(uv);
         const dx = pos.x - dragRef.current.startCanvasX;
         const dy = pos.y - dragRef.current.startCanvasY;
-        updateElement(dragRef.current.elementId, {
-          x: dragRef.current.startElX + dx,
-          y: dragRef.current.startElY + dy,
-        });
+        const gridVisible = useStore.getState().gridVisible;
+        let newX = dragRef.current.startElX + dx;
+        let newY = dragRef.current.startElY + dy;
+        if (gridVisible) {
+          newX = snapToGrid(newX);
+          newY = snapToGrid(newY);
+        }
+        updateElement(dragRef.current.elementId, { x: newX, y: newY });
         return;
       }
 
