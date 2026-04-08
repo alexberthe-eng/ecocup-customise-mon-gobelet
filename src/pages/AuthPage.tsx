@@ -21,20 +21,25 @@ const AuthPage = () => {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName } },
+        options: { data: { full_name: fullName }, emailRedirectTo: window.location.origin },
       });
       if (error) {
         toast.error(error.message);
       } else {
-        toast.success('Compte créé ! Vérifiez votre email pour confirmer.');
+        toast.success('Compte créé ! Vous êtes connecté.');
+        navigate('/');
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        toast.error(error.message);
+        if (error.message === 'Invalid login credentials') {
+          toast.error('Email ou mot de passe incorrect. Avez-vous créé un compte ?');
+        } else {
+          toast.error(error.message);
+        }
       } else {
         toast.success('Connexion réussie');
-        navigate('/account');
+        navigate('/');
       }
     }
     setLoading(false);
