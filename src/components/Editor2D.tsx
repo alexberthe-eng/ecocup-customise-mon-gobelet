@@ -403,7 +403,7 @@ const Editor2D = () => {
                   top: off.dy * scale,
                   width: canvasW,
                   height: canvasH,
-                  zIndex: 999,
+                  zIndex: 0,
                 }}>
                 {marks.map((mark) => {
                    const y = mark.defaultY * canvasH;
