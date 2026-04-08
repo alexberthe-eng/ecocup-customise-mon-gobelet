@@ -50,7 +50,12 @@ const TopBar = () => {
 
   const handleSaveClick = async () => {
     try {
+      // Demander un nom au design
       const currentDesign = useStore.getState().currentDesign;
+      const promptName = window.prompt('Nom du design :', currentDesign.name);
+      if (promptName === null) return; // annulé
+      const saveName = promptName.trim() || currentDesign.name;
+      useStore.getState().setDesignName(saveName);
 
       if (user) {
         // Sauvegarde en base de données pour les utilisateurs connectés
@@ -67,7 +72,7 @@ const TopBar = () => {
 
         const { error } = await supabase.from('saved_designs').insert({
           user_id: user.id,
-          design_name: currentDesign.name,
+          design_name: saveName,
           cup_color: currentDesign.cupColor,
           design_data: currentDesign as any,
           thumbnail_url: thumbnailUrl,
@@ -87,7 +92,7 @@ const TopBar = () => {
         }
         savedDesigns.push({
           id: crypto.randomUUID(),
-          design_name: currentDesign.name,
+          design_name: saveName,
           cup_color: currentDesign.cupColor,
           design_data: currentDesign,
           thumbnail_url: thumbnailDataUrl,
