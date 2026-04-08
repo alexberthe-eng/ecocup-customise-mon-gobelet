@@ -50,7 +50,12 @@ const TopBar = () => {
 
   const handleSaveClick = async () => {
     try {
+      // Demander un nom au design
       const currentDesign = useStore.getState().currentDesign;
+      const promptName = window.prompt('Nom du design :', currentDesign.name);
+      if (promptName === null) return; // annulé
+      const saveName = promptName.trim() || currentDesign.name;
+      useStore.getState().setDesignName(saveName);
 
       if (user) {
         // Sauvegarde en base de données pour les utilisateurs connectés
