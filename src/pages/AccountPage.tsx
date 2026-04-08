@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Package, Image, Share2, Settings, LogOut, ShoppingCart, Plus, Trash2, ExternalLink } from 'lucide-react';
+import { useStore } from '@/store/useStore';
+import { User, Package, Image, Share2, Settings, LogOut, ShoppingCart, Plus, Trash2, ExternalLink, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 type Tab = 'orders' | 'designs' | 'shares' | 'profile';

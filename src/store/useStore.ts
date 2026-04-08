@@ -427,4 +427,12 @@ export const useStore = create<AppState>((set, get) => ({
     localStorage.setItem('tourCompleted', 'true');
     set({ showTour: false, tourCompleted: true });
   },
+
+  loadSavedDesign: (designData) => {
+    set({
+      currentDesign: JSON.parse(JSON.stringify(designData)),
+      activeTab: '2d' as ActiveTab,
+      isDirty: false,
+    });
+  },
 }));
