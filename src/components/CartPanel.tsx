@@ -23,6 +23,7 @@ const CartPanel = () => {
 
   const isMobile = useIsMobile();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [showOrderConfirm, setShowOrderConfirm] = useState(false);
 
   if (!showCartPanel) return null;
 
