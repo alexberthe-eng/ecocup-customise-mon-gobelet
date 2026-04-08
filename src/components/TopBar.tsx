@@ -75,6 +75,7 @@ const TopBar = () => {
       });
 
       if (error) throw error;
+      setIsDirty(false);
       toast.success('Design sauvegardé !', { description: 'Retrouvez-le dans votre espace client.' });
     } catch (err) {
       console.error(err);
