@@ -12,7 +12,7 @@ const GRID_SIZE = 22;
 
 const snapToGrid = (val: number) => Math.round(val / GRID_SIZE) * GRID_SIZE;
 
-const Editor2D = () => {
+const Editor2D = ({ onEditWithAI }: { onEditWithAI?: (elementId: string) => void }) => {
   const {
     currentDesign,
     gridVisible,
@@ -494,6 +494,7 @@ const Editor2D = () => {
         <ElementPanel
           element={selectedElement}
           isMobile={isMobile}
+          onEditWithAI={onEditWithAI}
           anchor={
             !isMobile && canvasRef.current
               ? {
