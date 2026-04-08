@@ -108,10 +108,12 @@ export const ElementPanel = ({
   element,
   isMobile,
   anchor,
+  onEditWithAI,
 }: {
   element: DesignElement;
   isMobile: boolean;
   anchor?: { left: number; top: number };
+  onEditWithAI?: (elementId: string) => void;
 }) => {
   const { updateElement, removeElement, moveElementLayer, pushHistory, addElement, setSelectedElementId } = useStore();
 
