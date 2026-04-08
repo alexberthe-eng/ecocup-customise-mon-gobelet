@@ -156,10 +156,10 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
-/* ─── Motif Drawer ─── */
+/* ─── Sticker Drawer ─── */
 const CATEGORIES = ['Tous', 'Animaux', 'Fête', 'Mariage', 'Sport', 'Vacances', 'Drôle'];
 
-const DEMO_MOTIFS = [
+const DEMO_STICKERS = [
   { id: '1', name: 'Étoile', category: 'Fête', path: 'M 50 5 L 61 35 L 95 38 L 70 58 L 78 92 L 50 75 L 22 92 L 30 58 L 5 38 L 39 35 Z' },
   { id: '2', name: 'Cœur', category: 'Mariage', path: 'M 50 85 C 20 60 5 40 5 25 A 20 20 0 0 1 50 20 A 20 20 0 0 1 95 25 C 95 40 80 60 50 85' },
   { id: '3', name: 'Soleil', category: 'Vacances', path: 'M 50 10 L 55 30 L 75 15 L 65 35 L 85 35 L 70 45 L 90 55 L 70 55 L 80 75 L 60 60 L 55 80 L 50 60 L 45 80 L 40 60 L 20 75 L 30 55 L 10 55 L 30 45 L 15 35 L 35 35 L 25 15 L 45 30 Z' },
@@ -168,19 +168,19 @@ const DEMO_MOTIFS = [
   { id: '6', name: 'Rire', category: 'Drôle', path: 'M 50 10 A 40 40 0 1 0 50 90 A 40 40 0 1 0 50 10 M 35 40 A 3 3 0 1 0 35 40.1 M 65 40 A 3 3 0 1 0 65 40.1 M 30 60 Q 50 80 70 60' },
 ];
 
-const MotifDrawerContent = ({ onClose }: { onClose: () => void }) => {
+const StickerDrawerContent = ({ onClose }: { onClose: () => void }) => {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('Tous');
   const { addElement, currentDesign, setSelectedElementId } = useStore();
 
-  const filtered = DEMO_MOTIFS.filter((m) => {
+  const filtered = DEMO_STICKERS.filter((m) => {
     if (category !== 'Tous' && m.category !== category) return false;
     if (search && !m.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
-  const handleSelect = (motif: (typeof DEMO_MOTIFS)[0]) => {
-    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="${motif.path}" fill="#111111" stroke="none"/></svg>`;
+  const handleSelect = (sticker: (typeof DEMO_STICKERS)[0]) => {
+    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="${sticker.path}" fill="#111111" stroke="none"/></svg>`;
     const blob = new Blob([svgString], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     const newId = crypto.randomUUID();
@@ -193,10 +193,10 @@ const MotifDrawerContent = ({ onClose }: { onClose: () => void }) => {
 
   return (
     <div className="p-4 pt-10">
-      <h3 className="text-sm font-semibold mb-3">Ajouter un motif</h3>
+      <h3 className="text-sm font-semibold mb-3">Ajouter un sticker</h3>
       <div className="relative mb-3">
         <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Trouver un motif" className="w-full text-xs border-thin rounded-md pl-7 pr-2 py-1.5 bg-background" />
+        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Trouver un sticker" className="w-full text-xs border-thin rounded-md pl-7 pr-2 py-1.5 bg-background" />
       </div>
       <div className="flex gap-1.5 overflow-x-auto mb-4 pb-1 scrollbar-none">
         {CATEGORIES.map((cat) => (
@@ -216,7 +216,7 @@ const MotifDrawerContent = ({ onClose }: { onClose: () => void }) => {
               const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="${m.path}" fill="#111111" stroke="none"/></svg>`;
               const blob = new Blob([svgString], { type: 'image/svg+xml' });
               const url = URL.createObjectURL(blob);
-              e.dataTransfer.setData('application/x-motif', JSON.stringify({ type: 'svg', src: url, name: m.name }));
+              e.dataTransfer.setData('application/x-sticker', JSON.stringify({ type: 'svg', src: url, name: m.name }));
               e.dataTransfer.effectAllowed = 'copy';
               setTimeout(() => onClose(), 0);
             }}
@@ -227,7 +227,7 @@ const MotifDrawerContent = ({ onClose }: { onClose: () => void }) => {
             <span className="text-[8px] text-muted-foreground truncate w-full text-center px-1">{m.name}</span>
           </button>
         ))}
-        {filtered.length === 0 && <p className="col-span-3 text-[10px] text-muted-foreground text-center py-6">Aucun motif trouvé</p>}
+        {filtered.length === 0 && <p className="col-span-3 text-[10px] text-muted-foreground text-center py-6">Aucun sticker trouvé</p>}
       </div>
     </div>
   );
@@ -291,7 +291,7 @@ const CanvasDrawer = () => {
   return (
     <DrawerShell onClose={close}>
       {openDrawer === 'image' && <ImageDrawerContent onClose={close} />}
-      {openDrawer === 'motif' && <MotifDrawerContent onClose={close} />}
+      {openDrawer === 'sticker' && <StickerDrawerContent onClose={close} />}
       {openDrawer === 'collection' && <CollectionDrawerContent onClose={close} />}
     </DrawerShell>
   );
