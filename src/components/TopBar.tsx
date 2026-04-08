@@ -13,6 +13,8 @@ const TopBar = () => {
   const cupColor = useStore((s) => s.currentDesign.cupColor);
   const productType = useStore((s) => s.currentDesign.productType);
   const capacity = useStore((s) => s.currentDesign.capacity);
+  const isDirty = useStore((s) => s.isDirty);
+  const setIsDirty = useStore((s) => s.setIsDirty);
   const setDesignName = useStore((s) => s.setDesignName);
   const showRightPanel = useStore((s) => s.showRightPanel);
   const setShowRightPanel = useStore((s) => s.setShowRightPanel);
