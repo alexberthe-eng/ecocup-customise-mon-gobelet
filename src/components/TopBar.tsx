@@ -49,34 +49,54 @@ const TopBar = () => {
   }, [editing, designName]);
 
   const handleSaveClick = async () => {
-    if (!user) {
-      setShowAuth(true);
-      return;
-    }
     try {
-      let thumbnailUrl: string | undefined;
-      const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
-      if (canvasEl) {
-        const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
-        const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
-        const fileName = `${user.id}/${crypto.randomUUID()}.png`;
-        await supabase.storage.from('design-thumbnails').upload(fileName, blob, { contentType: 'image/png' });
-        const { data: urlData } = supabase.storage.from('design-thumbnails').getPublicUrl(fileName);
-        thumbnailUrl = urlData.publicUrl;
-      }
-
       const currentDesign = useStore.getState().currentDesign;
-      const { error } = await supabase.from('saved_designs').insert({
-        user_id: user.id,
-        design_name: currentDesign.name,
-        cup_color: currentDesign.cupColor,
-        design_data: currentDesign as any,
-        thumbnail_url: thumbnailUrl,
-      });
 
-      if (error) throw error;
-      setIsDirty(false);
-      toast.success('Design sauvegardé !', { description: 'Retrouvez-le dans votre espace client.' });
+      if (user) {
+        // Sauvegarde en base de données pour les utilisateurs connectés
+        let thumbnailUrl: string | undefined;
+        const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+        if (canvasEl) {
+          const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
+          const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
+          const fileName = `${user.id}/${crypto.randomUUID()}.png`;
+          await supabase.storage.from('design-thumbnails').upload(fileName, blob, { contentType: 'image/png' });
+          const { data: urlData } = supabase.storage.from('design-thumbnails').getPublicUrl(fileName);
+          thumbnailUrl = urlData.publicUrl;
+        }
+
+        const { error } = await supabase.from('saved_designs').insert({
+          user_id: user.id,
+          design_name: currentDesign.name,
+          cup_color: currentDesign.cupColor,
+          design_data: currentDesign as any,
+          thumbnail_url: thumbnailUrl,
+        });
+
+        if (error) throw error;
+        setIsDirty(false);
+        toast.success('Design sauvegardé !', { description: 'Retrouvez-le dans votre espace client.' });
+      } else {
+        // Sauvegarde locale pour les utilisateurs non connectés
+        const savedDesigns = JSON.parse(localStorage.getItem('ecocup_saved_designs') || '[]');
+        const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+        let thumbnailDataUrl: string | undefined;
+        if (canvasEl) {
+          const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
+          thumbnailDataUrl = canvas.toDataURL('image/png');
+        }
+        savedDesigns.push({
+          id: crypto.randomUUID(),
+          design_name: currentDesign.name,
+          cup_color: currentDesign.cupColor,
+          design_data: currentDesign,
+          thumbnail_url: thumbnailDataUrl,
+          created_at: new Date().toISOString(),
+        });
+        localStorage.setItem('ecocup_saved_designs', JSON.stringify(savedDesigns));
+        setIsDirty(false);
+        toast.success('Design sauvegardé localement !', { description: 'Connectez-vous pour le retrouver partout.' });
+      }
     } catch (err) {
       console.error(err);
       toast.error('Erreur lors de la sauvegarde');
