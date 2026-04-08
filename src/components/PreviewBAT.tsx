@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { Printer, Download } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getClipPath } from '@/lib/clipPaths';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
