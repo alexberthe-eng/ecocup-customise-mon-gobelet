@@ -279,6 +279,91 @@ const CollectionDrawerContent = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
+/* ─── Mask & Frame Drawer ─── */
+const DRAWER_MASKS = [
+  { id: 'rectangle', label: 'Rectangle', path: 'M 5 5 H 95 V 95 H 5 Z' },
+  { id: 'circle', label: 'Cercle', path: 'M 50 5 A 45 45 0 1 0 50 95 A 45 45 0 1 0 50 5' },
+  { id: 'polaroid', label: 'Polaroïd', path: 'M 10 5 H 90 V 80 H 10 Z M 10 80 H 90 V 95 H 10 Z' },
+  { id: 'star', label: 'Étoile', path: 'M 50 5 L 61 35 L 95 38 L 70 58 L 78 92 L 50 75 L 22 92 L 30 58 L 5 38 L 39 35 Z' },
+  { id: 'badge', label: 'Badge', path: 'M 50 5 L 63 20 L 82 10 L 78 32 L 95 42 L 80 55 L 88 75 L 68 72 L 55 92 L 45 72 L 25 80 L 30 60 L 10 48 L 28 38 L 20 18 L 40 25 Z' },
+  { id: 'drop', label: 'Goutte', path: 'M 50 5 C 50 5 85 55 85 70 A 35 35 0 1 1 15 70 C 15 55 50 5 50 5' },
+];
+
+const FRAMES = [
+  { id: 'frame-simple', label: 'Cadre simple', border: 4, radius: 0 },
+  { id: 'frame-rounded', label: 'Cadre arrondi', border: 4, radius: 12 },
+  { id: 'frame-thick', label: 'Cadre épais', border: 8, radius: 0 },
+  { id: 'frame-double', label: 'Double cadre', border: 3, radius: 0, double: true },
+];
+
+const MaskDrawerContent = ({ onClose }: { onClose: () => void }) => {
+  const { addElement, currentDesign, setSelectedElementId } = useStore();
+  const [tab, setTab] = useState<'masks' | 'frames'>('masks');
+
+  const handleMaskSelect = (mask: (typeof DRAWER_MASKS)[0]) => {
+    const count = currentDesign.elements.length;
+    const offset = count * 30;
+    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="${mask.path}" fill="#111111" stroke="none"/></svg>`;
+    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const newId = crypto.randomUUID();
+    addElement({ id: newId, type: 'svg', x: 100 + (offset % 300), y: 60 + (offset % 200), width: 100, height: 100, rotation: 0, opacity: 100, color: '#111111', zIndex: count, src: url });
+    setSelectedElementId(newId);
+    onClose();
+  };
+
+  const handleFrameSelect = (frame: (typeof FRAMES)[0]) => {
+    const count = currentDesign.elements.length;
+    const offset = count * 30;
+    const double = (frame as any).double;
+    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <rect x="${frame.border}" y="${frame.border}" width="${100 - frame.border * 2}" height="${100 - frame.border * 2}" rx="${frame.radius}" fill="none" stroke="#111111" stroke-width="${frame.border}"/>
+      ${double ? `<rect x="${frame.border * 3}" y="${frame.border * 3}" width="${100 - frame.border * 6}" height="${100 - frame.border * 6}" rx="${frame.radius}" fill="none" stroke="#111111" stroke-width="${frame.border - 1}"/>` : ''}
+    </svg>`;
+    const blob = new Blob([svgString], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const newId = crypto.randomUUID();
+    addElement({ id: newId, type: 'svg', x: 100 + (offset % 300), y: 60 + (offset % 200), width: 120, height: 120, rotation: 0, opacity: 100, color: '#111111', zIndex: count, src: url });
+    setSelectedElementId(newId);
+    onClose();
+  };
+
+  return (
+    <div className="p-4 pt-10">
+      <h3 className="text-sm font-semibold mb-3">Masques & cadres</h3>
+      <div className="flex gap-1.5 mb-4">
+        <button onClick={() => setTab('masks')} className={`text-[10px] px-3 py-1 rounded-full transition-colors ${tab === 'masks' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>Masques</button>
+        <button onClick={() => setTab('frames')} className={`text-[10px] px-3 py-1 rounded-full transition-colors ${tab === 'frames' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-secondary/80'}`}>Cadres</button>
+      </div>
+
+      {tab === 'masks' && (
+        <div className="grid grid-cols-3 gap-2">
+          {DRAWER_MASKS.map((m) => (
+            <button key={m.id} onClick={() => handleMaskSelect(m)} className="aspect-square border-thin rounded-lg flex flex-col items-center justify-center gap-1 hover:bg-secondary/50 transition-colors">
+              <svg viewBox="0 0 100 100" className="w-10 h-10 text-foreground"><path d={m.path} fill="currentColor" /></svg>
+              <span className="text-[8px] text-muted-foreground">{m.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {tab === 'frames' && (
+        <div className="grid grid-cols-2 gap-2">
+          {FRAMES.map((f) => (
+            <button key={f.id} onClick={() => handleFrameSelect(f)} className="aspect-square border-thin rounded-lg flex flex-col items-center justify-center gap-1 hover:bg-secondary/50 transition-colors">
+              <svg viewBox="0 0 100 100" className="w-10 h-10 text-foreground">
+                <rect x={f.border} y={f.border} width={100 - f.border * 2} height={100 - f.border * 2} rx={f.radius} fill="none" stroke="currentColor" strokeWidth={f.border} />
+                {(f as any).double && <rect x={f.border * 3} y={f.border * 3} width={100 - f.border * 6} height={100 - f.border * 6} rx={f.radius} fill="none" stroke="currentColor" strokeWidth={f.border - 1} />}
+              </svg>
+              <span className="text-[8px] text-muted-foreground">{f.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ─── Main Drawer component ─── */
 const CanvasDrawer = () => {
   const openDrawer = useStore((s) => s.openDrawer);
@@ -293,6 +378,7 @@ const CanvasDrawer = () => {
       {openDrawer === 'image' && <ImageDrawerContent onClose={close} />}
       {openDrawer === 'sticker' && <StickerDrawerContent onClose={close} />}
       {openDrawer === 'collection' && <CollectionDrawerContent onClose={close} />}
+      {openDrawer === 'mask' && <MaskDrawerContent onClose={close} />}
     </DrawerShell>
   );
 };
