@@ -219,12 +219,12 @@ const TopBar = () => {
           )}
           <button
             onClick={() => setShowCartPanel(true)}
-            className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+            className="relative flex items-center justify-center p-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+            title="Mon panier"
           >
             <ShoppingCart size={14} />
-            {!isMobile && <span>Mon panier</span>}
             {cart.length > 0 && (
-              <span className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+              <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-medium">
                 {cart.length}
               </span>
             )}
