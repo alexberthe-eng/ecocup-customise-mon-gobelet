@@ -1,9 +1,13 @@
-import { useEffect, useRef } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus, Headphones, Phone, MessageCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus, Headphones, Phone, MessageCircle, Save, Share2, User, Loader2, Copy, X } from 'lucide-react';
 import { useStore, ActiveTool } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { supabase } from '@/integrations/supabase/client';
+import AuthModal from '@/components/AuthModal';
+import html2canvas from 'html2canvas';
+import { toast } from 'sonner';
 
 const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?: boolean; tooltip: string }[] = [
   { id: 'color', icon: Palette, label: 'Gobelet', tooltip: 'Changer la couleur du gobelet' },
