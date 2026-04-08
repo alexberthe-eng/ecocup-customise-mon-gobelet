@@ -1,17 +1,18 @@
 import { useEffect, useRef } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, HelpCircle, Plus, Headphones, MessageCircle } from 'lucide-react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, HelpCircle, Plus, Headphones, MessageCircle, Sparkles } from 'lucide-react';
 import { useStore, ActiveTool } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
-const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?: boolean; tooltip: string }[] = [
+const tools: { id: ActiveTool | 'ai-wizard'; icon: React.ElementType; label: string; showPlus?: boolean; tooltip: string }[] = [
   { id: 'color', icon: Palette, label: 'Gobelet', tooltip: 'Changer la couleur du gobelet' },
   { id: 'image', icon: ImagePlus, label: 'Image', tooltip: 'Ajouter une image' },
   { id: 'text', icon: Type, label: 'Texte', showPlus: true, tooltip: 'Ajouter du texte' },
   { id: 'sticker', icon: Shapes, label: 'Sticker', showPlus: true, tooltip: 'Ajouter un sticker' },
   { id: 'collection', icon: BookOpen, label: 'Collection', showPlus: true, tooltip: 'Choisir une collection' },
   { id: 'mask', icon: Frame, label: 'Masque', showPlus: true, tooltip: 'Masques et cadres' },
+  { id: 'ai-wizard', icon: Sparkles, label: 'IA', tooltip: 'Générer une image par IA' },
 ];
 
 const ColorPopover = ({ position }: { position: 'side' | 'above' }) => {
@@ -103,12 +104,20 @@ const AssistancePopoverContent = () => (
 );
 
 /** Desktop: vertical sidebar. Mobile: horizontal bottom toolbar (tools + aide + assistance only) */
-const LeftSidebar = () => {
+const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
   const activeTool = useStore((s) => s.activeTool);
   const showColorPopover = useStore((s) => s.showColorPopover);
   const handleToolClick = useStore((s) => s.handleToolClick);
   const startTour = useStore((s) => s.startTour);
   const isMobile = useIsMobile();
+
+  const onToolClick = (id: string) => {
+    if (id === 'ai-wizard') {
+      onOpenAIWizard?.();
+    } else {
+      handleToolClick(id as ActiveTool);
+    }
+  };
 
   if (isMobile) {
     return (
@@ -120,7 +129,7 @@ const LeftSidebar = () => {
             <div key={tool.id} className="relative">
               <button
                 data-tour={tool.id === 'color' ? 'color' : tool.id === 'image' ? 'image' : undefined}
-                onClick={() => handleToolClick(tool.id)}
+                onClick={() => onToolClick(tool.id)}
                 className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] transition-colors ${
                   isActive ? 'bg-accent/20 text-accent' : 'text-muted-foreground'
                 }`}
@@ -172,7 +181,7 @@ const LeftSidebar = () => {
                 <TooltipTrigger asChild>
                   <button
                     data-tour={tool.id === 'color' ? 'color' : tool.id === 'image' ? 'image' : undefined}
-                    onClick={() => handleToolClick(tool.id)}
+                    onClick={() => onToolClick(tool.id)}
                     className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg text-[10px] transition-colors w-full ${
                       isActive
                         ? 'bg-accent/20 text-accent'

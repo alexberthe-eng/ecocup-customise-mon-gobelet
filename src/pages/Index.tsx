@@ -13,6 +13,7 @@ import CartPanel from '@/components/CartPanel';
 import OnboardingTour from '@/components/OnboardingTour';
 import ToggleSwitch from '@/components/ToggleSwitch';
 import WarningModal from '@/components/WarningModal';
+import AIWizardModal from '@/components/AIWizardModal';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
 const Index = () => {
@@ -20,6 +21,7 @@ const Index = () => {
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
   const [showWarning, setShowWarning] = useState(true);
+  const [showAIWizard, setShowAIWizard] = useState(false);
 
   const handleExportPNG = async () => {
     const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
@@ -46,7 +48,7 @@ const Index = () => {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop sidebar (hidden on mobile — toolbar is at bottom) */}
-        {!isMobile && <LeftSidebar />}
+        {!isMobile && <LeftSidebar onOpenAIWizard={() => setShowAIWizard(true)} />}
 
         {/* Center area */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
@@ -119,11 +121,12 @@ const Index = () => {
       <BottomBar />
 
       {/* Mobile bottom toolbar */}
-      {isMobile && <LeftSidebar />}
+      {isMobile && <LeftSidebar onOpenAIWizard={() => setShowAIWizard(true)} />}
 
       <WarningModal open={showWarning} onClose={handleWarningClose} />
       <OnboardingTour />
       <CartPanel />
+      <AIWizardModal open={showAIWizard} onClose={() => setShowAIWizard(false)} />
     </div>
   );
 };
