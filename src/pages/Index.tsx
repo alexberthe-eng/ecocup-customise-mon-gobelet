@@ -16,10 +16,24 @@ import WarningModal from '@/components/WarningModal';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
 const Index = () => {
-  const { activeTab, setActiveTab, tourCompleted, startTour, gridVisible, setGridVisible } = useStore();
+  const { activeTab, setActiveTab, tourCompleted, startTour, gridVisible, setGridVisible, currentDesign } = useStore();
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
   const [showWarning, setShowWarning] = useState(true);
+
+  const handleExportPNG = async () => {
+    const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+    if (!canvasEl) return;
+    const canvas = await html2canvas(canvasEl, {
+      backgroundColor: currentDesign.cupColor,
+      useCORS: true,
+      scale: 2,
+    });
+    const link = document.createElement('a');
+    link.download = `design_${currentDesign.name}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
 
   const handleWarningClose = () => {
     setShowWarning(false);
