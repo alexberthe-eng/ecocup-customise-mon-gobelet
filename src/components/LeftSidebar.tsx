@@ -9,7 +9,7 @@ const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?
   { id: 'color', icon: Palette, label: 'Gobelet', tooltip: 'Changer la couleur du gobelet' },
   { id: 'image', icon: ImagePlus, label: 'Image', tooltip: 'Ajouter une image' },
   { id: 'text', icon: Type, label: 'Texte', showPlus: true, tooltip: 'Ajouter du texte' },
-  { id: 'motif', icon: Shapes, label: 'Motif', showPlus: true, tooltip: 'Ajouter un motif' },
+  { id: 'sticker', icon: Shapes, label: 'Sticker', showPlus: true, tooltip: 'Ajouter un sticker' },
   { id: 'collection', icon: BookOpen, label: 'Collection', showPlus: true, tooltip: 'Choisir une collection' },
 ];
 

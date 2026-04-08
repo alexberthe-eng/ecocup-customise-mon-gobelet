@@ -270,10 +270,10 @@ const Editor2D = () => {
           onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }}
           onDrop={(e) => {
             e.preventDefault();
-            const motifData = e.dataTransfer.getData('application/x-motif');
-            if (!motifData) return;
+            const stickerData = e.dataTransfer.getData('application/x-sticker');
+            if (!stickerData) return;
             try {
-              const data = JSON.parse(motifData);
+              const data = JSON.parse(stickerData);
               const rect = canvasRef.current?.getBoundingClientRect();
               const scale = isMobile ? 600 / 340 : 1;
               const dropX = rect ? (e.clientX - rect.left) * scale - 40 : 100;
