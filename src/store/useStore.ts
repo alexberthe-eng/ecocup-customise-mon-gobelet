@@ -365,7 +365,19 @@ export const useStore = create<AppState>((set, get) => ({
     }));
   },
 
-  pushHistory: () => {
+  duplicateCartDesign: (id) => {
+    set((s) => {
+      const design = s.cart.find((d) => d.id === id);
+      if (!design) return s;
+      const clone = {
+        ...JSON.parse(JSON.stringify(design)),
+        id: crypto.randomUUID(),
+        name: `Copie de ${design.name}`,
+      };
+      return { cart: [...s.cart, clone] };
+    });
+  },
+
     set((s) => {
       const newHistory = s.history.slice(0, s.historyIndex + 1);
       newHistory.push(JSON.parse(JSON.stringify(s.currentDesign)));
