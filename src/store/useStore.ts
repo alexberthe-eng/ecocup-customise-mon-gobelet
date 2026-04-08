@@ -38,8 +38,8 @@ export interface Design {
 }
 
 export type ActiveTab = '2d' | '3d' | 'bat';
-export type ActiveTool = 'color' | 'image' | 'text' | 'sticker' | 'collection' | 'aide' | null;
-export type OpenDrawer = 'image' | 'sticker' | 'collection' | null;
+export type ActiveTool = 'color' | 'image' | 'text' | 'sticker' | 'collection' | 'mask' | 'aide' | null;
+export type OpenDrawer = 'image' | 'sticker' | 'collection' | 'mask' | null;
 
 /** Capacity options per product type */
 export const PRODUCT_CAPACITIES: Record<string, { label: string; capacities: string[] }> = {
@@ -250,6 +250,8 @@ export const useStore = create<AppState>((set, get) => ({
       set({ openDrawer: 'sticker', activeTool: 'sticker' });
     } else if (tool === 'collection') {
       set({ openDrawer: 'collection', activeTool: 'collection' });
+    } else if (tool === 'mask') {
+      set({ openDrawer: 'mask', activeTool: 'mask' });
     } else if (tool === 'aide') {
       get().startTour();
     }
