@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, HelpCircle, Plus, Headphones, MessageCircle } from 'lucide-react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, HelpCircle, Plus, Headphones, MessageCircle, Sparkles } from 'lucide-react';
 import { useStore, ActiveTool } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -12,6 +12,7 @@ const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?
   { id: 'sticker', icon: Shapes, label: 'Sticker', showPlus: true, tooltip: 'Ajouter un sticker' },
   { id: 'collection', icon: BookOpen, label: 'Collection', showPlus: true, tooltip: 'Choisir une collection' },
   { id: 'mask', icon: Frame, label: 'Masque', showPlus: true, tooltip: 'Masques et cadres' },
+  { id: 'ai-wizard', icon: Sparkles, label: 'IA', tooltip: 'Générer une image par IA' },
 ];
 
 const ColorPopover = ({ position }: { position: 'side' | 'above' }) => {
