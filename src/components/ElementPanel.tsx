@@ -10,6 +10,7 @@ export const ElementPanelFields = ({
   removeElement,
   onDuplicate,
   onValidate,
+  onEditWithAI,
 }: {
   element: DesignElement;
   update: (u: Partial<DesignElement>) => void;
@@ -18,6 +19,7 @@ export const ElementPanelFields = ({
   removeElement: (id: string) => void;
   onDuplicate: () => void;
   onValidate: () => void;
+  onEditWithAI?: () => void;
 }) => (
   <>
     {element.type === 'text' && (
@@ -78,13 +80,18 @@ export const ElementPanelFields = ({
       <button onClick={() => moveElementLayer(element.id, 'down')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↓ Arrière</button>
       <button onClick={() => moveElementLayer(element.id, 'bottom')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↓↓ Fond</button>
     </div>
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 flex-wrap">
       <button onClick={onDuplicate} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground hover:underline">
         <Copy size={10} /> Dupliquer
       </button>
       <button onClick={() => removeElement(element.id)} className="flex items-center gap-1 text-[10px] text-destructive hover:underline">
         <Trash2 size={10} /> Supprimer
       </button>
+      {(element.type === 'image' || element.type === 'svg') && onEditWithAI && (
+        <button onClick={onEditWithAI} className="flex items-center gap-1 text-[10px] text-accent hover:underline">
+          <Sparkles size={10} /> Modifier IA
+        </button>
+      )}
     </div>
     <button
       onClick={onValidate}
