@@ -72,7 +72,7 @@ const TopBar = () => {
 
         const { error } = await supabase.from('saved_designs').insert({
           user_id: user.id,
-          design_name: currentDesign.name,
+          design_name: saveName,
           cup_color: currentDesign.cupColor,
           design_data: currentDesign as any,
           thumbnail_url: thumbnailUrl,
