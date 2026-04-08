@@ -97,6 +97,7 @@ interface AppState {
   setProductType: (t: string) => void;
   setCapacity: (c: string) => void;
   setGlobalComment: (c: string) => void;
+  setIsDirty: (v: boolean) => void;
 
   addElement: (el: DesignElement) => void;
   updateElement: (id: string, updates: Partial<DesignElement>, saveHistory?: boolean) => void;
