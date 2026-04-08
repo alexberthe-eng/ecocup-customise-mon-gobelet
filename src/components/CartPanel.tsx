@@ -239,6 +239,19 @@ const CartPanel = () => {
           </div>
         </div>
       )}
+
+      {/* Order confirmation with 3D preview */}
+      {showOrderConfirm && (
+        <OrderConfirmModal
+          cart={cart}
+          cartTotal={cartTotal}
+          onConfirm={() => {
+            setShowOrderConfirm(false);
+            handleOrder();
+          }}
+          onCancel={() => setShowOrderConfirm(false)}
+        />
+      )}
     </>
   );
 };
