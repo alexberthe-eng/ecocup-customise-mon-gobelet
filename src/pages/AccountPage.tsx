@@ -5,6 +5,11 @@ import { useStore } from '@/store/useStore';
 import { User, Package, Image, Share2, Settings, LogOut, ShoppingCart, Plus, Trash2, ExternalLink, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 type Tab = 'orders' | 'designs' | 'shares' | 'profile';
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -229,12 +234,27 @@ const AccountPage = () => {
                             <Pencil size={10} />
                             Modifier
                           </button>
-                          <button
-                            onClick={() => handleDeleteDesign(d.id)}
-                            className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md"
-                          >
-                            <Trash2 size={12} />
-                          </button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md">
+                                <Trash2 size={12} />
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Supprimer ce design ?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Cette action est irréversible. Le design « {d.design_name} » sera définitivement supprimé.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteDesign(d.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                  Supprimer
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     </div>
