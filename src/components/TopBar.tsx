@@ -92,7 +92,7 @@ const TopBar = () => {
         }
         savedDesigns.push({
           id: crypto.randomUUID(),
-          design_name: currentDesign.name,
+          design_name: saveName,
           cup_color: currentDesign.cupColor,
           design_data: currentDesign,
           thumbnail_url: thumbnailDataUrl,
