@@ -178,10 +178,11 @@ const TopBar = () => {
             <>
               <button
                 onClick={handleSaveClick}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+                className="relative flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
               >
                 <Save size={14} />
                 <span className="hidden md:inline">Sauvegarder</span>
+                {isDirty && <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-orange-500 -translate-y-0.5 translate-x-0.5" />}
               </button>
               <button
                 onClick={handleShare}
