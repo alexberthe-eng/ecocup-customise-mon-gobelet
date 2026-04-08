@@ -198,7 +198,7 @@ const CartPanel = () => {
               <span>{cartTotal.toFixed(2)} €</span>
             </div>
             <button
-              onClick={handleOrder}
+              onClick={() => setShowOrderConfirm(true)}
               className="w-full bg-primary text-primary-foreground text-xs py-3 rounded-md hover:opacity-90 transition-opacity font-medium mb-2"
             >
               Passer commande
