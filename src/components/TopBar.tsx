@@ -176,33 +176,32 @@ const TopBar = () => {
         <div className="flex items-center gap-1.5 md:gap-2">
           <button
             onClick={handleSaveClick}
-            className="relative flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+            className="relative flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+            title="Sauvegarder"
           >
             <Save size={14} />
-            <span className="hidden md:inline">Sauvegarder</span>
             {isDirty && <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-orange-500 -translate-y-0.5 translate-x-0.5" />}
           </button>
           <button
             onClick={handleShare}
             disabled={sharing}
-            className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors disabled:opacity-50"
+            className="flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors disabled:opacity-50"
+            title="Partager"
           >
             {sharing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
-            <span className="hidden md:inline">{sharing ? 'Partage...' : 'Partager'}</span>
           </button>
           {!isMobile && user && (
             <>
               <a
                 href="/account"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
-                title="Mon espace client"
+                className="flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+                title="Mon compte"
               >
                 <User size={14} />
-                <span className="hidden md:inline">Mon compte</span>
               </a>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+                className="flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
                 title="Déconnexion"
               >
                 <LogOut size={14} />
@@ -212,10 +211,10 @@ const TopBar = () => {
           {!isMobile && !user && (
             <a
               href="/auth"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+              className="flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+              title="Connexion"
             >
               <User size={14} />
-              <span className="hidden md:inline">Connexion</span>
             </a>
           )}
           <button
