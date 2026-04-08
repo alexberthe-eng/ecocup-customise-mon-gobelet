@@ -196,7 +196,13 @@ const PreviewBAT = () => {
               </div>
             )}
             {(el.type === 'image' || el.type === 'svg') && el.src && (
-              <img src={el.src} alt="" className="w-full h-full object-contain" draggable={false} />
+              <img
+                src={el.src}
+                alt=""
+                className="w-full h-full object-contain"
+                draggable={false}
+                style={el.maskType ? { clipPath: getClipPath(el.maskType) } : undefined}
+              />
             )}
           </div>
         ))}
