@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
+import { Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import TopBar from '@/components/TopBar';
 import LeftSidebar from '@/components/LeftSidebar';
 import BottomBar from '@/components/BottomBar';
@@ -14,10 +16,24 @@ import WarningModal from '@/components/WarningModal';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
 const Index = () => {
-  const { activeTab, setActiveTab, tourCompleted, startTour, gridVisible, setGridVisible } = useStore();
+  const { activeTab, setActiveTab, tourCompleted, startTour, gridVisible, setGridVisible, currentDesign } = useStore();
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
   const [showWarning, setShowWarning] = useState(true);
+
+  const handleExportPNG = async () => {
+    const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+    if (!canvasEl) return;
+    const canvas = await html2canvas(canvasEl, {
+      backgroundColor: currentDesign.cupColor,
+      useCORS: true,
+      scale: 2,
+    });
+    const link = document.createElement('a');
+    link.download = `design_${currentDesign.name}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
 
   const handleWarningClose = () => {
     setShowWarning(false);
@@ -74,7 +90,14 @@ const Index = () => {
             </button>
 
             {activeTab === '2d' && (
-              <div className="ml-auto shrink-0">
+              <div className="ml-auto shrink-0 flex items-center gap-2">
+                <button
+                  onClick={handleExportPNG}
+                  className="flex items-center gap-1 px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+                >
+                  <Download size={12} />
+                  PNG
+                </button>
                 <ToggleSwitch label="Grille" checked={gridVisible} onChange={setGridVisible} />
               </div>
             )}

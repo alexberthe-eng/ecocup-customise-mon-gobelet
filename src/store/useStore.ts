@@ -60,6 +60,7 @@ interface AppState {
   currentDesign: Design;
   cart: Design[];
   globalComment: string;
+  isDirty: boolean;
 
   activeTab: ActiveTab;
   activeTool: ActiveTool;
@@ -96,6 +97,7 @@ interface AppState {
   setProductType: (t: string) => void;
   setCapacity: (c: string) => void;
   setGlobalComment: (c: string) => void;
+  setIsDirty: (v: boolean) => void;
 
   addElement: (el: DesignElement) => void;
   updateElement: (id: string, updates: Partial<DesignElement>, saveHistory?: boolean) => void;
@@ -105,6 +107,7 @@ interface AppState {
   addToCart: (thumbnail?: string) => void;
   removeFromCart: (id: string) => void;
   editCartDesign: (id: string) => void;
+  duplicateCartDesign: (id: string) => void;
   updateCartDesignName: (id: string, name: string) => void;
   updateCartDesignQuantity: (id: string, quantity: number) => void;
 
@@ -151,6 +154,7 @@ export const getUnitPrice = (quantity: number): number => {
 export const useStore = create<AppState>((set, get) => ({
   currentDesign: { ...defaultDesign },
   cart: [],
+  isDirty: false,
   globalComment: '',
   activeTab: '2d',
   activeTool: null,
@@ -187,6 +191,7 @@ export const useStore = create<AppState>((set, get) => ({
   setShowGraduation: (v) => set({ showGraduation: v }),
   setShowGraduationMask: (v) => set({ showGraduationMask: v }),
   setGlobalComment: (c) => set({ globalComment: c }),
+  setIsDirty: (v) => set({ isDirty: v }),
 
   setProductType: (t) => {
     const caps = PRODUCT_CAPACITIES[t]?.capacities ?? ['33cl'];
@@ -360,11 +365,24 @@ export const useStore = create<AppState>((set, get) => ({
     }));
   },
 
+  duplicateCartDesign: (id) => {
+    set((s) => {
+      const design = s.cart.find((d) => d.id === id);
+      if (!design) return s;
+      const clone = {
+        ...JSON.parse(JSON.stringify(design)),
+        id: crypto.randomUUID(),
+        name: `Copie de ${design.name}`,
+      };
+      return { cart: [...s.cart, clone] };
+    });
+  },
+
   pushHistory: () => {
     set((s) => {
       const newHistory = s.history.slice(0, s.historyIndex + 1);
       newHistory.push(JSON.parse(JSON.stringify(s.currentDesign)));
-      return { history: newHistory, historyIndex: newHistory.length - 1 };
+      return { history: newHistory, historyIndex: newHistory.length - 1, isDirty: true };
     });
   },
 

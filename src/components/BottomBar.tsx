@@ -67,18 +67,18 @@ const BottomBar = () => {
                 <span>🕐</span>
                 <span>Lun – Ven : 9h00 – 18h00</span>
               </div>
-              <a
-                href="tel:+33123456789"
-                className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary transition-colors group"
+              <button
+                onClick={() => window.open('mailto:contact@ecocup.com?subject=Demande%20d%27assistance', '_blank')}
+                className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary transition-colors w-full text-left"
               >
                 <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
                   <Phone size={16} className="text-foreground" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Appelez-nous</p>
-                  <p className="text-xs text-muted-foreground">01 23 45 67 89</p>
+                  <p className="text-sm font-medium text-foreground">Contactez-nous</p>
+                  <p className="text-xs text-muted-foreground">Par email</p>
                 </div>
-              </a>
+              </button>
               <button
                 onClick={() => window.open('mailto:contact@ecocup.com?subject=Demande%20d%27assistance', '_blank')}
                 className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary transition-colors w-full text-left"

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ShoppingCart, Save, Share2, Menu, Check, X, LogOut, Loader2, Copy, User } from 'lucide-react';
+import { ShoppingCart, Save, Share2, Menu, Check, X, LogOut, Loader2, Copy, User, Download } from 'lucide-react';
 import { useStore, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +13,8 @@ const TopBar = () => {
   const cupColor = useStore((s) => s.currentDesign.cupColor);
   const productType = useStore((s) => s.currentDesign.productType);
   const capacity = useStore((s) => s.currentDesign.capacity);
+  const isDirty = useStore((s) => s.isDirty);
+  const setIsDirty = useStore((s) => s.setIsDirty);
   const setDesignName = useStore((s) => s.setDesignName);
   const showRightPanel = useStore((s) => s.showRightPanel);
   const setShowRightPanel = useStore((s) => s.setShowRightPanel);
@@ -73,6 +75,7 @@ const TopBar = () => {
       });
 
       if (error) throw error;
+      setIsDirty(false);
       toast.success('Design sauvegardé !', { description: 'Retrouvez-le dans votre espace client.' });
     } catch (err) {
       console.error(err);
@@ -175,10 +178,11 @@ const TopBar = () => {
             <>
               <button
                 onClick={handleSaveClick}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+                className="relative flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
               >
                 <Save size={14} />
                 <span className="hidden md:inline">Sauvegarder</span>
+                {isDirty && <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-orange-500 -translate-y-0.5 translate-x-0.5" />}
               </button>
               <button
                 onClick={handleShare}
