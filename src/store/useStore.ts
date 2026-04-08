@@ -382,7 +382,7 @@ export const useStore = create<AppState>((set, get) => ({
     set((s) => {
       const newHistory = s.history.slice(0, s.historyIndex + 1);
       newHistory.push(JSON.parse(JSON.stringify(s.currentDesign)));
-      return { history: newHistory, historyIndex: newHistory.length - 1 };
+      return { history: newHistory, historyIndex: newHistory.length - 1, isDirty: true };
     });
   },
 
