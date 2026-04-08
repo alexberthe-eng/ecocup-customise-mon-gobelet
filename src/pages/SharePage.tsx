@@ -27,6 +27,28 @@ const SharePage = () => {
     fetchDesign();
   }, [id]);
 
+  // Set og:image meta tag dynamically
+  useEffect(() => {
+    if (!design?.image_url) return;
+    let meta = document.querySelector('meta[property="og:image"]') as HTMLMetaElement;
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('property', 'og:image');
+      document.head.appendChild(meta);
+    }
+    meta.content = design.image_url;
+
+    let metaTitle = document.querySelector('meta[property="og:title"]') as HTMLMetaElement;
+    if (!metaTitle) {
+      metaTitle = document.createElement('meta');
+      metaTitle.setAttribute('property', 'og:title');
+      document.head.appendChild(metaTitle);
+    }
+    metaTitle.content = `${design.design_name} — ECOCUP®`;
+
+    document.title = `${design.design_name} — ECOCUP®`;
+  }, [design]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -53,7 +75,7 @@ const SharePage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center bg-background text-foreground">
       <header className="w-full h-12 flex items-center px-4 border-b border-border shrink-0">
-        <span className="font-bold text-sm tracking-wide">ECOCUP®</span>
+        <a href="/" className="font-bold text-sm tracking-wide">ECOCUP®</a>
         <span className="mx-2 text-muted-foreground">·</span>
         <span className="text-sm text-muted-foreground">Aperçu partagé</span>
       </header>
@@ -61,16 +83,15 @@ const SharePage = () => {
       <main className="flex-1 flex flex-col items-center justify-center p-6 gap-6 max-w-2xl w-full">
         <h1 className="text-lg font-semibold text-center">{design.design_name}</h1>
 
-        <div
-          className="rounded-xl border border-border overflow-hidden shadow-lg bg-card"
-          style={{ maxWidth: 500, width: '100%' }}
-        >
-          <img
-            src={design.image_url}
-            alt={design.design_name}
-            className="w-full h-auto"
-          />
-        </div>
+        {design.image_url && (
+          <div className="w-full" style={{ maxWidth: 600 }}>
+            <img
+              src={design.image_url}
+              alt={design.design_name}
+              className="w-full h-auto rounded-xl border border-border shadow-md"
+            />
+          </div>
+        )}
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <div
@@ -87,9 +108,9 @@ const SharePage = () => {
 
         <a
           href="/"
-          className="px-5 py-2.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:opacity-90 transition-opacity"
+          className="px-6 py-3 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
         >
-          Créer mon propre design
+          Créez votre propre design →
         </a>
       </main>
     </div>
