@@ -80,11 +80,77 @@ const LeftSidebar = () => {
   const showColorPopover = useStore((s) => s.showColorPopover);
   const handleToolClick = useStore((s) => s.handleToolClick);
   const startTour = useStore((s) => s.startTour);
+  const designName = useStore((s) => s.currentDesign.name);
+  const cupColor = useStore((s) => s.currentDesign.cupColor);
   const isMobile = useIsMobile();
+
+  const [user, setUser] = useState<any>(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSaveClick = async () => {
+    if (!user) { setShowAuth(true); return; }
+    try {
+      let thumbnailUrl: string | undefined;
+      const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+      if (canvasEl) {
+        const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
+        const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
+        const fileName = `${user.id}/${crypto.randomUUID()}.png`;
+        await supabase.storage.from('design-thumbnails').upload(fileName, blob, { contentType: 'image/png' });
+        const { data: urlData } = supabase.storage.from('design-thumbnails').getPublicUrl(fileName);
+        thumbnailUrl = urlData.publicUrl;
+      }
+      const currentDesign = useStore.getState().currentDesign;
+      const { error } = await supabase.from('saved_designs').insert({
+        user_id: user.id, design_name: currentDesign.name, cup_color: currentDesign.cupColor,
+        design_data: currentDesign as any, thumbnail_url: thumbnailUrl,
+      });
+      if (error) throw error;
+      toast.success('Design sauvegardé !', { description: 'Retrouvez-le dans votre espace client.' });
+    } catch (err) { console.error(err); toast.error('Erreur lors de la sauvegarde'); }
+  };
+
+  const handleShare = async () => {
+    setSharing(true); setShareUrl(null);
+    try {
+      const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+      if (!canvasEl) { toast.error('Impossible de capturer le design'); setSharing(false); return; }
+      const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 2 });
+      const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
+      const fileName = `${crypto.randomUUID()}.png`;
+      const { error: uploadError } = await supabase.storage.from('shared-designs').upload(fileName, blob, { contentType: 'image/png' });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from('shared-designs').getPublicUrl(fileName);
+      const insertData: any = { design_name: designName, cup_color: cupColor, image_url: urlData.publicUrl };
+      if (user) insertData.user_id = user.id;
+      const { data, error } = await supabase.from('shared_designs').insert(insertData).select('id').single();
+      if (error) throw error;
+      const url = `${window.location.origin}/share/${data.id}`;
+      setShareUrl(url);
+      toast.success('Lien de partage créé !', { description: 'Valide pendant 7 jours.' });
+    } catch (err) { console.error(err); toast.error('Erreur lors du partage'); }
+    setSharing(false);
+  };
 
   if (isMobile) {
     return (
+      <>
       <nav className="h-14 flex items-center justify-around border-t border-thin bg-background shrink-0 relative">
+        {tools.map((tool) => {
+          const Icon = tool.icon;
+          const isActive = activeTool === tool.id;
         {tools.map((tool) => {
           const Icon = tool.icon;
           const isActive = activeTool === tool.id;
