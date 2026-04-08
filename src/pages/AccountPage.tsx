@@ -216,12 +216,18 @@ const AccountPage = () => {
                         <div className="flex gap-1.5 mt-2">
                           <button
                             onClick={() => {
-                              toast.info('Fonctionnalité bientôt disponible', { description: 'Le chargement de designs sauvegardés arrive bientôt.' });
+                              const designData = d.design_data as any;
+                              if (designData && designData.elements) {
+                                useStore.getState().loadSavedDesign(designData);
+                                navigate('/');
+                              } else {
+                                toast.error('Données du design invalides');
+                              }
                             }}
                             className="flex-1 text-[10px] py-1.5 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity flex items-center justify-center gap-1"
                           >
-                            <ShoppingCart size={10} />
-                            Ajouter au panier
+                            <Pencil size={10} />
+                            Modifier
                           </button>
                           <button
                             onClick={() => handleDeleteDesign(d.id)}
