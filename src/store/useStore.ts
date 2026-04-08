@@ -60,6 +60,7 @@ interface AppState {
   currentDesign: Design;
   cart: Design[];
   globalComment: string;
+  isDirty: boolean;
 
   activeTab: ActiveTab;
   activeTool: ActiveTool;
