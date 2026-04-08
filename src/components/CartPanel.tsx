@@ -3,6 +3,7 @@ import { useStore, getUnitPrice } from '@/store/useStore';
 import { X, Pencil, Trash2, FileText, Copy } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
+import OrderConfirmModal from '@/components/OrderConfirmModal';
 
 const QUANTITIES = [125, 250, 500, 1000, 2500, 5000, 10000];
 
