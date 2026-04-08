@@ -5,6 +5,11 @@ import { useStore } from '@/store/useStore';
 import { User, Package, Image, Share2, Settings, LogOut, ShoppingCart, Plus, Trash2, ExternalLink, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 type Tab = 'orders' | 'designs' | 'shares' | 'profile';
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
