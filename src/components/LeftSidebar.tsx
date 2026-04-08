@@ -1,9 +1,13 @@
-import { useEffect, useRef } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus, Headphones, Phone, MessageCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, HelpCircle, Plus, Headphones, Phone, MessageCircle, Save, Share2, User, Loader2, Copy, X } from 'lucide-react';
 import { useStore, ActiveTool } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { supabase } from '@/integrations/supabase/client';
+import AuthModal from '@/components/AuthModal';
+import html2canvas from 'html2canvas';
+import { toast } from 'sonner';
 
 const tools: { id: ActiveTool; icon: React.ElementType; label: string; showPlus?: boolean; tooltip: string }[] = [
   { id: 'color', icon: Palette, label: 'Gobelet', tooltip: 'Changer la couleur du gobelet' },
@@ -76,10 +80,73 @@ const LeftSidebar = () => {
   const showColorPopover = useStore((s) => s.showColorPopover);
   const handleToolClick = useStore((s) => s.handleToolClick);
   const startTour = useStore((s) => s.startTour);
+  const designName = useStore((s) => s.currentDesign.name);
+  const cupColor = useStore((s) => s.currentDesign.cupColor);
   const isMobile = useIsMobile();
+
+  const [user, setUser] = useState<any>(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSaveClick = async () => {
+    if (!user) { setShowAuth(true); return; }
+    try {
+      let thumbnailUrl: string | undefined;
+      const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+      if (canvasEl) {
+        const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
+        const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
+        const fileName = `${user.id}/${crypto.randomUUID()}.png`;
+        await supabase.storage.from('design-thumbnails').upload(fileName, blob, { contentType: 'image/png' });
+        const { data: urlData } = supabase.storage.from('design-thumbnails').getPublicUrl(fileName);
+        thumbnailUrl = urlData.publicUrl;
+      }
+      const currentDesign = useStore.getState().currentDesign;
+      const { error } = await supabase.from('saved_designs').insert({
+        user_id: user.id, design_name: currentDesign.name, cup_color: currentDesign.cupColor,
+        design_data: currentDesign as any, thumbnail_url: thumbnailUrl,
+      });
+      if (error) throw error;
+      toast.success('Design sauvegardé !', { description: 'Retrouvez-le dans votre espace client.' });
+    } catch (err) { console.error(err); toast.error('Erreur lors de la sauvegarde'); }
+  };
+
+  const handleShare = async () => {
+    setSharing(true); setShareUrl(null);
+    try {
+      const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
+      if (!canvasEl) { toast.error('Impossible de capturer le design'); setSharing(false); return; }
+      const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 2 });
+      const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
+      const fileName = `${crypto.randomUUID()}.png`;
+      const { error: uploadError } = await supabase.storage.from('shared-designs').upload(fileName, blob, { contentType: 'image/png' });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from('shared-designs').getPublicUrl(fileName);
+      const insertData: any = { design_name: designName, cup_color: cupColor, image_url: urlData.publicUrl };
+      if (user) insertData.user_id = user.id;
+      const { data, error } = await supabase.from('shared_designs').insert(insertData).select('id').single();
+      if (error) throw error;
+      const url = `${window.location.origin}/share/${data.id}`;
+      setShareUrl(url);
+      toast.success('Lien de partage créé !', { description: 'Valide pendant 7 jours.' });
+    } catch (err) { console.error(err); toast.error('Erreur lors du partage'); }
+    setSharing(false);
+  };
 
   if (isMobile) {
     return (
+      <>
       <nav className="h-14 flex items-center justify-around border-t border-thin bg-background shrink-0 relative">
         {tools.map((tool) => {
           const Icon = tool.icon;
@@ -90,9 +157,7 @@ const LeftSidebar = () => {
                 data-tour={tool.id === 'color' ? 'color' : tool.id === 'image' ? 'image' : undefined}
                 onClick={() => handleToolClick(tool.id)}
                 className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] transition-colors ${
-                  isActive
-                    ? 'bg-accent/20 text-accent'
-                    : 'text-muted-foreground'
+                  isActive ? 'bg-accent/20 text-accent' : 'text-muted-foreground'
                 }`}
               >
                 <div className="relative">
@@ -106,18 +171,32 @@ const LeftSidebar = () => {
           );
         })}
         <button
-          data-tour="aide"
-          onClick={startTour}
+          onClick={handleSaveClick}
           className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] text-muted-foreground"
         >
-          <HelpCircle size={18} />
-          <span>Aide</span>
+          <Save size={18} />
+          <span>Sauver</span>
         </button>
+        <button
+          onClick={handleShare}
+          disabled={sharing}
+          className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] text-muted-foreground disabled:opacity-50"
+        >
+          {sharing ? <Loader2 size={18} className="animate-spin" /> : <Share2 size={18} />}
+          <span>Partager</span>
+        </button>
+        <a
+          href={user ? '/account' : '/auth'}
+          className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] text-muted-foreground"
+        >
+          <User size={18} />
+          <span>{user ? 'Compte' : 'Connexion'}</span>
+        </a>
         <Popover>
           <PopoverTrigger asChild>
             <button className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] text-muted-foreground">
               <Headphones size={18} />
-              <span>Assistance</span>
+              <span>Aide</span>
             </button>
           </PopoverTrigger>
           <PopoverContent side="top" align="center" className="w-72 p-0">
@@ -158,6 +237,28 @@ const LeftSidebar = () => {
           </PopoverContent>
         </Popover>
       </nav>
+
+      {/* Share URL modal */}
+      {shareUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShareUrl(null)}>
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm">Lien de partage</h3>
+              <button onClick={() => setShareUrl(null)} className="p-1 rounded hover:bg-secondary"><X size={14} /></button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">Partagez ce lien. Valide 7 jours.</p>
+            <div className="flex items-center gap-2">
+              <input readOnly value={shareUrl} className="flex-1 text-xs border-thin rounded-md px-3 py-2 bg-background truncate" onFocus={(e) => e.target.select()} />
+              <button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success('Lien copié !'); }} className="flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 shrink-0">
+                <Copy size={12} /> Copier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AuthModal open={showAuth} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />
+      </>
     );
   }
 
