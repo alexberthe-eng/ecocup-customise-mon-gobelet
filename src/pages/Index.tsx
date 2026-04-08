@@ -22,6 +22,7 @@ const Index = () => {
   const isDesktop = useIsDesktop();
   const [showWarning, setShowWarning] = useState(true);
   const [showAIWizard, setShowAIWizard] = useState(false);
+  const [aiEditElementId, setAiEditElementId] = useState<string | null>(null);
 
   const handleExportPNG = async () => {
     const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
@@ -107,7 +108,7 @@ const Index = () => {
 
           {/* Canvas area */}
           <div className="flex-1 flex overflow-hidden">
-            {activeTab === '2d' && <Editor2D />}
+            {activeTab === '2d' && <Editor2D onEditWithAI={(id) => { setAiEditElementId(id); setShowAIWizard(true); }} />}
             {activeTab === '3d' && <Preview3D />}
             {activeTab === 'bat' && <PreviewBAT />}
           </div>
@@ -126,7 +127,7 @@ const Index = () => {
       <WarningModal open={showWarning} onClose={handleWarningClose} />
       <OnboardingTour />
       <CartPanel />
-      <AIWizardModal open={showAIWizard} onClose={() => setShowAIWizard(false)} />
+      <AIWizardModal open={showAIWizard} onClose={() => { setShowAIWizard(false); setAiEditElementId(null); }} editElementId={aiEditElementId} />
     </div>
   );
 };

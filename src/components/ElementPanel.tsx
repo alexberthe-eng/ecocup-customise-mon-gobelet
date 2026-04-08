@@ -1,5 +1,5 @@
 import { useStore, DesignElement } from '@/store/useStore';
-import { Trash2, Copy, X, Check } from 'lucide-react';
+import { Trash2, Copy, X, Check, Sparkles } from 'lucide-react';
 
 /** Shared fields for contextual panel (used in 2D editor, 3D preview, etc.) */
 export const ElementPanelFields = ({
@@ -10,6 +10,7 @@ export const ElementPanelFields = ({
   removeElement,
   onDuplicate,
   onValidate,
+  onEditWithAI,
 }: {
   element: DesignElement;
   update: (u: Partial<DesignElement>) => void;
@@ -18,6 +19,7 @@ export const ElementPanelFields = ({
   removeElement: (id: string) => void;
   onDuplicate: () => void;
   onValidate: () => void;
+  onEditWithAI?: () => void;
 }) => (
   <>
     {element.type === 'text' && (
@@ -78,13 +80,18 @@ export const ElementPanelFields = ({
       <button onClick={() => moveElementLayer(element.id, 'down')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↓ Arrière</button>
       <button onClick={() => moveElementLayer(element.id, 'bottom')} className="border-thin rounded py-1.5 hover:bg-secondary transition-colors text-center">↓↓ Fond</button>
     </div>
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 flex-wrap">
       <button onClick={onDuplicate} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground hover:underline">
         <Copy size={10} /> Dupliquer
       </button>
       <button onClick={() => removeElement(element.id)} className="flex items-center gap-1 text-[10px] text-destructive hover:underline">
         <Trash2 size={10} /> Supprimer
       </button>
+      {(element.type === 'image' || element.type === 'svg') && onEditWithAI && (
+        <button onClick={onEditWithAI} className="flex items-center gap-1 text-[10px] text-accent hover:underline">
+          <Sparkles size={10} /> Modifier IA
+        </button>
+      )}
     </div>
     <button
       onClick={onValidate}
@@ -101,10 +108,12 @@ export const ElementPanel = ({
   element,
   isMobile,
   anchor,
+  onEditWithAI,
 }: {
   element: DesignElement;
   isMobile: boolean;
   anchor?: { left: number; top: number };
+  onEditWithAI?: (elementId: string) => void;
 }) => {
   const { updateElement, removeElement, moveElementLayer, pushHistory, addElement, setSelectedElementId } = useStore();
 
@@ -139,7 +148,7 @@ export const ElementPanel = ({
           <X size={12} className="text-muted-foreground" />
         </button>
         <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate pr-5">{elementName}</p>
-        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} onValidate={() => setSelectedElementId(null)} />
+        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} onValidate={() => setSelectedElementId(null)} onEditWithAI={onEditWithAI ? () => onEditWithAI(element.id) : undefined} />
       </div>
     );
   }
@@ -157,7 +166,7 @@ export const ElementPanel = ({
           <X size={12} className="text-muted-foreground" />
         </button>
         <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate pr-5">{elementName}</p>
-        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} onValidate={() => setSelectedElementId(null)} />
+        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} onValidate={() => setSelectedElementId(null)} onEditWithAI={onEditWithAI ? () => onEditWithAI(element.id) : undefined} />
       </div>
     </div>
   );
