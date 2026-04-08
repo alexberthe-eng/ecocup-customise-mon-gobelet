@@ -90,7 +90,14 @@ const Index = () => {
             </button>
 
             {activeTab === '2d' && (
-              <div className="ml-auto shrink-0">
+              <div className="ml-auto shrink-0 flex items-center gap-2">
+                <button
+                  onClick={handleExportPNG}
+                  className="flex items-center gap-1 px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
+                >
+                  <Download size={12} />
+                  PNG
+                </button>
                 <ToggleSwitch label="Grille" checked={gridVisible} onChange={setGridVisible} />
               </div>
             )}
