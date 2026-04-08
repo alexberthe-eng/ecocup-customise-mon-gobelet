@@ -122,6 +122,9 @@ interface AppState {
 
   /** Handles sidebar tool click with new behavior rules */
   handleToolClick: (tool: ActiveTool) => void;
+
+  /** Load a saved design into the editor */
+  loadSavedDesign: (designData: Design) => void;
 }
 
 const defaultDesign: Design = {
@@ -423,5 +426,13 @@ export const useStore = create<AppState>((set, get) => ({
   endTour: () => {
     localStorage.setItem('tourCompleted', 'true');
     set({ showTour: false, tourCompleted: true });
+  },
+
+  loadSavedDesign: (designData) => {
+    set({
+      currentDesign: JSON.parse(JSON.stringify(designData)),
+      activeTab: '2d' as ActiveTab,
+      isDirty: false,
+    });
   },
 }));
