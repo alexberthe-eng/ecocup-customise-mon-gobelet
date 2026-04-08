@@ -104,12 +104,20 @@ const AssistancePopoverContent = () => (
 );
 
 /** Desktop: vertical sidebar. Mobile: horizontal bottom toolbar (tools + aide + assistance only) */
-const LeftSidebar = () => {
+const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
   const activeTool = useStore((s) => s.activeTool);
   const showColorPopover = useStore((s) => s.showColorPopover);
   const handleToolClick = useStore((s) => s.handleToolClick);
   const startTour = useStore((s) => s.startTour);
   const isMobile = useIsMobile();
+
+  const onToolClick = (id: string) => {
+    if (id === 'ai-wizard') {
+      onOpenAIWizard?.();
+    } else {
+      handleToolClick(id as ActiveTool);
+    }
+  };
 
   if (isMobile) {
     return (
