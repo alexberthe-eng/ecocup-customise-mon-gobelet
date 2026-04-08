@@ -174,57 +174,53 @@ const TopBar = () => {
           )}
         </div>
         <div className="flex items-center gap-1.5 md:gap-2">
-          {!isMobile && (
+          <button
+            onClick={handleSaveClick}
+            className="relative flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+          >
+            <Save size={14} />
+            <span className="hidden md:inline">Sauvegarder</span>
+            {isDirty && <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-orange-500 -translate-y-0.5 translate-x-0.5" />}
+          </button>
+          <button
+            onClick={handleShare}
+            disabled={sharing}
+            className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors disabled:opacity-50"
+          >
+            {sharing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
+            <span className="hidden md:inline">{sharing ? 'Partage...' : 'Partager'}</span>
+          </button>
+          {!isMobile && user && (
             <>
-              <button
-                onClick={handleSaveClick}
-                className="relative flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+              <a
+                href="/account"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+                title="Mon espace client"
               >
-                <Save size={14} />
-                <span className="hidden md:inline">Sauvegarder</span>
-                {isDirty && <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-orange-500 -translate-y-0.5 translate-x-0.5" />}
-              </button>
+                <User size={14} />
+                <span className="hidden md:inline">Mon compte</span>
+              </a>
               <button
-                onClick={handleShare}
-                disabled={sharing}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors disabled:opacity-50"
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+                title="Déconnexion"
               >
-                {sharing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
-                <span className="hidden md:inline">{sharing ? 'Partage...' : 'Partager'}</span>
+                <LogOut size={14} />
               </button>
-              {user && (
-                <>
-                  <a
-                    href="/account"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
-                    title="Mon espace client"
-                  >
-                    <User size={14} />
-                    <span className="hidden md:inline">Mon compte</span>
-                  </a>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
-                    title="Déconnexion"
-                  >
-                    <LogOut size={14} />
-                  </button>
-                </>
-              )}
-              {!user && (
-                <a
-                  href="/auth"
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
-                >
-                  <User size={14} />
-                  <span className="hidden md:inline">Connexion</span>
-                </a>
-              )}
             </>
+          )}
+          {!isMobile && !user && (
+            <a
+              href="/auth"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
+            >
+              <User size={14} />
+              <span className="hidden md:inline">Connexion</span>
+            </a>
           )}
           <button
             onClick={() => setShowCartPanel(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
+            className="flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
           >
             <ShoppingCart size={14} />
             {!isMobile && <span>Mon panier</span>}
