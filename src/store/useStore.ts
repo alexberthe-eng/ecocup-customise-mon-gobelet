@@ -122,6 +122,9 @@ interface AppState {
 
   /** Handles sidebar tool click with new behavior rules */
   handleToolClick: (tool: ActiveTool) => void;
+
+  /** Load a saved design into the editor */
+  loadSavedDesign: (designData: Design) => void;
 }
 
 const defaultDesign: Design = {
