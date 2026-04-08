@@ -151,18 +151,13 @@ const LeftSidebar = () => {
         {tools.map((tool) => {
           const Icon = tool.icon;
           const isActive = activeTool === tool.id;
-        {tools.map((tool) => {
-          const Icon = tool.icon;
-          const isActive = activeTool === tool.id;
           return (
             <div key={tool.id} className="relative">
               <button
                 data-tour={tool.id === 'color' ? 'color' : tool.id === 'image' ? 'image' : undefined}
                 onClick={() => handleToolClick(tool.id)}
                 className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] transition-colors ${
-                  isActive
-                    ? 'bg-accent/20 text-accent'
-                    : 'text-muted-foreground'
+                  isActive ? 'bg-accent/20 text-accent' : 'text-muted-foreground'
                 }`}
               >
                 <div className="relative">
@@ -176,18 +171,32 @@ const LeftSidebar = () => {
           );
         })}
         <button
-          data-tour="aide"
-          onClick={startTour}
+          onClick={handleSaveClick}
           className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] text-muted-foreground"
         >
-          <HelpCircle size={18} />
-          <span>Aide</span>
+          <Save size={18} />
+          <span>Sauver</span>
         </button>
+        <button
+          onClick={handleShare}
+          disabled={sharing}
+          className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] text-muted-foreground disabled:opacity-50"
+        >
+          {sharing ? <Loader2 size={18} className="animate-spin" /> : <Share2 size={18} />}
+          <span>Partager</span>
+        </button>
+        <a
+          href={user ? '/account' : '/auth'}
+          className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] text-muted-foreground"
+        >
+          <User size={18} />
+          <span>{user ? 'Compte' : 'Connexion'}</span>
+        </a>
         <Popover>
           <PopoverTrigger asChild>
             <button className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] text-muted-foreground">
               <Headphones size={18} />
-              <span>Assistance</span>
+              <span>Aide</span>
             </button>
           </PopoverTrigger>
           <PopoverContent side="top" align="center" className="w-72 p-0">
@@ -228,6 +237,28 @@ const LeftSidebar = () => {
           </PopoverContent>
         </Popover>
       </nav>
+
+      {/* Share URL modal */}
+      {shareUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShareUrl(null)}>
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm">Lien de partage</h3>
+              <button onClick={() => setShareUrl(null)} className="p-1 rounded hover:bg-secondary"><X size={14} /></button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">Partagez ce lien. Valide 7 jours.</p>
+            <div className="flex items-center gap-2">
+              <input readOnly value={shareUrl} className="flex-1 text-xs border-thin rounded-md px-3 py-2 bg-background truncate" onFocus={(e) => e.target.select()} />
+              <button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success('Lien copié !'); }} className="flex items-center gap-1.5 px-3 py-2 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 shrink-0">
+                <Copy size={12} /> Copier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AuthModal open={showAuth} onClose={() => setShowAuth(false)} onSuccess={() => setShowAuth(false)} />
+      </>
     );
   }
 
