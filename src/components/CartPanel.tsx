@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useStore, getUnitPrice } from '@/store/useStore';
-import { X, Pencil, Trash2, FileText } from 'lucide-react';
+import { X, Pencil, Trash2, FileText, Copy } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 
@@ -14,6 +14,7 @@ const CartPanel = () => {
     setShowCartPanel,
     removeFromCart,
     editCartDesign,
+    duplicateCartDesign,
     updateCartDesignName,
     updateCartDesignQuantity,
     setGlobalComment,
@@ -41,15 +42,26 @@ const CartPanel = () => {
   };
 
   const handleOrder = () => {
-    toast.info('Fonctionnalité bientôt disponible', {
-      description: 'La commande en ligne sera disponible prochainement.',
-    });
+    const lines = cart.map((d, i) =>
+      `Design ${i + 1}: ${d.name} — ${d.quantity} pcs x ${getUnitPrice(d.quantity).toFixed(2)}€`
+    ).join('%0A');
+    const total = cartTotal.toFixed(2);
+    const comment = globalComment ? `%0ACommentaire: ${globalComment}` : '';
+    window.open(
+      `mailto:commandes@ecocup.com?subject=Commande configurateur&body=Bonjour,%0A%0AVoici ma commande :%0A${lines}%0A%0ATotal HT: ${total}€${comment}`,
+      '_blank'
+    );
   };
 
   const handleQuote = () => {
-    toast.info('Fonctionnalité bientôt disponible', {
-      description: 'La demande de devis sera disponible prochainement.',
-    });
+    const lines = cart.map((d, i) =>
+      `Design ${i + 1}: ${d.name} — ${d.quantity} pcs`
+    ).join('%0A');
+    const comment = globalComment ? `%0ACommentaire: ${globalComment}` : '';
+    window.open(
+      `mailto:commandes@ecocup.com?subject=Demande de devis&body=Bonjour,%0A%0AJe souhaite un devis pour :%0A${lines}${comment}`,
+      '_blank'
+    );
   };
 
   return (
@@ -141,6 +153,13 @@ const CartPanel = () => {
                       title="Modifier ce design"
                     >
                       <Pencil size={12} />
+                    </button>
+                    <button
+                      onClick={() => duplicateCartDesign(d.id)}
+                      className="p-1.5 hover:bg-secondary rounded"
+                      title="Dupliquer"
+                    >
+                      <Copy size={12} />
                     </button>
                     <button
                       onClick={() => handleDelete(d.id)}

@@ -30,10 +30,12 @@ export const ElementPanelFields = ({
           <label>
             <span className="text-muted-foreground">Police</span>
             <select value={element.fontFamily || 'system-ui'} onChange={(e) => update({ fontFamily: e.target.value })} className="w-full border-thin rounded px-1.5 py-1 bg-background mt-0.5">
-              <option value="system-ui">System</option>
+              <option value="system-ui">Sans-serif</option>
               <option value="serif">Serif</option>
-              <option value="monospace">Mono</option>
-              <option value="cursive">Cursive</option>
+              <option value="Montserrat, sans-serif">Montserrat</option>
+              <option value="Playfair Display, serif">Playfair Display</option>
+              <option value="Dancing Script, cursive">Dancing Script</option>
+              <option value="Oswald, sans-serif">Oswald</option>
             </select>
           </label>
           <label>
