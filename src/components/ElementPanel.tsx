@@ -148,7 +148,7 @@ export const ElementPanel = ({
           <X size={12} className="text-muted-foreground" />
         </button>
         <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate pr-5">{elementName}</p>
-        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} onValidate={() => setSelectedElementId(null)} />
+        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} onValidate={() => setSelectedElementId(null)} onEditWithAI={onEditWithAI ? () => onEditWithAI(element.id) : undefined} />
       </div>
     );
   }
@@ -166,7 +166,7 @@ export const ElementPanel = ({
           <X size={12} className="text-muted-foreground" />
         </button>
         <p className="text-[10px] font-semibold text-muted-foreground mb-2 truncate pr-5">{elementName}</p>
-        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} onValidate={() => setSelectedElementId(null)} />
+        <ElementPanelFields element={element} update={update} pushHistory={pushHistory} moveElementLayer={moveElementLayer} removeElement={removeElement} onDuplicate={handleDuplicate} onValidate={() => setSelectedElementId(null)} onEditWithAI={onEditWithAI ? () => onEditWithAI(element.id) : undefined} />
       </div>
     </div>
   );
