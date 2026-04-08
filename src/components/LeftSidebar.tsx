@@ -129,7 +129,7 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
             <div key={tool.id} className="relative">
               <button
                 data-tour={tool.id === 'color' ? 'color' : tool.id === 'image' ? 'image' : undefined}
-                onClick={() => handleToolClick(tool.id)}
+                onClick={() => onToolClick(tool.id)}
                 className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-[9px] transition-colors ${
                   isActive ? 'bg-accent/20 text-accent' : 'text-muted-foreground'
                 }`}
@@ -181,7 +181,7 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
                 <TooltipTrigger asChild>
                   <button
                     data-tour={tool.id === 'color' ? 'color' : tool.id === 'image' ? 'image' : undefined}
-                    onClick={() => handleToolClick(tool.id)}
+                    onClick={() => onToolClick(tool.id)}
                     className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg text-[10px] transition-colors w-full ${
                       isActive
                         ? 'bg-accent/20 text-accent'
