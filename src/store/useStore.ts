@@ -191,6 +191,7 @@ export const useStore = create<AppState>((set, get) => ({
   setShowGraduation: (v) => set({ showGraduation: v }),
   setShowGraduationMask: (v) => set({ showGraduationMask: v }),
   setGlobalComment: (c) => set({ globalComment: c }),
+  setIsDirty: (v) => set({ isDirty: v }),
 
   setProductType: (t) => {
     const caps = PRODUCT_CAPACITIES[t]?.capacities ?? ['33cl'];
