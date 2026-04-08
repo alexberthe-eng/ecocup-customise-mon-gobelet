@@ -154,6 +154,7 @@ export const getUnitPrice = (quantity: number): number => {
 export const useStore = create<AppState>((set, get) => ({
   currentDesign: { ...defaultDesign },
   cart: [],
+  isDirty: false,
   globalComment: '',
   activeTab: '2d',
   activeTool: null,
