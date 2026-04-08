@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useStore } from '@/store/useStore';
 import { Printer, Download } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getClipPath } from '@/lib/clipPaths';
 
 const CANVAS_W = 600;
 const CANVAS_H = 400;
@@ -195,7 +196,13 @@ const PreviewBAT = () => {
               </div>
             )}
             {(el.type === 'image' || el.type === 'svg') && el.src && (
-              <img src={el.src} alt="" className="w-full h-full object-contain" draggable={false} />
+              <img
+                src={el.src}
+                alt=""
+                className="w-full h-full object-contain"
+                draggable={false}
+                style={el.maskType ? { clipPath: getClipPath(el.maskType) } : undefined}
+              />
             )}
           </div>
         ))}
