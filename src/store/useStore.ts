@@ -107,6 +107,7 @@ interface AppState {
   addToCart: (thumbnail?: string) => void;
   removeFromCart: (id: string) => void;
   editCartDesign: (id: string) => void;
+  duplicateCartDesign: (id: string) => void;
   updateCartDesignName: (id: string, name: string) => void;
   updateCartDesignQuantity: (id: string, quantity: number) => void;
 
