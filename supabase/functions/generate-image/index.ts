@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { prompt } = await req.json();
+    const { prompt, imageBase64 } = await req.json();
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: "Un prompt est requis" }), {
         status: 400,
@@ -21,6 +21,21 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const isEditing = !!imageBase64;
+
+    const userContent = isEditing
+      ? [
+          {
+            type: "image_url",
+            image_url: { url: imageBase64.startsWith("data:") ? imageBase64 : `data:image/png;base64,${imageBase64}` },
+          },
+          {
+            type: "text",
+            text: `Edit this image for a cup/gobelet design: ${prompt}. Keep the overall composition but apply the requested changes. The result should have a clean background, suitable for placing on a cup.`,
+          },
+        ]
+      : `Generate an image for a cup/gobelet design: ${prompt}. The image should have a transparent or clean background, suitable for placing on a cup. Make it vibrant and high quality.`;
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -28,13 +43,8 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
-        messages: [
-          {
-            role: "user",
-            content: `Generate an image for a cup/gobelet design: ${prompt}. The image should have a transparent or clean background, suitable for placing on a cup. Make it vibrant and high quality.`,
-          },
-        ],
+        model: isEditing ? "google/gemini-3.1-flash-image-preview" : "google/gemini-2.5-flash-image",
+        messages: [{ role: "user", content: userContent }],
         modalities: ["image", "text"],
       }),
     });

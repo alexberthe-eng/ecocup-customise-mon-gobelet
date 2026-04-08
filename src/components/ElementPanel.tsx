@@ -1,5 +1,5 @@
 import { useStore, DesignElement } from '@/store/useStore';
-import { Trash2, Copy, X, Check } from 'lucide-react';
+import { Trash2, Copy, X, Check, Sparkles } from 'lucide-react';
 
 /** Shared fields for contextual panel (used in 2D editor, 3D preview, etc.) */
 export const ElementPanelFields = ({
