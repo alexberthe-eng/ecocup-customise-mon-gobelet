@@ -3,6 +3,7 @@ import { useStore, getUnitPrice } from '@/store/useStore';
 import { X, Pencil, Trash2, FileText, Copy } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
+import OrderConfirmModal from '@/components/OrderConfirmModal';
 
 const QUANTITIES = [125, 250, 500, 1000, 2500, 5000, 10000];
 
@@ -22,6 +23,7 @@ const CartPanel = () => {
 
   const isMobile = useIsMobile();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [showOrderConfirm, setShowOrderConfirm] = useState(false);
 
   if (!showCartPanel) return null;
 
@@ -196,7 +198,7 @@ const CartPanel = () => {
               <span>{cartTotal.toFixed(2)} €</span>
             </div>
             <button
-              onClick={handleOrder}
+              onClick={() => setShowOrderConfirm(true)}
               className="w-full bg-primary text-primary-foreground text-xs py-3 rounded-md hover:opacity-90 transition-opacity font-medium mb-2"
             >
               Passer commande
@@ -236,6 +238,19 @@ const CartPanel = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Order confirmation with 3D preview */}
+      {showOrderConfirm && (
+        <OrderConfirmModal
+          cart={cart}
+          cartTotal={cartTotal}
+          onConfirm={() => {
+            setShowOrderConfirm(false);
+            handleOrder();
+          }}
+          onCancel={() => setShowOrderConfirm(false)}
+        />
       )}
     </>
   );
