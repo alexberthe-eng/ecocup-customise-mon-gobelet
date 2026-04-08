@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ShoppingCart, Save, Share2, Menu, Check, X, LogOut, Loader2, Copy, User } from 'lucide-react';
+import { ShoppingCart, Save, Share2, Menu, Check, X, LogOut, Loader2, Copy, User, Download } from 'lucide-react';
 import { useStore, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
