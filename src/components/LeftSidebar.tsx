@@ -302,11 +302,6 @@ const GraduationPanel = () => {
     <div className="space-y-3">
       <ToggleSwitch label="Afficher graduation" checked={showGraduation} onChange={setShowGraduation} />
       <ToggleSwitch label="Afficher masque" checked={showGraduationMask} onChange={setShowGraduationMask} />
-      <select value={currentDesign.graduation} onChange={(e) => setGraduation(e.target.value)} className="w-full text-xs border-thin rounded-md px-2 py-1.5 bg-background">
-        <option value="standard-33cl">Standard 33cl</option>
-        <option value="standard-25cl">Standard 25cl</option>
-        <option value="pinte-50cl">Pinte 50cl</option>
-      </select>
     </div>
   );
 };
