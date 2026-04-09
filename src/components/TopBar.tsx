@@ -41,6 +41,18 @@ const TopBar = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Listen for bottom bar save/share events
+  useEffect(() => {
+    const onSave = () => handleSaveClick();
+    const onShare = () => handleShare();
+    document.addEventListener('ecocup-save', onSave);
+    document.addEventListener('ecocup-share', onShare);
+    return () => {
+      document.removeEventListener('ecocup-save', onSave);
+      document.removeEventListener('ecocup-share', onShare);
+    };
+  });
+
   useEffect(() => {
     if (editing) {
       setEditValue(designName);
