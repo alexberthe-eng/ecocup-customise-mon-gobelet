@@ -1,6 +1,7 @@
-import { Save, Share2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Save, Share2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useRef, useEffect, useState, useCallback } from 'react';
 
 const BottomBar = () => {
   const { activeTab, setActiveTab, showRightPanel, setShowRightPanel } = useStore();
