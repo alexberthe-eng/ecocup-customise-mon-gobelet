@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useStore, getUnitPrice, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { X, ShoppingCart, Check, Plus } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import ToggleSwitch from '@/components/ToggleSwitch';
+
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
 const QUANTITIES = [125, 250, 500, 1000, 2500, 5000, 10000];
@@ -11,14 +11,9 @@ const RightPanel = () => {
   const {
     currentDesign,
     cart,
-    showGraduation,
-    showGraduationMask,
     showRightPanel,
-    setShowGraduation,
-    setShowGraduationMask,
     setQuantity,
     setComment,
-    setGraduation,
     setProductType,
     setCapacity,
     addToCart,
@@ -89,25 +84,6 @@ const RightPanel = () => {
         </select>
       </div>
 
-      {/* Graduation */}
-      <div className="p-3 border-b border-thin">
-        <h3 className="text-xs font-semibold mb-2">Graduation</h3>
-        <div className="mb-1.5">
-          <ToggleSwitch label="Afficher graduation" checked={showGraduation} onChange={setShowGraduation} />
-        </div>
-        <div className="mb-2">
-          <ToggleSwitch label="Afficher masque" checked={showGraduationMask} onChange={setShowGraduationMask} />
-        </div>
-        <select
-          value={currentDesign.graduation}
-          onChange={(e) => setGraduation(e.target.value)}
-          className="w-full text-xs border-thin rounded-md px-2 py-1.5 bg-background mt-2"
-        >
-          <option value="standard-33cl">Standard 33cl</option>
-          <option value="standard-25cl">Standard 25cl</option>
-          <option value="pinte-50cl">Pinte 50cl</option>
-        </select>
-      </div>
 
       {/* Ce design */}
       <div className="p-3 border-b border-thin">
