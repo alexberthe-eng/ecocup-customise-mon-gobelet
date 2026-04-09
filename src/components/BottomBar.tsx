@@ -1,103 +1,82 @@
-import { useState } from 'react';
-import { Undo2, Redo2, Headphones, Phone, MessageCircle, X } from 'lucide-react';
+import { Save, Share2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
 const BottomBar = () => {
-  const undo = useStore((s) => s.undo);
-  const redo = useStore((s) => s.redo);
-  const historyIndex = useStore((s) => s.historyIndex);
-  const historyLength = useStore((s) => s.history.length);
-  const cupColor = useStore((s) => s.currentDesign.cupColor);
+  const { activeTab, setActiveTab, showRightPanel, setShowRightPanel } = useStore();
   const isMobile = useIsMobile();
 
   if (isMobile) return null;
 
   return (
-    <footer className="h-10 flex items-center justify-between px-4 border-t border-thin bg-background shrink-0">
+    <footer className="h-12 flex items-center justify-between px-4 border-t border-thin bg-background shrink-0">
+      {/* Left: Tab buttons */}
       <div className="flex items-center gap-2">
-        <div
-          className="w-6 h-8 rounded border-thin"
-          style={{ backgroundColor: cupColor }}
-          title="Aperçu miniature"
-        />
+        <button
+          onClick={() => setActiveTab('3d')}
+          className={`px-4 py-1.5 text-xs font-medium rounded-full border transition-all ${
+            activeTab === '3d'
+              ? 'bg-foreground text-background border-foreground'
+              : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/50'
+          }`}
+        >
+          Édition 3D
+        </button>
+        <button
+          onClick={() => setActiveTab('2d')}
+          className={`px-4 py-1.5 text-xs font-medium rounded-full border transition-all ${
+            activeTab === '2d'
+              ? 'bg-foreground text-background border-foreground'
+              : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/50'
+          }`}
+        >
+          Édition 2D
+        </button>
+        <button
+          onClick={() => setActiveTab('bat')}
+          className={`px-4 py-1.5 text-xs font-medium rounded-full border transition-all ${
+            activeTab === 'bat'
+              ? 'bg-foreground text-background border-foreground'
+              : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/50'
+          }`}
+        >
+          Aperçu BAT
+        </button>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1">
-          <button
-            onClick={undo}
-            disabled={historyIndex <= 0}
-            className="p-1.5 rounded hover:bg-secondary disabled:opacity-30 transition-colors"
-            title="Annuler"
-          >
-            <Undo2 size={14} />
-          </button>
-          <button
-            onClick={redo}
-            disabled={historyIndex >= historyLength - 1}
-            className="p-1.5 rounded hover:bg-secondary disabled:opacity-30 transition-colors"
-            title="Rétablir"
-          >
-            <Redo2 size={14} />
-          </button>
-        </div>
 
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className="w-9 h-9 rounded-full bg-foreground text-background flex items-center justify-center hover:opacity-90 transition-opacity"
-              title="Assistance"
-            >
-              <Headphones size={16} />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent side="top" align="center" className="w-72 p-0">
-            <div className="px-4 py-3 border-b border-border bg-secondary/50">
-              <div className="flex items-center gap-2">
-                <Headphones size={16} className="text-foreground" />
-                <span className="text-sm font-semibold text-foreground">Besoin d'aide ?</span>
-              </div>
-            </div>
-            <div className="p-4 space-y-3">
-              <p className="text-xs text-muted-foreground">
-                Notre équipe vous accompagne dans la personnalisation de vos gobelets.
-              </p>
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/60 text-xs text-muted-foreground">
-                <span>🕐</span>
-                <span>Lun – Ven : 9h00 – 18h00</span>
-              </div>
-              <button
-                onClick={() => window.open('mailto:contact@ecocup.com?subject=Demande%20d%27assistance', '_blank')}
-                className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary transition-colors w-full text-left"
-              >
-                <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                  <Phone size={16} className="text-foreground" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Contactez-nous</p>
-                  <p className="text-xs text-muted-foreground">Par email</p>
-                </div>
-              </button>
-              <button
-                onClick={() => window.open('mailto:contact@ecocup.com?subject=Demande%20d%27assistance', '_blank')}
-                className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary transition-colors w-full text-left"
-              >
-                <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                  <MessageCircle size={16} className="text-foreground" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">Chat / Email</p>
-                  <p className="text-xs text-muted-foreground">Réponse sous 24h</p>
-                </div>
-              </button>
-            </div>
-          </PopoverContent>
-        </Popover>
+      {/* Center: Save & Share */}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => {
+            // Trigger save from TopBar's handler via a custom event
+            document.dispatchEvent(new CustomEvent('ecocup-save'));
+          }}
+          className="flex flex-col items-center gap-0.5 text-muted-foreground hover:text-foreground transition-colors"
+          title="Sauvegarder"
+        >
+          <Save size={18} />
+          <span className="text-[10px]">Sauvegarder</span>
+        </button>
+        <button
+          onClick={() => {
+            document.dispatchEvent(new CustomEvent('ecocup-share'));
+          }}
+          className="flex flex-col items-center gap-0.5 text-muted-foreground hover:text-foreground transition-colors"
+          title="Partager"
+        >
+          <Share2 size={18} />
+          <span className="text-[10px]">Partager</span>
+        </button>
       </div>
-      <span className="text-[10px] text-muted-foreground hidden lg:block">
-        Cliquez sur un élément pour le modifier
-      </span>
+
+      {/* Right: Récapitulatif */}
+      <button
+        onClick={() => setShowRightPanel(!showRightPanel)}
+        className="flex items-center gap-2 px-4 py-1.5 text-xs font-medium border border-border rounded-lg hover:bg-secondary transition-colors"
+      >
+        Récapitulatif
+        {showRightPanel ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      </button>
     </footer>
   );
 };

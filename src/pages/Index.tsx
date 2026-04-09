@@ -17,7 +17,7 @@ import AIWizardModal from '@/components/AIWizardModal';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
 const Index = () => {
-  const { activeTab, setActiveTab, tourCompleted, startTour, gridVisible, setGridVisible, currentDesign } = useStore();
+  const { activeTab, tourCompleted, startTour, gridVisible, setGridVisible, currentDesign } = useStore();
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
   const [showWarning, setShowWarning] = useState(true);
@@ -53,58 +53,19 @@ const Index = () => {
 
         {/* Center area */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          {/* Tab bar */}
-          <div className="flex items-center border-b border-thin px-2 md:px-4 bg-background overflow-x-auto shrink-0 gap-3">
-            {/* 2D/3D toggle */}
-            <div className="flex items-center bg-secondary rounded-lg p-0.5 border border-border" data-tour="tabs-2d-3d">
+          {/* Top toolbar for 2D mode */}
+          {activeTab === '2d' && (
+            <div className="flex items-center justify-end border-b border-thin px-2 md:px-4 bg-background shrink-0 py-1.5 gap-2">
               <button
-                onClick={() => setActiveTab('2d')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                  activeTab === '2d'
-                    ? 'bg-foreground text-background shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
+                onClick={handleExportPNG}
+                className="flex items-center gap-1 px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
               >
-                {isMobile ? '2D' : 'Édition 2D'}
+                <Download size={12} />
+                PNG
               </button>
-              <button
-                onClick={() => setActiveTab('3d')}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                  activeTab === '3d'
-                    ? 'bg-foreground text-background shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {isMobile ? '3D' : 'Vue 3D 360°'}
-              </button>
+              <ToggleSwitch label="Grille" checked={gridVisible} onChange={setGridVisible} />
             </div>
-
-            {/* BAT tab */}
-            <button
-              data-tour="tab-bat"
-              onClick={() => setActiveTab('bat')}
-              className={`px-3 md:px-4 py-2 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === 'bat'
-                  ? 'border-accent text-accent'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {isMobile ? 'BAT' : 'Aperçu BAT'}
-            </button>
-
-            {activeTab === '2d' && (
-              <div className="ml-auto shrink-0 flex items-center gap-2">
-                <button
-                  onClick={handleExportPNG}
-                  className="flex items-center gap-1 px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
-                >
-                  <Download size={12} />
-                  PNG
-                </button>
-                <ToggleSwitch label="Grille" checked={gridVisible} onChange={setGridVisible} />
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Canvas area */}
           <div className="flex-1 flex overflow-hidden">
