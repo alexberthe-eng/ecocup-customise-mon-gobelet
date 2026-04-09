@@ -43,12 +43,12 @@ const TopBar = () => {
 
   // Listen for bottom bar save/share events
   useEffect(() => {
-    const onSave = () => handleSaveClick();
+    const onDoSave = () => handleSaveClick();
     const onShare = () => handleShare();
-    document.addEventListener('ecocup-save', onSave);
+    document.addEventListener('ecocup-do-save', onDoSave);
     document.addEventListener('ecocup-share', onShare);
     return () => {
-      document.removeEventListener('ecocup-save', onSave);
+      document.removeEventListener('ecocup-do-save', onDoSave);
       document.removeEventListener('ecocup-share', onShare);
     };
   });
@@ -62,12 +62,8 @@ const TopBar = () => {
 
   const handleSaveClick = async () => {
     try {
-      // Demander un nom au design
       const currentDesign = useStore.getState().currentDesign;
-      const promptName = window.prompt('Nom du design :', currentDesign.name);
-      if (promptName === null) return; // annulé
-      const saveName = promptName.trim() || currentDesign.name;
-      useStore.getState().setDesignName(saveName);
+      const saveName = currentDesign.name;
 
       if (user) {
         // Sauvegarde en base de données pour les utilisateurs connectés
@@ -212,7 +208,7 @@ const TopBar = () => {
         </div>
         <div className="flex items-center gap-1.5 md:gap-2">
           <button
-            onClick={handleSaveClick}
+            onClick={() => document.dispatchEvent(new CustomEvent('ecocup-save'))}
             className="relative flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
             title="Sauvegarder"
           >

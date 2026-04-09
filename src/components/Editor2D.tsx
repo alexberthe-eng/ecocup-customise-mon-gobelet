@@ -1,6 +1,6 @@
 import { useRef, useCallback, useMemo, useState } from 'react';
 import { useStore, DesignElement } from '@/store/useStore';
-import { Trash2, Undo2, Redo2, RotateCw, Copy, X } from 'lucide-react';
+import { Trash2, Undo2, Redo2, RotateCw, Copy, X, ChevronUp, ChevronDown } from 'lucide-react';
 import CanvasDrawer from '@/components/CanvasDrawer';
 import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -12,6 +12,19 @@ const GRID_SIZE = 22;
 
 const snapToGrid = (val: number) => Math.round(val / GRID_SIZE) * GRID_SIZE;
 
+const ContextMenuBtn = ({ icon: Icon, label, onClick, danger }: { icon: any; label: string; onClick: () => void; danger?: boolean }) => (
+  <button
+    onClick={onClick}
+    className="w-11 h-[38px] rounded-md flex flex-col items-center justify-center gap-0.5 transition-colors"
+    style={{ color: danger ? '#ff6b6b' : 'white' }}
+    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
+    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+  >
+    <Icon size={13} />
+    <span style={{ fontSize: 8, lineHeight: 1 }}>{label}</span>
+  </button>
+);
+
 const Editor2D = ({ onEditWithAI }: { onEditWithAI?: (elementId: string) => void }) => {
   const {
     currentDesign,
@@ -20,6 +33,7 @@ const Editor2D = ({ onEditWithAI }: { onEditWithAI?: (elementId: string) => void
     setSelectedElementId,
     updateElement,
     removeElement,
+    moveElementLayer,
     pushHistory,
     undo,
     redo,

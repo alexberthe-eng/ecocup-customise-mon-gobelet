@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
-import { Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import TopBar from '@/components/TopBar';
+import ToolBar from '@/components/ToolBar';
 import LeftSidebar from '@/components/LeftSidebar';
 import BottomBar from '@/components/BottomBar';
 import RightPanel from '@/components/RightPanel';
@@ -11,17 +11,19 @@ import Preview3D from '@/components/Preview3D';
 import PreviewBAT from '@/components/PreviewBAT';
 import CartPanel from '@/components/CartPanel';
 import OnboardingTour from '@/components/OnboardingTour';
-import ToggleSwitch from '@/components/ToggleSwitch';
 import WarningModal from '@/components/WarningModal';
+import SaveModal from '@/components/SaveModal';
 import AIWizardModal from '@/components/AIWizardModal';
-import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+const DEFAULT_NAME = 'Gobelet personnalisé par vos soins – ECO 30 Digital';
 
 const Index = () => {
-  const { activeTab, tourCompleted, startTour, gridVisible, setGridVisible, currentDesign } = useStore();
+  const { activeTab, startTour, currentDesign } = useStore();
   const isMobile = useIsMobile();
-  const isDesktop = useIsDesktop();
   const [showWarning, setShowWarning] = useState(false);
   const [showAIWizard, setShowAIWizard] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
   const [aiEditElementId, setAiEditElementId] = useState<string | null>(null);
 
   const handleExportPNG = async () => {
@@ -38,6 +40,20 @@ const Index = () => {
     link.click();
   };
 
+  // Intercept save events — show modal if name is default, else save directly
+  useEffect(() => {
+    const handler = () => {
+      const design = useStore.getState().currentDesign;
+      if (design.name === DEFAULT_NAME || !design.name.trim()) {
+        setShowSaveModal(true);
+      } else {
+        document.dispatchEvent(new CustomEvent('ecocup-do-save'));
+      }
+    };
+    document.addEventListener('ecocup-save', handler);
+    return () => document.removeEventListener('ecocup-save', handler);
+  }, []);
+
   const handleWarningClose = () => {
     setShowWarning(false);
     setTimeout(startTour, 400);
@@ -46,28 +62,12 @@ const Index = () => {
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <TopBar />
+      <ToolBar onExportPNG={handleExportPNG} onOpenAIWizard={() => setShowAIWizard(true)} />
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Desktop sidebar (hidden on mobile — toolbar is at bottom) */}
         {!isMobile && <LeftSidebar onOpenAIWizard={() => setShowAIWizard(true)} />}
 
-        {/* Center area */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          {/* Top toolbar for 2D mode */}
-          {activeTab === '2d' && (
-            <div className="flex items-center justify-end border-b border-thin px-2 md:px-4 bg-background shrink-0 py-1.5 gap-2">
-              <button
-                onClick={handleExportPNG}
-                className="flex items-center gap-1 px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-colors"
-              >
-                <Download size={12} />
-                PNG
-              </button>
-              <ToggleSwitch label="Grille" checked={gridVisible} onChange={setGridVisible} />
-            </div>
-          )}
-
-          {/* Canvas area */}
           <div className="flex-1 flex overflow-hidden">
             {activeTab === '2d' && <Editor2D onEditWithAI={(id) => { setAiEditElementId(id); setShowAIWizard(true); }} />}
             {activeTab === '3d' && <Preview3D />}
@@ -75,19 +75,17 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Desktop right panel (on mobile/tablet it's an overlay triggered by cart button) */}
         <RightPanel />
       </div>
 
-      {/* Desktop bottom bar */}
       <BottomBar />
 
-      {/* Mobile bottom toolbar */}
       {isMobile && <LeftSidebar onOpenAIWizard={() => setShowAIWizard(true)} />}
 
       <WarningModal open={showWarning} onClose={handleWarningClose} />
       <OnboardingTour />
       <CartPanel />
+      <SaveModal open={showSaveModal} onClose={() => setShowSaveModal(false)} />
       <AIWizardModal open={showAIWizard} onClose={() => { setShowAIWizard(false); setAiEditElementId(null); }} editElementId={aiEditElementId} />
     </div>
   );
