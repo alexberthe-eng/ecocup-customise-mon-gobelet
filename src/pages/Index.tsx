@@ -17,7 +17,7 @@ import AIWizardModal from '@/components/AIWizardModal';
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
 const Index = () => {
-  const { activeTab, setActiveTab, tourCompleted, startTour, gridVisible, setGridVisible, currentDesign } = useStore();
+  const { activeTab, tourCompleted, startTour, gridVisible, setGridVisible, currentDesign } = useStore();
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
   const [showWarning, setShowWarning] = useState(true);
