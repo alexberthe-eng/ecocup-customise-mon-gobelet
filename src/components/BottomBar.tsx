@@ -69,14 +69,8 @@ const BottomBar = () => {
         </button>
       </div>
 
-      {/* Right: Récapitulatif */}
-      <button
-        onClick={() => setShowRightPanel(!showRightPanel)}
-        className="flex items-center gap-2 px-4 py-1.5 text-xs font-medium border border-border rounded-lg hover:bg-secondary transition-colors"
-      >
-        Récapitulatif
-        {showRightPanel ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-      </button>
+      {/* Right: spacer */}
+      <div />
     </footer>
   );
 };
