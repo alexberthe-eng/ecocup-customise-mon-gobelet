@@ -11,33 +11,33 @@ const BottomBar = () => {
   return (
     <footer className="h-12 flex items-center justify-between px-4 border-t border-thin bg-background shrink-0">
       {/* Left: Tab buttons */}
-      <div className="flex items-center rounded-full border border-border overflow-hidden">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => setActiveTab('3d')}
-          className={`px-4 py-1.5 text-xs font-medium transition-all ${
+          className={`px-4 py-1.5 text-xs font-medium rounded-full border transition-all ${
             activeTab === '3d'
-              ? 'bg-foreground text-background'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+              ? 'bg-foreground text-background border-foreground'
+              : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/50'
           }`}
         >
           Édition 3D
         </button>
         <button
           onClick={() => setActiveTab('2d')}
-          className={`px-4 py-1.5 text-xs font-medium border-x border-border transition-all ${
+          className={`px-4 py-1.5 text-xs font-medium rounded-full border transition-all ${
             activeTab === '2d'
-              ? 'bg-foreground text-background'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+              ? 'bg-foreground text-background border-foreground'
+              : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/50'
           }`}
         >
           Édition 2D
         </button>
         <button
           onClick={() => setActiveTab('bat')}
-          className={`px-4 py-1.5 text-xs font-medium transition-all ${
+          className={`px-4 py-1.5 text-xs font-medium rounded-full border transition-all ${
             activeTab === 'bat'
-              ? 'bg-foreground text-background'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+              ? 'bg-foreground text-background border-foreground'
+              : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/50'
           }`}
         >
           Aperçu BAT

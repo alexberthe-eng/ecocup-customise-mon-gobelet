@@ -54,7 +54,7 @@ const Index = () => {
         {/* Center area */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           {/* Top toolbar for 2D mode */}
-          {(activeTab === '2d' || activeTab === '3d') && (
+          {activeTab === '2d' && (
             <div className="flex items-center justify-end border-b border-thin px-2 md:px-4 bg-background shrink-0 py-1.5 gap-2">
               <button
                 onClick={handleExportPNG}
@@ -69,20 +69,9 @@ const Index = () => {
 
           {/* Canvas area */}
           <div className="flex-1 flex overflow-hidden">
-            {activeTab === 'bat' ? (
-              <PreviewBAT />
-            ) : (
-              <>
-                {/* 2D editor — primary when tab is 2d, secondary when 3d */}
-                <div className={`overflow-hidden ${activeTab === '2d' ? 'flex-[3]' : 'flex-[2]'} border-r border-thin`}>
-                  <Editor2D onEditWithAI={(id) => { setAiEditElementId(id); setShowAIWizard(true); }} />
-                </div>
-                {/* 3D preview — primary when tab is 3d, secondary when 2d */}
-                <div className={`overflow-hidden ${activeTab === '3d' ? 'flex-[3]' : 'flex-[2]'}`}>
-                  <Preview3D />
-                </div>
-              </>
-            )}
+            {activeTab === '2d' && <Editor2D onEditWithAI={(id) => { setAiEditElementId(id); setShowAIWizard(true); }} />}
+            {activeTab === '3d' && <Preview3D />}
+            {activeTab === 'bat' && <PreviewBAT />}
           </div>
         </div>
 
