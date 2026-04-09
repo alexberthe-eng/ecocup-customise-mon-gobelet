@@ -6,43 +6,52 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 const BottomBar = () => {
   const { activeTab, setActiveTab, showRightPanel, setShowRightPanel } = useStore();
   const isMobile = useIsMobile();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [pillStyle, setPillStyle] = useState({ left: 0, width: 0 });
+
+  const tabs = ['3d', '2d', 'bat'] as const;
+  const labels = { '3d': 'Édition 3D', '2d': 'Édition 2D', 'bat': 'Aperçu BAT' };
+
+  const updatePill = useCallback(() => {
+    if (!containerRef.current) return;
+    const idx = tabs.indexOf(activeTab as typeof tabs[number]);
+    const btns = containerRef.current.querySelectorAll<HTMLButtonElement>('[data-tab-btn]');
+    if (btns[idx]) {
+      setPillStyle({ left: btns[idx].offsetLeft, width: btns[idx].offsetWidth });
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    updatePill();
+    window.addEventListener('resize', updatePill);
+    return () => window.removeEventListener('resize', updatePill);
+  }, [updatePill]);
 
   if (isMobile) return null;
 
   return (
     <footer className="h-12 flex items-center justify-between px-4 border-t border-thin bg-background shrink-0">
-      {/* Left: Tab buttons */}
-      <div className="flex items-center rounded-full border border-border overflow-hidden">
-        <button
-          onClick={() => setActiveTab('3d')}
-          className={`px-4 py-1.5 text-xs font-medium transition-all ${
-            activeTab === '3d'
-              ? 'bg-foreground text-background'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-          }`}
-        >
-          Édition 3D
-        </button>
-        <button
-          onClick={() => setActiveTab('2d')}
-          className={`px-4 py-1.5 text-xs font-medium border-x border-border transition-all ${
-            activeTab === '2d'
-              ? 'bg-foreground text-background'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-          }`}
-        >
-          Édition 2D
-        </button>
-        <button
-          onClick={() => setActiveTab('bat')}
-          className={`px-4 py-1.5 text-xs font-medium transition-all ${
-            activeTab === 'bat'
-              ? 'bg-foreground text-background'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-          }`}
-        >
-          Aperçu BAT
-        </button>
+      {/* Left: Tab toggle */}
+      <div ref={containerRef} className="relative flex items-center rounded-full border border-border overflow-hidden">
+        {/* Sliding pill */}
+        <div
+          className="absolute top-0 h-full bg-foreground rounded-full transition-all duration-300 ease-out"
+          style={{ left: pillStyle.left, width: pillStyle.width }}
+        />
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            data-tab-btn
+            onClick={() => setActiveTab(tab)}
+            className={`relative z-10 px-4 py-1.5 text-xs font-medium transition-colors duration-200 ${
+              activeTab === tab
+                ? 'text-background'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {labels[tab]}
+          </button>
+        ))}
       </div>
 
       {/* Center: Save & Share */}
