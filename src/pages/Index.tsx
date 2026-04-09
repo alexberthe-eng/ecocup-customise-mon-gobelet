@@ -20,7 +20,7 @@ const Index = () => {
   const { activeTab, tourCompleted, startTour, gridVisible, setGridVisible, currentDesign } = useStore();
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
-  const [showWarning, setShowWarning] = useState(true);
+  const [showWarning, setShowWarning] = useState(false);
   const [showAIWizard, setShowAIWizard] = useState(false);
   const [aiEditElementId, setAiEditElementId] = useState<string | null>(null);
 
