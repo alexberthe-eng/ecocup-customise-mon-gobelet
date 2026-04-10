@@ -25,6 +25,16 @@ export interface DesignElement {
   align?: 'left' | 'center' | 'right';
 }
 
+export interface GraduationStyle {
+  svgId: string | null;
+  color: string;
+  strokeWidth: 'thin' | 'normal' | 'thick';
+  strokeStyle: 'solid' | 'dashed' | 'dotted';
+  fontSize: 'small' | 'normal' | 'large';
+  offsetDx: number;
+  hiddenMarks: string[];
+}
+
 export interface Design {
   id: string;
   name: string;
@@ -33,9 +43,8 @@ export interface Design {
   graduation: string;
   quantity: number;
   comment: string;
-  /** Single offset for the entire graduation block (pixels) */
   graduationOffset: { dx: number; dy: number };
-  /** Base64 thumbnail captured when adding to cart */
+  graduationStyle: GraduationStyle;
   thumbnail?: string;
   productType: string;
   capacity: string;
