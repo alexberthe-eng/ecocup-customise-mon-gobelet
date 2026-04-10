@@ -236,14 +236,15 @@ export const useStore = create<AppState>((set, get) => ({
   setProductType: (t) => {
     const caps = PRODUCT_CAPACITIES[t]?.capacities ?? ['33cl'];
     const newCap = caps[0];
-    const newGrad = capacityToGraduation(newCap);
+    const newGrad = capacityToGraduation(t);
     set((s) => ({
       currentDesign: { ...s.currentDesign, productType: t, capacity: newCap, graduation: newGrad },
     }));
   },
 
   setCapacity: (c) => {
-    const newGrad = capacityToGraduation(c);
+    const { productType } = get().currentDesign;
+    const newGrad = capacityToGraduation(productType);
     set((s) => ({
       currentDesign: { ...s.currentDesign, capacity: c, graduation: newGrad },
     }));
