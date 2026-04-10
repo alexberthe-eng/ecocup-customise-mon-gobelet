@@ -25,7 +25,7 @@ const RightPanel = () => {
   const isDesktop = useIsDesktop();
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const unitPrice = getUnitPrice(currentDesign.quantity);
+  const unitPrice = getUnitPrice(currentDesign.quantity, currentDesign.productType);
   const subtotal = unitPrice * currentDesign.quantity;
 
   const productInfo = PRODUCT_CAPACITIES[currentDesign.productType];
@@ -67,21 +67,38 @@ const RightPanel = () => {
         <select
           value={currentDesign.productType}
           onChange={(e) => setProductType(e.target.value)}
-          className="w-full text-xs border-thin rounded-md px-2 py-1.5 bg-background mb-2"
+          className="w-full text-xs border-thin rounded-md px-2 py-2 bg-background mb-2"
         >
-          {Object.entries(PRODUCT_CAPACITIES).map(([key, val]) => (
-            <option key={key} value={key}>{val.label}</option>
-          ))}
+          <optgroup label="Gobelets Ecocup">
+            {Object.entries(PRODUCT_CAPACITIES)
+              .filter(([key]) => key !== 'eco-carafe')
+              .map(([key, val]) => (
+                <option key={key} value={key}>
+                  {val.ref} — {val.label} {val.capacities[0]}
+                </option>
+              ))}
+          </optgroup>
+          <optgroup label="Carafe">
+            {Object.entries(PRODUCT_CAPACITIES)
+              .filter(([key]) => key === 'eco-carafe')
+              .map(([key, val]) => (
+                <option key={key} value={key}>
+                  {val.ref} — {val.label}
+                </option>
+              ))}
+          </optgroup>
         </select>
-        <select
-          value={currentDesign.capacity}
-          onChange={(e) => setCapacity(e.target.value)}
-          className="w-full text-xs border-thin rounded-md px-2 py-1.5 bg-background"
-        >
-          {capacities.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+        {capacities.length > 1 && (
+          <select
+            value={currentDesign.capacity}
+            onChange={(e) => setCapacity(e.target.value)}
+            className="w-full text-xs border-thin rounded-md px-2 py-1.5 bg-background"
+          >
+            {capacities.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        )}
       </div>
 
 
