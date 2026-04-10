@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Plus, Share2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
-import html2canvas from 'html2canvas';
+
 
 const BottomBar = () => {
   const { cart, currentDesign, addToCart, editCartDesign, setShowCartPanel } = useStore();
