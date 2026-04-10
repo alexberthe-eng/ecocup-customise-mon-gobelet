@@ -159,15 +159,24 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
         )}
       </div>
 
+      {lowRes && (
+        <div className="flex items-start gap-2 p-2.5 mb-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-300">
+          <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+          <p className="text-[10px] leading-snug">
+            <span className="font-semibold">Résolution faible.</span> Votre image fait moins de {MIN_RECOMMENDED_PX}px. Le rendu d'impression risque d'être pixelisé. Privilégiez un fichier haute résolution.
+          </p>
+        </div>
+      )}
+
       <div className="text-[11px] text-foreground mb-1">
-        <span className="font-medium">Formats de fichier :</span> PNG, JPG
+        <span className="font-medium">Formats de fichier :</span> PNG, JPG, PDF
       </div>
       <div className="text-[11px] text-foreground mb-4">
         <span className="font-medium">Taille de fichier :</span> 10 Mo max.
       </div>
 
       <p className="text-[11px] text-muted-foreground text-center mb-4">
-        Importez un fichier image à ajouter à votre design.
+        Importez un fichier image ou PDF à ajouter à votre design.
       </p>
 
       {/* Mask selector */}
