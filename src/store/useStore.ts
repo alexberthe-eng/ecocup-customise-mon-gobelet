@@ -19,6 +19,10 @@ export interface DesignElement {
   fontFamily?: string;
   fontSize?: number;
   maskType?: MaskType;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  align?: 'left' | 'center' | 'right';
 }
 
 export interface Design {
