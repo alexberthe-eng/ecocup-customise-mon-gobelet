@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Save, Undo2, Redo2, Copy, ClipboardPaste, Trash2, PenLine, Box, FileCheck, Grid3x3, Download, Sparkles } from 'lucide-react';
+import { useStore as useGlobalStore } from '@/store/useStore';
 import { useStore, DesignElement } from '@/store/useStore';
 
 interface ToolBarProps {
@@ -64,7 +65,7 @@ const ToolBar = ({ onExportPNG, onOpenAIWizard }: ToolBarProps) => {
 
   return (
     <div className="h-11 flex items-center justify-center px-3 gap-1 border-b border-thin bg-background shrink-0">
-      <Btn icon={Save} title="Sauvegarder" onClick={() => document.dispatchEvent(new CustomEvent('ecocup-save'))} data-tour="toolbar-save" />
+      <SaveBtn />
       <Sep />
       <Btn icon={Undo2} title="Annuler (Ctrl+Z)" onClick={undo} disabled={!canUndo} />
       <Btn icon={Redo2} title="Rétablir (Ctrl+Y)" onClick={redo} disabled={!canRedo} />
