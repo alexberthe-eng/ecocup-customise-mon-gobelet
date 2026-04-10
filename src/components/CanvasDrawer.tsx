@@ -55,16 +55,57 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<{ dataUrl: string; name: string } | null>(null);
   const [selectedMask, setSelectedMask] = useState<MaskType>(null);
+  const [lowRes, setLowRes] = useState(false);
   const { addElement, currentDesign, setSelectedElementId } = useStore();
 
-  const handleFile = (file: File) => {
+  const checkResolution = (dataUrl: string) => {
+    const img = new Image();
+    img.onload = () => {
+      if (img.naturalWidth < MIN_RECOMMENDED_PX || img.naturalHeight < MIN_RECOMMENDED_PX) {
+        setLowRes(true);
+      } else {
+        setLowRes(false);
+      }
+    };
+    img.src = dataUrl;
+  };
+
+  const handleFile = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
       alert('Fichier trop volumineux (max 10 Mo)');
       return;
     }
+
+    // Handle PDF files
+    if (file.type === 'application/pdf') {
+      try {
+        const pdfjs = await import('pdfjs-dist');
+        pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+        const page = await pdf.getPage(1);
+        const scale = 2; // render at 2x for quality
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d')!;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        const dataUrl = canvas.toDataURL('image/png');
+        setSelectedFile({ dataUrl, name: file.name });
+        checkResolution(dataUrl);
+      } catch {
+        alert('Impossible de lire ce fichier PDF.');
+      }
+      return;
+    }
+
+    // Handle image files
     const reader = new FileReader();
     reader.onload = (e) => {
-      setSelectedFile({ dataUrl: e.target?.result as string, name: file.name });
+      const dataUrl = e.target?.result as string;
+      setSelectedFile({ dataUrl, name: file.name });
+      checkResolution(dataUrl);
     };
     reader.readAsDataURL(file);
   };
