@@ -56,6 +56,28 @@ const Index = () => {
     return () => document.removeEventListener('ecocup-save', handler);
   }, []);
 
+  const handleStartModalClose = () => {
+    setShowStartModal(false);
+    setShowWarning(true);
+  };
+
+  const handleLoadDesign = (savedDesign: any) => {
+    const designData = savedDesign.design_data;
+    if (designData) {
+      useStore.setState({
+        currentDesign: {
+          ...designData,
+          id: designData.id || crypto.randomUUID(),
+        },
+        history: [designData],
+        historyIndex: 0,
+        isDirty: false,
+      });
+    }
+    setShowStartModal(false);
+    setShowWarning(true);
+  };
+
   const handleWarningClose = () => {
     setShowWarning(false);
     setTimeout(startTour, 400);
@@ -84,6 +106,7 @@ const Index = () => {
 
       {isMobile && <LeftSidebar onOpenAIWizard={() => setShowAIWizard(true)} />}
 
+      <StartModal open={showStartModal} onClose={handleStartModalClose} onLoadDesign={handleLoadDesign} />
       <WarningModal open={showWarning} onClose={handleWarningClose} />
       <OnboardingTour />
       <CartPanel />
