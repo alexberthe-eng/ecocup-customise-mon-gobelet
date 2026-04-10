@@ -397,7 +397,7 @@ export const useStore = create<AppState>((set, get) => ({
   startTour: () => set({ showTour: true, tourStep: 0 }),
   nextTourStep: () =>
     set((s) => {
-      if (s.tourStep >= 4) {
+      if (s.tourStep >= 6) {
         localStorage.setItem('tourCompleted', 'true');
         return { showTour: false, tourCompleted: true };
       }
