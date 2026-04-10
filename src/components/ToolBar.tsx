@@ -74,7 +74,7 @@ const ToolBar = ({ onExportPNG, onOpenAIWizard }: ToolBarProps) => {
   );
 
   return (
-    <div className="h-11 flex items-center justify-center px-3 gap-1 border-b border-thin bg-background shrink-0">
+    <div className="h-11 flex items-center justify-start sm:justify-center px-3 gap-1 border-b border-thin bg-background shrink-0 overflow-x-auto scrollbar-none">
       <SaveBtn />
       <Sep />
       <Btn icon={Undo2} title="Annuler (Ctrl+Z)" onClick={undo} disabled={!canUndo} />
