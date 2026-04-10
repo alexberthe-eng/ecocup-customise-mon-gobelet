@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, Ruler, Sparkles, HelpCircle, Headphones, Plus, X, Search, MessageCircle } from 'lucide-react';
 import { useStore, ActiveTool, MaskType } from '@/store/useStore';
+import { getGraduationMarks } from '@/components/GraduationMarks';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import ToggleSwitch from '@/components/ToggleSwitch';
