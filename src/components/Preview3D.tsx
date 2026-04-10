@@ -5,7 +5,6 @@ import * as THREE from 'three';
 import { useStore, DesignElement } from '@/store/useStore';
 import { getGraduationMarks } from '@/components/GraduationMarks';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
-import { ElementPanel } from '@/components/ElementPanel';
 import { useIsMobile } from '@/hooks/use-mobile';
 import CanvasDrawer from '@/components/CanvasDrawer';
 import ecocupLogo from '@/assets/ecocup-logo.png';
