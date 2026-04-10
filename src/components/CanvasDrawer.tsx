@@ -140,9 +140,13 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
       >
         {selectedFile ? (
           <div className="flex flex-col items-center gap-2">
-            <img src={selectedFile.dataUrl} alt="" className="max-h-24 object-contain rounded" />
+            {selectedFile.name.toLowerCase().endsWith('.pdf') ? (
+              <div className="w-16 h-20 bg-destructive/10 rounded flex items-center justify-center text-destructive text-xs font-bold">PDF</div>
+            ) : (
+              <img src={selectedFile.dataUrl} alt="" className="max-h-24 object-contain rounded" />
+            )}
             <p className="text-[10px] text-muted-foreground truncate max-w-full">{selectedFile.name}</p>
-            <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }} className="text-[10px] text-destructive hover:underline">Supprimer</button>
+            <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null); setLowRes(false); }} className="text-[10px] text-destructive hover:underline">Supprimer</button>
           </div>
         ) : (
           <>
