@@ -4,6 +4,7 @@ import { useStore, ActiveTool, MaskType } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import ToggleSwitch from '@/components/ToggleSwitch';
+import GraduationPanel from '@/components/GraduationPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -342,15 +343,7 @@ const MaskPanel = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
-const GraduationPanel = () => {
-  const { showGraduation, showGraduationMask, currentDesign, setShowGraduation, setShowGraduationMask, setGraduation } = useStore();
-  return (
-    <div className="space-y-3">
-      <ToggleSwitch label="Afficher graduation" checked={showGraduation} onChange={setShowGraduation} />
-      <ToggleSwitch label="Afficher masque" checked={showGraduationMask} onChange={setShowGraduationMask} />
-    </div>
-  );
-};
+/* GraduationPanel is now imported from its own file */
 
 /* ─── My Designs Panel ─── */
 function timeAgo(dateStr: string): string {
