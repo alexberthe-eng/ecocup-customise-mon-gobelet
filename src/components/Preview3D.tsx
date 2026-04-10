@@ -412,14 +412,6 @@ const Preview3D = () => {
         </div>
       )}
 
-      {/* Property panel for selected element */}
-      {selectedElement && (
-        <ElementPanel
-          element={selectedElement}
-          isMobile={isMobile}
-          anchor={!isMobile ? { left: 200, top: 10 } : undefined}
-        />
-      )}
 
       {/* Drag hint */}
       {isDragging && (
