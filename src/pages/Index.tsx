@@ -12,6 +12,7 @@ import PreviewBAT from '@/components/PreviewBAT';
 import CartPanel from '@/components/CartPanel';
 import OnboardingTour from '@/components/OnboardingTour';
 import WarningModal from '@/components/WarningModal';
+import StartModal from '@/components/StartModal';
 import SaveModal from '@/components/SaveModal';
 import AIWizardModal from '@/components/AIWizardModal';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -21,6 +22,7 @@ const DEFAULT_NAME = 'Gobelet personnalisé par vos soins – ECO 30 Digital';
 const Index = () => {
   const { activeTab, startTour, currentDesign } = useStore();
   const isMobile = useIsMobile();
+  const [showStartModal, setShowStartModal] = useState(true);
   const [showWarning, setShowWarning] = useState(false);
   const [showAIWizard, setShowAIWizard] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
