@@ -9,9 +9,7 @@ import RightPanel from '@/components/RightPanel';
 import Editor2D from '@/components/Editor2D';
 import Preview3D from '@/components/Preview3D';
 import PreviewBAT from '@/components/PreviewBAT';
-import CartPanel from '@/components/CartPanel';
 import OnboardingTour from '@/components/OnboardingTour';
-import WarningModal from '@/components/WarningModal';
 import StartModal from '@/components/StartModal';
 import SaveModal from '@/components/SaveModal';
 import AIWizardModal from '@/components/AIWizardModal';
@@ -20,10 +18,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 const DEFAULT_NAME = 'Mon gobelet personnalisé — ECO 30';
 
 const Index = () => {
-  const { activeTab, startTour, currentDesign } = useStore();
+  const { activeTab, startTour, currentDesign, tourCompleted } = useStore();
   const isMobile = useIsMobile();
   const [showStartModal, setShowStartModal] = useState(true);
-  const [showWarning, setShowWarning] = useState(false);
   const [showAIWizard, setShowAIWizard] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [aiEditElementId, setAiEditElementId] = useState<string | null>(null);
@@ -58,7 +55,10 @@ const Index = () => {
 
   const handleStartModalClose = () => {
     setShowStartModal(false);
-    setShowWarning(true);
+    // Launch tour only on first visit
+    if (!tourCompleted) {
+      setTimeout(startTour, 400);
+    }
   };
 
   const handleLoadDesign = (savedDesign: any) => {
@@ -75,12 +75,6 @@ const Index = () => {
       });
     }
     setShowStartModal(false);
-    setShowWarning(true);
-  };
-
-  const handleWarningClose = () => {
-    setShowWarning(false);
-    setTimeout(startTour, 400);
   };
 
   return (
@@ -107,9 +101,7 @@ const Index = () => {
       {isMobile && <LeftSidebar onOpenAIWizard={() => setShowAIWizard(true)} />}
 
       <StartModal open={showStartModal} onClose={handleStartModalClose} onLoadDesign={handleLoadDesign} />
-      <WarningModal open={showWarning} onClose={handleWarningClose} />
       <OnboardingTour />
-      <CartPanel />
       <SaveModal open={showSaveModal} onClose={() => setShowSaveModal(false)} />
       <AIWizardModal open={showAIWizard} onClose={() => { setShowAIWizard(false); setAiEditElementId(null); }} editElementId={aiEditElementId} />
     </div>
