@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Menu, Check, X, Loader2, Copy, User, ChevronDown } from 'lucide-react';
 import { useStore, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -8,6 +9,7 @@ import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
 
 const TopBar = () => {
+  const navigate = useNavigate();
   const cart = useStore((s) => s.cart);
   const designName = useStore((s) => s.currentDesign.name);
   const cupColor = useStore((s) => s.currentDesign.cupColor);
@@ -201,7 +203,7 @@ const TopBar = () => {
           </div>
 
           <button
-            onClick={() => setShowCartPanel(true)}
+            onClick={() => navigate('/panier')}
             className="relative flex items-center justify-center p-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
             title="Mon panier"
           >
