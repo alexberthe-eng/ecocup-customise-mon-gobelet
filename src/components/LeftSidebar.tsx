@@ -556,6 +556,12 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
           );
         })}
         <div className="flex-1" />
+        <button
+          onClick={() => handleTabClick('my-designs')}
+          className={`w-12 h-[52px] flex flex-col items-center justify-center gap-0.5 text-[9px] transition-all ${activePanel === 'my-designs' ? 'bg-secondary text-foreground border-r-2 border-foreground rounded-l-lg rounded-r-none' : 'text-muted-foreground hover:bg-secondary rounded-lg'}`}
+        >
+          <FolderOpen size={18} /><span className="text-[8px]">Mes designs</span>
+        </button>
         <button data-tour="aide" onClick={startTour} className="w-12 h-[52px] flex flex-col items-center justify-center gap-0.5 text-[9px] text-muted-foreground hover:bg-secondary rounded-lg"><HelpCircle size={18} /><span>Aide</span></button>
         <Popover>
           <PopoverTrigger asChild><button className="w-12 h-[52px] flex flex-col items-center justify-center gap-0.5 text-[9px] text-muted-foreground hover:bg-secondary rounded-lg"><Headphones size={18} /><span className="text-[8px]">Assistance</span></button></PopoverTrigger>
