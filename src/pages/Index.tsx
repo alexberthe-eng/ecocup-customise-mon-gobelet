@@ -13,6 +13,7 @@ import OnboardingTour from '@/components/OnboardingTour';
 import StartModal from '@/components/StartModal';
 import SaveModal from '@/components/SaveModal';
 import AIWizardModal from '@/components/AIWizardModal';
+import SaveReminderToast from '@/components/SaveReminderToast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const DEFAULT_NAME = 'Mon gobelet personnalisé — ECO 30';
@@ -105,6 +106,7 @@ const Index = () => {
       <OnboardingTour />
       <SaveModal open={showSaveModal} onClose={() => setShowSaveModal(false)} />
       <AIWizardModal open={showAIWizard} onClose={() => { setShowAIWizard(false); setAiEditElementId(null); }} editElementId={aiEditElementId} />
+      <SaveReminderToast />
     </div>
   );
 };
