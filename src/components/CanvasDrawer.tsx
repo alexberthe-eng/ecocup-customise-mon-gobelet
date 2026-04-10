@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
-import { X, Search } from 'lucide-react';
+import { X, Search, AlertTriangle } from 'lucide-react';
 import { useStore, MaskType, OpenDrawer } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+const MIN_RECOMMENDED_PX = 500; // minimum width or height for good print quality
 
 /* ─── Shared drawer shell ─── */
 const DrawerShell = ({
