@@ -12,6 +12,7 @@ import PreviewBAT from '@/components/PreviewBAT';
 import CartPanel from '@/components/CartPanel';
 import OnboardingTour from '@/components/OnboardingTour';
 import WarningModal from '@/components/WarningModal';
+import StartModal from '@/components/StartModal';
 import SaveModal from '@/components/SaveModal';
 import AIWizardModal from '@/components/AIWizardModal';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -21,6 +22,7 @@ const DEFAULT_NAME = 'Gobelet personnalisé par vos soins – ECO 30 Digital';
 const Index = () => {
   const { activeTab, startTour, currentDesign } = useStore();
   const isMobile = useIsMobile();
+  const [showStartModal, setShowStartModal] = useState(true);
   const [showWarning, setShowWarning] = useState(false);
   const [showAIWizard, setShowAIWizard] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -54,6 +56,28 @@ const Index = () => {
     return () => document.removeEventListener('ecocup-save', handler);
   }, []);
 
+  const handleStartModalClose = () => {
+    setShowStartModal(false);
+    setShowWarning(true);
+  };
+
+  const handleLoadDesign = (savedDesign: any) => {
+    const designData = savedDesign.design_data;
+    if (designData) {
+      useStore.setState({
+        currentDesign: {
+          ...designData,
+          id: designData.id || crypto.randomUUID(),
+        },
+        history: [designData],
+        historyIndex: 0,
+        isDirty: false,
+      });
+    }
+    setShowStartModal(false);
+    setShowWarning(true);
+  };
+
   const handleWarningClose = () => {
     setShowWarning(false);
     setTimeout(startTour, 400);
@@ -82,6 +106,7 @@ const Index = () => {
 
       {isMobile && <LeftSidebar onOpenAIWizard={() => setShowAIWizard(true)} />}
 
+      <StartModal open={showStartModal} onClose={handleStartModalClose} onLoadDesign={handleLoadDesign} />
       <WarningModal open={showWarning} onClose={handleWarningClose} />
       <OnboardingTour />
       <CartPanel />

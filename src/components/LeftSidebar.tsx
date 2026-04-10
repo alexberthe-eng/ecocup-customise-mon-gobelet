@@ -1,9 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, Ruler, Sparkles, HelpCircle, Headphones, Plus, X, Search, MessageCircle } from 'lucide-react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, Ruler, Sparkles, HelpCircle, Headphones, Plus, X, Search, MessageCircle, FolderOpen, Loader2 } from 'lucide-react';
 import { useStore, ActiveTool, MaskType } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import ToggleSwitch from '@/components/ToggleSwitch';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 /* ─── Tab definitions ─── */
 const TABS = [
@@ -17,7 +22,9 @@ const TABS = [
   { id: 'ai-wizard', icon: Sparkles, label: 'IA', title: "Créer avec l'IA" },
 ] as const;
 
-type PanelId = typeof TABS[number]['id'] | null;
+const BOTTOM_TAB = { id: 'my-designs' as const, icon: FolderOpen, label: 'Mes designs', title: 'Mes créations' };
+
+type PanelId = typeof TABS[number]['id'] | 'my-designs' | null;
 
 /* ─── Data ─── */
 const DEMO_STICKERS = [
@@ -295,6 +302,138 @@ const GraduationPanel = () => {
   );
 };
 
+/* ─── My Designs Panel ─── */
+function timeAgo(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "Aujourd'hui";
+  if (diffDays === 1) return 'Hier';
+  if (diffDays < 30) return `Il y a ${diffDays} jours`;
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
+const MyDesignsPanel = () => {
+  const navigate = useNavigate();
+  const isDirty = useStore((s) => s.isDirty);
+  const [user, setUser] = useState<any>(null);
+  const [designs, setDesigns] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [confirmDesign, setConfirmDesign] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const { data } = await supabase
+          .from('saved_designs')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        setDesigns(data || []);
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  const doLoad = (design: any) => {
+    const designData = design.design_data;
+    if (designData) {
+      useStore.setState({
+        currentDesign: { ...designData, id: designData.id || crypto.randomUUID() },
+        history: [designData],
+        historyIndex: 0,
+        isDirty: false,
+      });
+    }
+    setConfirmDesign(null);
+    toast('Design chargé');
+  };
+
+  const handleClick = (design: any) => {
+    if (isDirty) {
+      setConfirmDesign(design);
+    } else {
+      doLoad(design);
+    }
+  };
+
+  const handleSaveFirst = () => {
+    document.dispatchEvent(new CustomEvent('ecocup-save'));
+    setTimeout(() => { if (confirmDesign) doLoad(confirmDesign); }, 500);
+  };
+
+  if (!user) {
+    return (
+      <div className="space-y-3 text-center py-6">
+        <p className="text-xs text-muted-foreground">Connectez-vous pour accéder à vos créations sauvegardées</p>
+        <button onClick={() => navigate('/auth?redirect=/')} className="text-xs bg-primary text-primary-foreground rounded-lg px-4 py-2 font-medium hover:opacity-90">Se connecter</button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 size={20} className="animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {designs.length === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-6">Aucun design sauvegardé</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          {designs.map((d) => (
+            <button
+              key={d.id}
+              onClick={() => handleClick(d)}
+              className="border border-border rounded-lg overflow-hidden cursor-pointer transition-all hover:-translate-y-px text-left hover:border-foreground"
+            >
+              <div style={{ height: 70, overflow: 'hidden' }}>
+                {d.thumbnail_url ? (
+                  <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full" style={{ backgroundColor: d.cup_color || '#f2f2f2' }} />
+                )}
+              </div>
+              <div className="p-1.5">
+                <div className="truncate text-[10px] font-medium">{d.design_name}</div>
+                <div className="text-[9px] text-muted-foreground">{timeAgo(d.created_at)}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+      <a href="/account" className="block text-center text-primary hover:underline" style={{ fontSize: 11 }}>
+        Voir tout →
+      </a>
+
+      {/* Confirm dialog */}
+      <Dialog open={!!confirmDesign} onOpenChange={() => setConfirmDesign(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Charger ce design ?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Charger ce design remplacera votre design en cours. Voulez-vous d'abord sauvegarder ?
+          </p>
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <Button variant="ghost" size="sm" onClick={() => { if (confirmDesign) doLoad(confirmDesign); }}>Ignorer</Button>
+            <Button variant="outline" size="sm" onClick={handleSaveFirst}>Sauvegarder d'abord</Button>
+            <Button size="sm" onClick={() => { if (confirmDesign) doLoad(confirmDesign); }}>Charger</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
 /* ─── Mobile Color Popover ─── */
 const MobileColorPopover = () => {
   const { currentDesign, setCupColor, setShowColorPopover } = useStore();
@@ -381,7 +520,7 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
   }
 
   /* ── Desktop ── */
-  const currentTab = TABS.find(t => t.id === activePanel);
+  const currentTab = TABS.find(t => t.id === activePanel) || (activePanel === 'my-designs' ? BOTTOM_TAB : undefined);
   const renderPanelContent = () => {
     const close = () => setActivePanel(null);
     switch (activePanel) {
@@ -398,6 +537,7 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
           <button onClick={onOpenAIWizard} className="w-full py-2.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:opacity-90 flex items-center justify-center gap-1.5"><Sparkles size={14} /> Générer un visuel</button>
         </div>
       );
+      case 'my-designs': return <MyDesignsPanel />;
       default: return null;
     }
   };
@@ -416,6 +556,12 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
           );
         })}
         <div className="flex-1" />
+        <button
+          onClick={() => handleTabClick('my-designs')}
+          className={`w-12 h-[52px] flex flex-col items-center justify-center gap-0.5 text-[9px] transition-all ${activePanel === 'my-designs' ? 'bg-secondary text-foreground border-r-2 border-foreground rounded-l-lg rounded-r-none' : 'text-muted-foreground hover:bg-secondary rounded-lg'}`}
+        >
+          <FolderOpen size={18} /><span className="text-[8px]">Mes designs</span>
+        </button>
         <button data-tour="aide" onClick={startTour} className="w-12 h-[52px] flex flex-col items-center justify-center gap-0.5 text-[9px] text-muted-foreground hover:bg-secondary rounded-lg"><HelpCircle size={18} /><span>Aide</span></button>
         <Popover>
           <PopoverTrigger asChild><button className="w-12 h-[52px] flex flex-col items-center justify-center gap-0.5 text-[9px] text-muted-foreground hover:bg-secondary rounded-lg"><Headphones size={18} /><span className="text-[8px]">Assistance</span></button></PopoverTrigger>
