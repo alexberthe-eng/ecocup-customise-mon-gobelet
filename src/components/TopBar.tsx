@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ShoppingCart, Save, Share2, Menu, Check, X, LogOut, Loader2, Copy, User, Download } from 'lucide-react';
+import { ShoppingCart, Menu, Check, X, Loader2, Copy, User, ChevronDown } from 'lucide-react';
 import { useStore, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,8 +13,6 @@ const TopBar = () => {
   const cupColor = useStore((s) => s.currentDesign.cupColor);
   const productType = useStore((s) => s.currentDesign.productType);
   const capacity = useStore((s) => s.currentDesign.capacity);
-  const isDirty = useStore((s) => s.isDirty);
-  const setIsDirty = useStore((s) => s.setIsDirty);
   const setDesignName = useStore((s) => s.setDesignName);
   const showRightPanel = useStore((s) => s.showRightPanel);
   const setShowRightPanel = useStore((s) => s.setShowRightPanel);
@@ -27,7 +25,9 @@ const TopBar = () => {
   const [user, setUser] = useState<any>(null);
   const [sharing, setSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const productLabel = PRODUCT_CAPACITIES[productType]?.label ?? 'Gobelet';
 
@@ -41,16 +41,11 @@ const TopBar = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Listen for bottom bar save/share events
+  // Listen for share events from bottom bar
   useEffect(() => {
-    const onDoSave = () => handleSaveClick();
     const onShare = () => handleShare();
-    document.addEventListener('ecocup-do-save', onDoSave);
     document.addEventListener('ecocup-share', onShare);
-    return () => {
-      document.removeEventListener('ecocup-do-save', onDoSave);
-      document.removeEventListener('ecocup-share', onShare);
-    };
+    return () => document.removeEventListener('ecocup-share', onShare);
   });
 
   useEffect(() => {
@@ -60,61 +55,16 @@ const TopBar = () => {
     }
   }, [editing, designName]);
 
-  const handleSaveClick = async () => {
-    try {
-      const currentDesign = useStore.getState().currentDesign;
-      const saveName = currentDesign.name;
-
-      if (user) {
-        // Sauvegarde en base de données pour les utilisateurs connectés
-        let thumbnailUrl: string | undefined;
-        const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
-        if (canvasEl) {
-          const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
-          const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
-          const fileName = `${user.id}/${crypto.randomUUID()}.png`;
-          await supabase.storage.from('design-thumbnails').upload(fileName, blob, { contentType: 'image/png' });
-          const { data: urlData } = supabase.storage.from('design-thumbnails').getPublicUrl(fileName);
-          thumbnailUrl = urlData.publicUrl;
-        }
-
-        const { error } = await supabase.from('saved_designs').insert({
-          user_id: user.id,
-          design_name: saveName,
-          cup_color: currentDesign.cupColor,
-          design_data: currentDesign as any,
-          thumbnail_url: thumbnailUrl,
-        });
-
-        if (error) throw error;
-        setIsDirty(false);
-        toast.success('Design sauvegardé !', { description: 'Retrouvez-le dans votre espace client.' });
-      } else {
-        // Sauvegarde locale pour les utilisateurs non connectés
-        const savedDesigns = JSON.parse(localStorage.getItem('ecocup_saved_designs') || '[]');
-        const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
-        let thumbnailDataUrl: string | undefined;
-        if (canvasEl) {
-          const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
-          thumbnailDataUrl = canvas.toDataURL('image/png');
-        }
-        savedDesigns.push({
-          id: crypto.randomUUID(),
-          design_name: saveName,
-          cup_color: currentDesign.cupColor,
-          design_data: currentDesign,
-          thumbnail_url: thumbnailDataUrl,
-          created_at: new Date().toISOString(),
-        });
-        localStorage.setItem('ecocup_saved_designs', JSON.stringify(savedDesigns));
-        setIsDirty(false);
-        toast.success('Design sauvegardé localement !', { description: 'Connectez-vous pour le retrouver partout.' });
+  // Close user menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
       }
-    } catch (err) {
-      console.error(err);
-      toast.error('Erreur lors de la sauvegarde');
-    }
-  };
+    };
+    if (showUserMenu) document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showUserMenu]);
 
   const handleAuthSuccess = () => {
     setShowAuth(false);
@@ -131,6 +81,7 @@ const TopBar = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setShowUserMenu(false);
   };
 
   const handleShare = async () => {
@@ -143,7 +94,6 @@ const TopBar = () => {
         setSharing(false);
         return;
       }
-
       const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 2 });
       const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
       const fileName = `${crypto.randomUUID()}.png`;
@@ -180,8 +130,8 @@ const TopBar = () => {
         <div className="flex items-center gap-2 md:gap-4 min-w-0">
           <span className="font-bold text-sm tracking-wide shrink-0">ECOCUP®</span>
           {!isMobile && !editing && (
-            <span className="text-[11px] text-muted-foreground truncate">
-              — {productLabel} {capacity}
+            <span className="text-[11px] text-muted-foreground truncate cursor-pointer" onClick={() => setEditing(true)}>
+              — {designName} · {productLabel} {capacity}
             </span>
           )}
           {!isMobile && editing && (
@@ -207,49 +157,49 @@ const TopBar = () => {
           )}
         </div>
         <div className="flex items-center gap-1.5 md:gap-2">
-          <button
-            onClick={() => document.dispatchEvent(new CustomEvent('ecocup-save'))}
-            className="relative flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
-            title="Sauvegarder"
-          >
-            <Save size={14} />
-            {isDirty && <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-orange-500 -translate-y-0.5 translate-x-0.5" />}
-          </button>
-          <button
-            onClick={handleShare}
-            disabled={sharing}
-            className="flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors disabled:opacity-50"
-            title="Partager"
-          >
-            {sharing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
-          </button>
-          {!isMobile && user && (
-            <>
-              <a
-                href="/account"
-                className="flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
-                title="Mon compte"
-              >
-                <User size={14} />
-              </a>
-              <button
-                onClick={handleLogout}
-                className="flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
-                title="Déconnexion"
-              >
-                <LogOut size={14} />
-              </button>
-            </>
-          )}
-          {!isMobile && !user && (
-            <a
-              href="/auth"
-              className="flex items-center justify-center p-1.5 text-xs border-thin rounded-md hover:bg-secondary transition-colors"
-              title="Connexion"
+          {/* User dropdown */}
+          <div className="relative" ref={userMenuRef}>
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="w-8 h-8 flex items-center justify-center rounded-md border border-border hover:bg-secondary transition-colors"
+              title={user ? 'Mon compte' : 'Connexion'}
             >
-              <User size={14} />
-            </a>
-          )}
+              <User size={16} />
+            </button>
+            {showUserMenu && (
+              <div className="absolute right-0 top-full mt-1 w-52 bg-card border border-border rounded-lg shadow-lg z-50 py-1">
+                {user ? (
+                  <>
+                    <div className="px-3 py-2 text-xs text-muted-foreground truncate border-b border-border">
+                      {user.email}
+                    </div>
+                    <a
+                      href="/account"
+                      className="block px-3 py-2 text-xs hover:bg-secondary transition-colors"
+                      onClick={() => setShowUserMenu(false)}
+                    >
+                      Mon espace client
+                    </a>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-3 py-2 text-xs hover:bg-secondary transition-colors text-destructive"
+                    >
+                      Se déconnecter
+                    </button>
+                  </>
+                ) : (
+                  <a
+                    href="/auth"
+                    className="block px-3 py-2 text-xs hover:bg-secondary transition-colors"
+                    onClick={() => setShowUserMenu(false)}
+                  >
+                    Se connecter
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => setShowCartPanel(true)}
             className="relative flex items-center justify-center p-1.5 text-xs bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"

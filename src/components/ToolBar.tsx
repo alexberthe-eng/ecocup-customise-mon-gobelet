@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Save, Undo2, Redo2, Copy, ClipboardPaste, Trash2, PenLine, Box, FileCheck, Grid3x3, Download, Sparkles } from 'lucide-react';
+import { useStore as useGlobalStore } from '@/store/useStore';
 import { useStore, DesignElement } from '@/store/useStore';
 
 interface ToolBarProps {
@@ -9,6 +10,16 @@ interface ToolBarProps {
 
 const ToolBar = ({ onExportPNG, onOpenAIWizard }: ToolBarProps) => {
   const { undo, redo, historyIndex, history, selectedElementId, removeElement, gridVisible, setGridVisible, activeTab, setActiveTab, currentDesign, addElement, setSelectedElementId } = useStore();
+  const isDirty = useGlobalStore((s) => s.isDirty);
+
+  const SaveBtn = () => (
+    <div className="relative shrink-0">
+      <Btn icon={Save} title="Sauvegarder" onClick={() => document.dispatchEvent(new CustomEvent('ecocup-save'))} data-tour="toolbar-save" />
+      {isDirty && (
+        <div className="absolute top-0.5 right-0.5 w-[7px] h-[7px] rounded-full bg-orange-500 border-[1.5px] border-background pointer-events-none" />
+      )}
+    </div>
+  );
   const [clipboardElement, setClipboardElement] = useState<DesignElement | null>(null);
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
@@ -64,7 +75,7 @@ const ToolBar = ({ onExportPNG, onOpenAIWizard }: ToolBarProps) => {
 
   return (
     <div className="h-11 flex items-center justify-center px-3 gap-1 border-b border-thin bg-background shrink-0">
-      <Btn icon={Save} title="Sauvegarder" onClick={() => document.dispatchEvent(new CustomEvent('ecocup-save'))} data-tour="toolbar-save" />
+      <SaveBtn />
       <Sep />
       <Btn icon={Undo2} title="Annuler (Ctrl+Z)" onClick={undo} disabled={!canUndo} />
       <Btn icon={Redo2} title="Rétablir (Ctrl+Y)" onClick={redo} disabled={!canRedo} />
