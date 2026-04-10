@@ -4,6 +4,7 @@ import { useStore, ActiveTool, MaskType } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import ToggleSwitch from '@/components/ToggleSwitch';
+import GraduationPanel from '@/components/GraduationPanel';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -342,15 +343,7 @@ const MaskPanel = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
-const GraduationPanel = () => {
-  const { showGraduation, showGraduationMask, currentDesign, setShowGraduation, setShowGraduationMask, setGraduation } = useStore();
-  return (
-    <div className="space-y-3">
-      <ToggleSwitch label="Afficher graduation" checked={showGraduation} onChange={setShowGraduation} />
-      <ToggleSwitch label="Afficher masque" checked={showGraduationMask} onChange={setShowGraduationMask} />
-    </div>
-  );
-};
+/* GraduationPanel is now imported from its own file */
 
 /* ─── My Designs Panel ─── */
 function timeAgo(dateStr: string): string {
@@ -624,7 +617,7 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
             <span className="text-[13px] font-medium">{currentTab?.title}</span>
             <button onClick={() => setActivePanel(null)} className="p-1 rounded hover:bg-secondary"><X size={14} /></button>
           </div>
-          <div className="flex-1 overflow-y-auto p-3">{renderPanelContent()}</div>
+          <div className={`flex-1 overflow-y-auto ${activePanel === 'graduation' ? 'p-0' : 'p-3'}`}>{renderPanelContent()}</div>
         </div>
       )}
     </aside>
