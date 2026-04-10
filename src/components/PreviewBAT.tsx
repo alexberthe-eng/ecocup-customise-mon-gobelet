@@ -184,12 +184,16 @@ const PreviewBAT = () => {
           >
             {el.type === 'text' && (
               <div
-                className="w-full h-full flex items-center justify-center"
+                className="w-full h-full flex items-center"
                 style={{
                   color: el.color,
                   fontFamily: el.fontFamily || 'system-ui',
                   fontSize: (el.fontSize || 16) * scale,
-                  fontWeight: 600,
+                  fontWeight: el.bold ? 700 : 600,
+                  fontStyle: el.italic ? 'italic' : 'normal',
+                  textDecoration: el.underline ? 'underline' : 'none',
+                  textAlign: el.align || 'left',
+                  justifyContent: el.align === 'right' ? 'flex-end' : el.align === 'center' ? 'center' : 'flex-start',
                 }}
               >
                 {el.text}

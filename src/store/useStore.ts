@@ -19,6 +19,10 @@ export interface DesignElement {
   fontFamily?: string;
   fontSize?: number;
   maskType?: MaskType;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  align?: 'left' | 'center' | 'right';
 }
 
 export interface Design {
@@ -73,6 +77,7 @@ interface AppState {
   showTour: boolean;
   tourStep: number;
   selectedElementId: string | null;
+  pendingTextCreation: boolean;
   showGraduation: boolean;
   showGraduationMask: boolean;
 
@@ -98,6 +103,7 @@ interface AppState {
   setCapacity: (c: string) => void;
   setGlobalComment: (c: string) => void;
   setIsDirty: (v: boolean) => void;
+  setPendingTextCreation: (v: boolean) => void;
 
   addElement: (el: DesignElement) => void;
   updateElement: (id: string, updates: Partial<DesignElement>, saveHistory?: boolean) => void;
@@ -170,6 +176,7 @@ export const useStore = create<AppState>((set, get) => ({
   showTour: false,
   tourStep: 0,
   selectedElementId: null,
+  pendingTextCreation: false,
   showGraduation: true,
   showGraduationMask: false,
   history: [{ ...defaultDesign }],
@@ -195,6 +202,7 @@ export const useStore = create<AppState>((set, get) => ({
   setShowGraduationMask: (v) => set({ showGraduationMask: v }),
   setGlobalComment: (c) => set({ globalComment: c }),
   setIsDirty: (v) => set({ isDirty: v }),
+  setPendingTextCreation: (v) => set({ pendingTextCreation: v }),
 
   setProductType: (t) => {
     const caps = PRODUCT_CAPACITIES[t]?.capacities ?? ['33cl'];
@@ -219,34 +227,7 @@ export const useStore = create<AppState>((set, get) => ({
     if (tool === 'color') {
       set({ showColorPopover: !s.showColorPopover, activeTool: 'color' });
     } else if (tool === 'text') {
-      const newId = crypto.randomUUID();
-      const count = s.currentDesign.elements.length;
-      const offset = count * 30;
-      const el: DesignElement = {
-        id: newId,
-        type: 'text',
-        x: 100 + (offset % 300),
-        y: 80 + (offset % 200),
-        width: 200,
-        height: 60,
-        rotation: 0,
-        opacity: 100,
-        color: '#111111',
-        zIndex: s.currentDesign.elements.length,
-        text: 'Votre texte',
-        fontFamily: 'system-ui',
-        fontSize: 24,
-      };
-      set({
-        activeTool: 'text',
-        activeTab: '2d',
-        currentDesign: {
-          ...s.currentDesign,
-          elements: [...s.currentDesign.elements, el],
-        },
-        selectedElementId: newId,
-      });
-      setTimeout(() => get().pushHistory(), 0);
+      set({ pendingTextCreation: true, activeTool: 'text', activeTab: '2d' });
     } else if (tool === 'image') {
       set({ openDrawer: 'image', activeTool: 'image' });
     } else if (tool === 'sticker') {
