@@ -1,8 +1,10 @@
-import { useRef, useCallback, useMemo, useState } from 'react';
+import { useRef, useCallback, useMemo, useState, useEffect } from 'react';
 import { useStore, DesignElement } from '@/store/useStore';
-import { Trash2, Undo2, Redo2, RotateCw, Copy, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { Trash2, Undo2, Redo2, RotateCw, Copy, X, ChevronUp, ChevronDown, Pencil } from 'lucide-react';
 import CanvasDrawer from '@/components/CanvasDrawer';
-import { ElementPanel } from '@/components/ElementPanel';
+import FloatingContextMenu from '@/components/FloatingContextMenu';
+import TextEditModal from '@/components/TextEditModal';
+import ElementEditModal from '@/components/ElementEditModal';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getGraduationMarks } from '@/components/GraduationMarks';
 import ecocupLogo from '@/assets/ecocup-logo.png';
@@ -41,7 +43,30 @@ const Editor2D = ({ onEditWithAI }: { onEditWithAI?: (elementId: string) => void
     history,
     showGraduation,
     showGraduationMask,
+    addElement,
+    pendingTextCreation,
+    setPendingTextCreation,
   } = useStore();
+
+  const [showTextModal, setShowTextModal] = useState(false);
+  const [showElementModal, setShowElementModal] = useState(false);
+  const [editingElementId, setEditingElementId] = useState<string | null>(null);
+  const [textModalMode, setTextModalMode] = useState<'create' | 'edit'>('create');
+
+  const editingElement = useMemo(
+    () => currentDesign.elements.find((el) => el.id === editingElementId),
+    [currentDesign.elements, editingElementId]
+  );
+
+  // Handle pendingTextCreation from store
+  useEffect(() => {
+    if (pendingTextCreation) {
+      setPendingTextCreation(false);
+      setEditingElementId(null);
+      setTextModalMode('create');
+      setShowTextModal(true);
+    }
+  }, [pendingTextCreation, setPendingTextCreation]);
 
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -334,12 +359,16 @@ const Editor2D = ({ onEditWithAI }: { onEditWithAI?: (elementId: string) => void
               >
                 {el.type === 'text' && (
                   <div
-                    className="w-full h-full flex items-center justify-center select-none"
+                    className="w-full h-full flex items-center select-none"
                     style={{
                       color: el.color,
                       fontFamily: el.fontFamily || 'system-ui',
                       fontSize: (el.fontSize || 16) * scale,
-                      fontWeight: 600,
+                      fontWeight: el.bold ? 700 : 400,
+                      fontStyle: el.italic ? 'italic' : 'normal',
+                      textDecoration: el.underline ? 'underline' : 'none',
+                      textAlign: el.align || 'left',
+                      justifyContent: el.align === 'right' ? 'flex-end' : el.align === 'center' ? 'center' : 'flex-start',
                     }}
                   >
                     {el.text}
