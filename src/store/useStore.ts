@@ -77,6 +77,7 @@ interface AppState {
   showTour: boolean;
   tourStep: number;
   selectedElementId: string | null;
+  pendingTextCreation: boolean;
   showGraduation: boolean;
   showGraduationMask: boolean;
 
@@ -102,6 +103,7 @@ interface AppState {
   setCapacity: (c: string) => void;
   setGlobalComment: (c: string) => void;
   setIsDirty: (v: boolean) => void;
+  setPendingTextCreation: (v: boolean) => void;
 
   addElement: (el: DesignElement) => void;
   updateElement: (id: string, updates: Partial<DesignElement>, saveHistory?: boolean) => void;
