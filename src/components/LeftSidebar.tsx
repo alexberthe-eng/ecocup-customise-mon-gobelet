@@ -409,7 +409,7 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
           const Icon = tab.icon;
           const isActive = activePanel === tab.id;
           return (
-            <button key={tab.id} data-tour={tab.id === 'color' ? 'color' : tab.id === 'image' ? 'image' : undefined} onClick={() => handleTabClick(tab.id)}
+            <button key={tab.id} data-tour={tab.id === 'color' ? 'color' : tab.id === 'image' ? 'image' : tab.id === 'text' ? 'text-tool' : tab.id === 'sticker' ? 'sticker-tool' : undefined} onClick={() => handleTabClick(tab.id)}
               className={`w-12 h-[52px] flex flex-col items-center justify-center gap-0.5 text-[9px] transition-all ${isActive ? 'bg-secondary text-foreground border-r-2 border-foreground rounded-l-lg rounded-r-none' : 'text-muted-foreground hover:bg-secondary rounded-lg'}`}>
               <Icon size={18} /><span>{tab.label}</span>
             </button>
@@ -423,7 +423,7 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
         </Popover>
       </div>
       {activePanel && (
-        <div className="w-[260px] border-r border-thin bg-background flex flex-col overflow-hidden">
+        <div className="w-[260px] border-r border-thin bg-background flex flex-col overflow-hidden" data-tour="sidebar-panel">
           <div className="flex items-center justify-between px-3 py-2.5 border-b border-thin shrink-0">
             <span className="text-[13px] font-medium">{currentTab?.title}</span>
             <button onClick={() => setActivePanel(null)} className="p-1 rounded hover:bg-secondary"><X size={14} /></button>

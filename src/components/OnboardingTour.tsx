@@ -7,33 +7,110 @@ const TOUR_STEPS = [
     target: '[data-tour="color"]',
     title: 'Couleur du gobelet',
     description:
-      'Commencez par choisir la couleur de base de votre gobelet : Blanc ou Translucide givré.',
+      'Commencez par choisir la couleur de votre gobelet : Blanc ou Translucide givré. ' +
+      'Le rendu se met à jour en temps réel en 2D et en 3D.',
+    tooltipSide: 'right',
   },
   {
     target: '[data-tour="image"]',
     title: 'Importez votre visuel',
     description:
-      'Ajoutez votre logo ou photo en PNG, JPG ou SVG (max 10 Mo, 300 DPI recommandé). Choisissez un masque pour cadrer votre image automatiquement.',
+      'Cliquez sur "Image" pour ajouter votre logo ou photo. ' +
+      "Choisissez d'abord une forme de masque (rectangle, cercle, polaroïd…) " +
+      'puis importez votre fichier PNG, JPG ou SVG (max 10 Mo, 300 DPI recommandé).',
+    tooltipSide: 'right',
   },
   {
-    target: '[data-tour="tabs-2d-3d"]',
-    title: '2D ou 3D — travaillez comme vous préférez',
+    target: '[data-tour="text-tool"]',
+    title: 'Ajoutez du texte',
     description:
-      'Passez librement entre la vue à plat (2D) et la vue 3D 360°. Vous pouvez éditer vos éléments dans l\'une ou l\'autre vue — les modifications sont synchronisées en temps réel.',
+      "Cliquez sur \"Texte\" pour ouvrir l'éditeur de texte. " +
+      'Choisissez votre police, taille, couleur et mise en forme, ' +
+      'puis cliquez "Terminé" pour placer votre texte sur le gobelet.',
+    tooltipSide: 'right',
+  },
+  {
+    target: '[data-tour="canvas"]',
+    title: 'Modifiez vos éléments',
+    description:
+      "Cliquez sur n'importe quel élément du canvas pour afficher " +
+      "le menu d'actions : Modifier, Vers l'avant, Vers l'arrière, Supprimer. " +
+      'Vous pouvez aussi déplacer et redimensionner les éléments en les faisant glisser.',
+    tooltipSide: 'top',
+  },
+  {
+    target: '[data-tour="toggle-2d-3d"]',
+    title: '2D ou 3D — à vous de choisir',
+    description:
+      'Basculez librement entre la vue à plat (2D) pour éditer ' +
+      'et la vue 3D 360° pour visualiser votre gobelet sous tous les angles. ' +
+      'Vos modifications sont synchronisées dans les deux vues.',
+    tooltipSide: 'bottom',
   },
   {
     target: '[data-tour="tab-bat"]',
-    title: 'Vérifiez avant d\'imprimer',
+    title: 'Vérifiez votre Bon à Tirer',
     description:
-      'L\'aperçu BAT (Bon à Tirer) vous montre exactement ce qui sera imprimé, avec les zones de sécurité et de fond perdu. Vérifiez les alertes en bas, puis imprimez ou téléchargez votre BAT pour validation.',
+      "L'aperçu BAT vous montre exactement ce qui sera imprimé, " +
+      'avec les zones de sécurité (vert) et de fond perdu (bleu). ' +
+      'Vérifiez les alertes avant de valider, puis exportez en PDF ou PNG.',
+    tooltipSide: 'bottom',
   },
   {
     target: '[data-tour="right-panel"]',
     title: 'Finalisez et commandez',
     description:
-      'Vous pouvez créer plusieurs designs pour une même commande. Ajoutez un commentaire si besoin, puis ajoutez chaque design au panier.',
+      'Choisissez votre quantité — le prix unitaire se calcule automatiquement. ' +
+      'Vous pouvez créer plusieurs designs pour une même commande. ' +
+      'Ajoutez un commentaire si besoin, puis cliquez "Ajouter au panier".',
+    tooltipSide: 'left',
   },
 ];
+
+const getTooltipPosition = (
+  rect: DOMRect,
+  side: string,
+  isMobile: boolean
+) => {
+  const TOOLTIP_W = 270;
+  const TOOLTIP_H = 200;
+  const MARGIN = 12;
+
+  if (isMobile) {
+    return {
+      left: Math.max(10, Math.min(rect.left, window.innerWidth - TOOLTIP_W - 10)),
+      top: Math.min(rect.bottom + MARGIN, window.innerHeight - TOOLTIP_H - 10),
+    };
+  }
+
+  switch (side) {
+    case 'right':
+      return {
+        left: Math.min(rect.right + MARGIN, window.innerWidth - TOOLTIP_W - 10),
+        top: Math.max(10, rect.top),
+      };
+    case 'left':
+      return {
+        left: Math.max(10, rect.left - TOOLTIP_W - MARGIN),
+        top: Math.max(10, rect.top),
+      };
+    case 'bottom':
+      return {
+        left: Math.max(10, Math.min(rect.left + rect.width / 2 - TOOLTIP_W / 2, window.innerWidth - TOOLTIP_W - 10)),
+        top: rect.bottom + MARGIN,
+      };
+    case 'top':
+      return {
+        left: Math.max(10, Math.min(rect.left + rect.width / 2 - TOOLTIP_W / 2, window.innerWidth - TOOLTIP_W - 10)),
+        top: Math.max(10, rect.top - TOOLTIP_H - MARGIN),
+      };
+    default:
+      return {
+        left: Math.min(rect.right + MARGIN, window.innerWidth - TOOLTIP_W - 10),
+        top: Math.max(10, rect.top),
+      };
+  }
+};
 
 const OnboardingTour = () => {
   const { showTour, tourStep, nextTourStep, prevTourStep, endTour } = useStore();
@@ -52,14 +129,7 @@ const OnboardingTour = () => {
   if (!showTour || !rect) return null;
 
   const step = TOUR_STEPS[tourStep];
-
-  // Position tooltip: on mobile below the spotlight, on desktop to the right
-  const tooltipLeft = isMobile
-    ? Math.max(10, Math.min(rect.left, window.innerWidth - 280))
-    : Math.min(rect.right + 12, window.innerWidth - 280);
-  const tooltipTop = isMobile
-    ? Math.min(rect.bottom + 12, window.innerHeight - 220)
-    : Math.max(rect.top, 10);
+  const { left: tooltipLeft, top: tooltipTop } = getTooltipPosition(rect, step.tooltipSide, isMobile);
 
   return (
     <div className="fixed inset-0 z-50">
@@ -80,9 +150,47 @@ const OnboardingTour = () => {
 
       {/* Tooltip */}
       <div
-        className="absolute bg-white rounded-xl p-4 shadow-xl z-20 w-[260px] border border-neutral-200"
-        style={{ left: tooltipLeft, top: tooltipTop }}
+        className="absolute bg-white rounded-xl shadow-xl z-20 border border-neutral-100"
+        style={{
+          left: tooltipLeft,
+          top: tooltipTop,
+          width: '270px',
+          padding: '16px',
+        }}
       >
+        {/* Step number + close */}
+        <div className="flex items-center justify-between mb-2">
+          <span
+            style={{
+              fontSize: '10px',
+              fontWeight: 600,
+              color: '#9ca3af',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+            }}
+          >
+            Étape {tourStep + 1} sur {TOUR_STEPS.length}
+          </span>
+          <button
+            onClick={endTour}
+            style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              background: '#f3f4f6',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '12px',
+              color: '#6b7280',
+            }}
+          >
+            ×
+          </button>
+        </div>
+
         <h4 className="text-sm font-semibold mb-1 text-neutral-900">{step.title}</h4>
         <p className="text-xs text-neutral-500 mb-3">{step.description}</p>
 
