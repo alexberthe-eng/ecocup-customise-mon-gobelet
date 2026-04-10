@@ -617,7 +617,7 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
             <span className="text-[13px] font-medium">{currentTab?.title}</span>
             <button onClick={() => setActivePanel(null)} className="p-1 rounded hover:bg-secondary"><X size={14} /></button>
           </div>
-          <div className="flex-1 overflow-y-auto p-3">{renderPanelContent()}</div>
+          <div className={`flex-1 overflow-y-auto ${activePanel === 'graduation' ? 'p-0' : 'p-3'}`}>{renderPanelContent()}</div>
         </div>
       )}
     </aside>
