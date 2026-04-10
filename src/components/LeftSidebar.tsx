@@ -20,8 +20,9 @@ const TABS = [
   { id: 'mask', icon: Frame, label: 'Masques', title: 'Masques photo' },
   { id: 'graduation', icon: Ruler, label: 'Graduation', title: 'Graduation du gobelet' },
   { id: 'ai-wizard', icon: Sparkles, label: 'IA', title: "Créer avec l'IA" },
-  { id: 'my-designs', icon: FolderOpen, label: 'Mes designs', title: 'Mes créations' },
 ] as const;
+
+const BOTTOM_TAB = { id: 'my-designs' as const, icon: FolderOpen, label: 'Mes designs', title: 'Mes créations' };
 
 type PanelId = typeof TABS[number]['id'] | null;
 
