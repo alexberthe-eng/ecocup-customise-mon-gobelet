@@ -76,8 +76,17 @@ const ToolBar = ({ onExportPNG, onOpenAIWizard }: ToolBarProps) => {
           <Sep />
         </>
       )}
-      <Btn icon={PenLine} title="Édition à plat du gobelet" onClick={() => setActiveTab('2d')} active={activeTab === '2d'} />
-      <Btn icon={Box} title="Prévisualisation 3D du gobelet" onClick={() => setActiveTab('3d')} active={activeTab === '3d'} />
+      <div className="flex items-center gap-0.5 bg-secondary rounded-full p-0.5 shrink-0">
+        <span className="text-[10px] font-medium px-1.5 text-muted-foreground select-none">2D</span>
+        <button
+          onClick={() => setActiveTab(activeTab === '2d' ? '3d' : '2d')}
+          title={activeTab === '2d' ? 'Passer en 3D' : 'Passer en 2D'}
+          className={`relative w-9 h-5 rounded-full transition-colors duration-200 shrink-0 ${activeTab === '3d' ? 'bg-foreground' : 'bg-border'}`}
+        >
+          <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-background shadow-sm transition-transform duration-200 ${activeTab === '3d' ? 'translate-x-4' : 'translate-x-0'}`} />
+        </button>
+        <span className="text-[10px] font-medium px-1.5 text-muted-foreground select-none">3D</span>
+      </div>
       <Btn icon={FileCheck} title="Aperçu Bon à Tirer" onClick={() => setActiveTab('bat')} active={activeTab === 'bat'} />
       <Sep />
       {activeTab === '2d' && (
