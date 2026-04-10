@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, Ruler, Sparkles, HelpCircle, Headphones, Plus, X, Search, MessageCircle, FolderOpen, Loader2 } from 'lucide-react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, Ruler, Sparkles, HelpCircle, Headphones, Plus, X, Search, MessageCircle, FolderOpen, Loader2, AlertTriangle } from 'lucide-react';
 import { useStore, ActiveTool, MaskType } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
@@ -101,17 +101,54 @@ const ColorPanel = () => {
   );
 };
 
+const MIN_RECOMMENDED_PX = 500;
+
 const ImagePanel = ({ onClose }: { onClose: () => void }) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<{ dataUrl: string; name: string } | null>(null);
   const [selectedMask, setSelectedMask] = useState<MaskType>(null);
+  const [lowRes, setLowRes] = useState(false);
   const { addElement, currentDesign, setSelectedElementId } = useStore();
-  const handleFile = (file: File) => {
+
+  const checkResolution = (dataUrl: string) => {
+    const img = new Image();
+    img.onload = () => setLowRes(img.naturalWidth < MIN_RECOMMENDED_PX || img.naturalHeight < MIN_RECOMMENDED_PX);
+    img.src = dataUrl;
+  };
+
+  const handleFile = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) { alert('Fichier trop volumineux (max 10 Mo)'); return; }
+
+    if (file.type === 'application/pdf') {
+      try {
+        const pdfjs = await import('pdfjs-dist');
+        pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+        const page = await pdf.getPage(1);
+        const scale = 2;
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d')!;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        const dataUrl = canvas.toDataURL('image/png');
+        setSelectedFile({ dataUrl, name: file.name });
+        checkResolution(dataUrl);
+      } catch { alert('Impossible de lire ce fichier PDF.'); }
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = (e) => setSelectedFile({ dataUrl: e.target?.result as string, name: file.name });
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setSelectedFile({ dataUrl, name: file.name });
+      checkResolution(dataUrl);
+    };
     reader.readAsDataURL(file);
   };
+
   const handleAdd = () => {
     if (!selectedFile) return;
     const count = currentDesign.elements.length;
@@ -121,14 +158,19 @@ const ImagePanel = ({ onClose }: { onClose: () => void }) => {
     setSelectedElementId(newId);
     onClose();
   };
+
   return (
     <div className="space-y-3">
       <div className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:bg-secondary/30 transition-colors" onClick={() => fileRef.current?.click()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file) handleFile(file); }}>
         {selectedFile ? (
           <div className="flex flex-col items-center gap-2">
-            <img src={selectedFile.dataUrl} alt="" className="max-h-20 object-contain rounded" />
+            {selectedFile.name.toLowerCase().endsWith('.pdf') ? (
+              <div className="w-14 h-18 bg-destructive/10 rounded flex items-center justify-center text-destructive text-xs font-bold">PDF</div>
+            ) : (
+              <img src={selectedFile.dataUrl} alt="" className="max-h-20 object-contain rounded" />
+            )}
             <p className="text-[10px] text-muted-foreground truncate max-w-full">{selectedFile.name}</p>
-            <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }} className="text-[10px] text-destructive hover:underline">Supprimer</button>
+            <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null); setLowRes(false); }} className="text-[10px] text-destructive hover:underline">Supprimer</button>
           </div>
         ) : (
           <>
@@ -138,9 +180,17 @@ const ImagePanel = ({ onClose }: { onClose: () => void }) => {
           </>
         )}
       </div>
-      <div className="text-[10px] text-muted-foreground">PNG, JPG — 10 Mo max.</div>
+      {lowRes && (
+        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-300">
+          <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+          <p className="text-[10px] leading-snug">
+            <span className="font-semibold">Résolution faible.</span> Le rendu d'impression risque d'être pixelisé. Privilégiez un fichier haute résolution.
+          </p>
+        </div>
+      )}
+      <div className="text-[10px] text-muted-foreground">PNG, JPG, PDF — 10 Mo max.</div>
       <button onClick={handleAdd} disabled={!selectedFile} className="w-full py-2.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground disabled:opacity-40 hover:opacity-90">Ajouter au design</button>
-      <input ref={fileRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFile(file); }} />
+      <input ref={fileRef} type="file" accept="image/png,image/jpeg,application/pdf" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFile(file); }} />
     </div>
   );
 };
