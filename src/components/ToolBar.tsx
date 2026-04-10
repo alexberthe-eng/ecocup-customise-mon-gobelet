@@ -50,11 +50,12 @@ const ToolBar = ({ onExportPNG, onOpenAIWizard }: ToolBarProps) => {
 
   const Sep = () => <div className="w-px h-5 bg-border mx-1 shrink-0" />;
 
-  const Btn = ({ icon: Icon, title, onClick, disabled, active }: { icon: any; title: string; onClick: () => void; disabled?: boolean; active?: boolean }) => (
+  const Btn = ({ icon: Icon, title, onClick, disabled, active, 'data-tour': dataTour }: { icon: any; title: string; onClick: () => void; disabled?: boolean; active?: boolean; 'data-tour'?: string }) => (
     <button
       onClick={onClick}
       disabled={disabled}
       title={title}
+      data-tour={dataTour}
       className={`w-8 h-8 flex items-center justify-center rounded-md transition-all duration-150 shrink-0 ${active ? 'bg-secondary text-foreground border border-border' : 'text-muted-foreground hover:bg-secondary'} ${disabled ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       <Icon size={15} />
