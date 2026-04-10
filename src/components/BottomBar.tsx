@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Plus, Share2 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
-import html2canvas from 'html2canvas';
+
 
 const BottomBar = () => {
   const { cart, currentDesign, addToCart, editCartDesign, setShowCartPanel } = useStore();
@@ -14,6 +14,7 @@ const BottomBar = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
+        const html2canvas = (await import('html2canvas')).default;
         const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
         if (!canvasEl) return;
         const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.3 });

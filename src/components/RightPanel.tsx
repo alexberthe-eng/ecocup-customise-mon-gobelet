@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore, getUnitPrice, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { X, ShoppingCart, Check, Plus } from 'lucide-react';
-import html2canvas from 'html2canvas';
+
 
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 
@@ -37,6 +37,7 @@ const RightPanel = () => {
   const handleAddToCart = async () => {
     let thumbnail: string | undefined;
     try {
+      const html2canvas = (await import('html2canvas')).default;
       const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
       if (canvasEl) {
         const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
