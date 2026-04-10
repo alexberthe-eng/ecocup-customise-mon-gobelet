@@ -96,6 +96,7 @@ const TopBar = () => {
         setSharing(false);
         return;
       }
+      const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 2 });
       const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
       const fileName = `${crypto.randomUUID()}.png`;

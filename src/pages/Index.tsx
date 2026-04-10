@@ -28,6 +28,7 @@ const Index = () => {
   const handleExportPNG = async () => {
     const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
     if (!canvasEl) return;
+    const html2canvas = (await import('html2canvas')).default;
     const canvas = await html2canvas(canvasEl, {
       backgroundColor: currentDesign.cupColor,
       useCORS: true,

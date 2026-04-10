@@ -37,6 +37,7 @@ const RightPanel = () => {
   const handleAddToCart = async () => {
     let thumbnail: string | undefined;
     try {
+      const html2canvas = (await import('html2canvas')).default;
       const canvasEl = document.querySelector('[data-editor-canvas]') as HTMLElement;
       if (canvasEl) {
         const canvas = await html2canvas(canvasEl, { backgroundColor: null, useCORS: true, scale: 0.5 });
