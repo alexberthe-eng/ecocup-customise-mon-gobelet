@@ -227,34 +227,7 @@ export const useStore = create<AppState>((set, get) => ({
     if (tool === 'color') {
       set({ showColorPopover: !s.showColorPopover, activeTool: 'color' });
     } else if (tool === 'text') {
-      const newId = crypto.randomUUID();
-      const count = s.currentDesign.elements.length;
-      const offset = count * 30;
-      const el: DesignElement = {
-        id: newId,
-        type: 'text',
-        x: 100 + (offset % 300),
-        y: 80 + (offset % 200),
-        width: 200,
-        height: 60,
-        rotation: 0,
-        opacity: 100,
-        color: '#111111',
-        zIndex: s.currentDesign.elements.length,
-        text: 'Votre texte',
-        fontFamily: 'system-ui',
-        fontSize: 24,
-      };
-      set({
-        activeTool: 'text',
-        activeTab: '2d',
-        currentDesign: {
-          ...s.currentDesign,
-          elements: [...s.currentDesign.elements, el],
-        },
-        selectedElementId: newId,
-      });
-      setTimeout(() => get().pushHistory(), 0);
+      set({ pendingTextCreation: true, activeTool: 'text', activeTab: '2d' });
     } else if (tool === 'image') {
       set({ openDrawer: 'image', activeTool: 'image' });
     } else if (tool === 'sticker') {
