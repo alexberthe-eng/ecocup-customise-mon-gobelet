@@ -132,17 +132,6 @@ const ImagePanel = ({ onClose }: { onClose: () => void }) => {
         )}
       </div>
       <div className="text-[10px] text-muted-foreground">PNG, JPG — 10 Mo max.</div>
-      <div>
-        <p className="text-[10px] font-medium mb-1.5">Masque (optionnel)</p>
-        <div className="grid grid-cols-3 gap-1">
-          {MASKS_DATA.map((m) => (
-            <button key={m.id} onClick={() => setSelectedMask(selectedMask === m.id ? null : m.id)} className={`aspect-square border rounded-lg flex flex-col items-center justify-center gap-0.5 text-[8px] transition-colors ${selectedMask === m.id ? 'border-accent bg-accent/10' : 'border-border hover:bg-secondary/50'}`}>
-              <svg viewBox="0 0 100 100" className="w-6 h-6"><path d={m.path} fill="currentColor" /></svg>
-              {m.label}
-            </button>
-          ))}
-        </div>
-      </div>
       <button onClick={handleAdd} disabled={!selectedFile} className="w-full py-2.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground disabled:opacity-40 hover:opacity-90">Ajouter au design</button>
       <input ref={fileRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFile(file); }} />
     </div>
