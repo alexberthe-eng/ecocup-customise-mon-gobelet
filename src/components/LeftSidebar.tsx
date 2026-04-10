@@ -536,6 +536,7 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
           <button onClick={onOpenAIWizard} className="w-full py-2.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:opacity-90 flex items-center justify-center gap-1.5"><Sparkles size={14} /> Générer un visuel</button>
         </div>
       );
+      case 'my-designs': return <MyDesignsPanel />;
       default: return null;
     }
   };
