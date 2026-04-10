@@ -421,11 +421,16 @@ const Editor2D = ({ onEditWithAI }: { onEditWithAI?: (elementId: string) => void
 
           {/* Graduation marks overlay — draggable as a single block */}
           {showGraduation && (() => {
-            const marks = getGraduationMarks(currentDesign.graduation);
+            const allMarks = getGraduationMarks(currentDesign.graduation);
+            const gStyle = currentDesign.graduationStyle;
+            const marks = allMarks.filter((m) => !gStyle.hiddenMarks.includes(m.id));
             const scale = isMobile ? 340 / 600 : 1;
             const canvasW = (isMobile ? 340 : 600);
             const canvasH = (isMobile ? 227 : 400);
             const off = currentDesign.graduationOffset;
+            const strokeW = gStyle.strokeWidth === 'thin' ? 0.5 : gStyle.strokeWidth === 'thick' ? 2.5 : 1;
+            const dashArray = gStyle.strokeStyle === 'dashed' ? '4 3' : gStyle.strokeStyle === 'dotted' ? '1.5 2' : 'none';
+            const fSize = (gStyle.fontSize === 'small' ? 8 : gStyle.fontSize === 'large' ? 13 : 10) * scale;
             return (
               <div
                 className="absolute pointer-events-none select-none"
@@ -465,9 +470,13 @@ const Editor2D = ({ onEditWithAI }: { onEditWithAI?: (elementId: string) => void
                        }}
                      >
                        <div className="flex items-center justify-center">
-                         <div className="h-px bg-foreground/40" style={{ width: lineW }} />
+                         <svg width={lineW} height={strokeW + 2} style={{ overflow: 'visible' }}>
+                           <line x1="0" y1={strokeW / 2 + 1} x2={lineW} y2={strokeW / 2 + 1}
+                             stroke={gStyle.color} strokeWidth={strokeW}
+                             strokeDasharray={dashArray !== 'none' ? dashArray : undefined} />
+                         </svg>
                        </div>
-                       <p className="text-center text-foreground/60 font-medium whitespace-nowrap" style={{ fontSize: 10 * scale }}>
+                       <p className="text-center font-medium whitespace-nowrap" style={{ fontSize: fSize, color: gStyle.color }}>
                          {mark.label}
                        </p>
                      </div>

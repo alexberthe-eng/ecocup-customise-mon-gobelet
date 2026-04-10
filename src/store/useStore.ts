@@ -25,6 +25,16 @@ export interface DesignElement {
   align?: 'left' | 'center' | 'right';
 }
 
+export interface GraduationStyle {
+  svgId: string | null;
+  color: string;
+  strokeWidth: 'thin' | 'normal' | 'thick';
+  strokeStyle: 'solid' | 'dashed' | 'dotted';
+  fontSize: 'small' | 'normal' | 'large';
+  offsetDx: number;
+  hiddenMarks: string[];
+}
+
 export interface Design {
   id: string;
   name: string;
@@ -33,9 +43,8 @@ export interface Design {
   graduation: string;
   quantity: number;
   comment: string;
-  /** Single offset for the entire graduation block (pixels) */
   graduationOffset: { dx: number; dy: number };
-  /** Base64 thumbnail captured when adding to cart */
+  graduationStyle: GraduationStyle;
   thumbnail?: string;
   productType: string;
   capacity: string;
@@ -102,6 +111,7 @@ interface AppState {
   setProductType: (t: string) => void;
   setCapacity: (c: string) => void;
   setGlobalComment: (c: string) => void;
+  setGraduationStyle: (updates: Partial<GraduationStyle>) => void;
   setIsDirty: (v: boolean) => void;
   setPendingTextCreation: (v: boolean) => void;
 
@@ -133,6 +143,16 @@ interface AppState {
   loadSavedDesign: (designData: Design) => void;
 }
 
+const defaultGraduationStyle: GraduationStyle = {
+  svgId: null,
+  color: '#00000080',
+  strokeWidth: 'normal',
+  strokeStyle: 'solid',
+  fontSize: 'normal',
+  offsetDx: 0,
+  hiddenMarks: [],
+};
+
 const defaultDesign: Design = {
   id: crypto.randomUUID(),
   name: 'Gobelet personnalisé par vos soins – ECO 30 Digital',
@@ -142,6 +162,7 @@ const defaultDesign: Design = {
   quantity: 250,
   comment: '',
   graduationOffset: { dx: 0, dy: 0 },
+  graduationStyle: { ...defaultGraduationStyle },
   productType: 'gobelet-eco',
   capacity: '33cl',
 };
@@ -200,6 +221,20 @@ export const useStore = create<AppState>((set, get) => ({
   setDesignName: (name) => set((s) => ({ currentDesign: { ...s.currentDesign, name } })),
   setShowGraduation: (v) => set({ showGraduation: v }),
   setShowGraduationMask: (v) => set({ showGraduationMask: v }),
+  setGraduationStyle: (updates) => {
+    set((s) => {
+      const newStyle = { ...s.currentDesign.graduationStyle, ...updates };
+      return {
+        currentDesign: {
+          ...s.currentDesign,
+          graduationStyle: newStyle,
+          ...(updates.offsetDx !== undefined ? { graduationOffset: { dx: updates.offsetDx, dy: 0 } } : {}),
+        },
+      };
+    });
+    get().pushHistory();
+  },
+
   setGlobalComment: (c) => set({ globalComment: c }),
   setIsDirty: (v) => set({ isDirty: v }),
   setPendingTextCreation: (v) => set({ pendingTextCreation: v }),
