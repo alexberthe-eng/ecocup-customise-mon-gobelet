@@ -71,11 +71,20 @@ export const BASE_PRICES: Record<string, number> = {
   'eco-carafe': 1.57,
 };
 
-/** Default graduation for a given capacity */
-const capacityToGraduation = (cap: string): string => {
-  if (cap === '50cl') return 'pinte-50cl';
-  if (cap === '25cl') return 'standard-25cl';
-  return 'standard-33cl';
+/** Default graduation for a given product type */
+const capacityToGraduation = (t: string): string => {
+  const map: Record<string, string> = {
+    'eco-12': 'eco-12',
+    'eco-18': 'eco-18',
+    'eco-28': 'eco-28',
+    'eco-30': 'eco-30',
+    'eco-40': 'eco-40',
+    'eco-50': 'eco-50',
+    'eco-60': 'eco-60',
+    'eco-90': 'eco-90',
+    'eco-carafe': 'eco-carafe',
+  };
+  return map[t] ?? 'standard-33cl';
 };
 
 interface AppState {
