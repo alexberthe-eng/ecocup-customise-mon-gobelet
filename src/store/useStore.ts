@@ -142,6 +142,16 @@ interface AppState {
   loadSavedDesign: (designData: Design) => void;
 }
 
+const defaultGraduationStyle: GraduationStyle = {
+  svgId: null,
+  color: '#00000080',
+  strokeWidth: 'normal',
+  strokeStyle: 'solid',
+  fontSize: 'normal',
+  offsetDx: 0,
+  hiddenMarks: [],
+};
+
 const defaultDesign: Design = {
   id: crypto.randomUUID(),
   name: 'Gobelet personnalisé par vos soins – ECO 30 Digital',
@@ -151,6 +161,7 @@ const defaultDesign: Design = {
   quantity: 250,
   comment: '',
   graduationOffset: { dx: 0, dy: 0 },
+  graduationStyle: { ...defaultGraduationStyle },
   productType: 'gobelet-eco',
   capacity: '33cl',
 };
