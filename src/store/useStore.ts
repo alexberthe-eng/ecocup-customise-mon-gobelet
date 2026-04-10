@@ -111,6 +111,7 @@ interface AppState {
   setProductType: (t: string) => void;
   setCapacity: (c: string) => void;
   setGlobalComment: (c: string) => void;
+  setGraduationStyle: (updates: Partial<GraduationStyle>) => void;
   setIsDirty: (v: boolean) => void;
   setPendingTextCreation: (v: boolean) => void;
 
