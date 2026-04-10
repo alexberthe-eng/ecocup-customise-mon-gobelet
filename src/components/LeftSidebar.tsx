@@ -520,7 +520,7 @@ const LeftSidebar = ({ onOpenAIWizard }: { onOpenAIWizard?: () => void }) => {
   }
 
   /* ── Desktop ── */
-  const currentTab = TABS.find(t => t.id === activePanel);
+  const currentTab = TABS.find(t => t.id === activePanel) || (activePanel === 'my-designs' ? BOTTOM_TAB : undefined);
   const renderPanelContent = () => {
     const close = () => setActivePanel(null);
     switch (activePanel) {
