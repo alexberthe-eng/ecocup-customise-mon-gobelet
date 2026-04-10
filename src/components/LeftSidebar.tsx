@@ -286,11 +286,167 @@ const MaskPanel = ({ onClose }: { onClose: () => void }) => {
 };
 
 const GraduationPanel = () => {
-  const { showGraduation, showGraduationMask, currentDesign, setShowGraduation, setShowGraduationMask, setGraduation } = useStore();
+  const { showGraduation, showGraduationMask, currentDesign, setShowGraduation, setShowGraduationMask, setGraduationStyle } = useStore();
+  const graduationStyle = currentDesign.graduationStyle;
+  const marks = getGraduationMarks(currentDesign.graduation);
+
+  const [customGraduations, setCustomGraduations] = useState<{ id: string; name: string; svg_url: string }[]>([]);
+
+  useEffect(() => {
+    const fetchGraduations = async () => {
+      try {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { data } = await supabase.from('graduations').select('id, name, svg_url').eq('status', 'actif');
+        if (data) setCustomGraduations(data);
+      } catch {}
+    };
+    fetchGraduations();
+  }, []);
+
+  const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+    <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'hsl(var(--muted-foreground))', marginBottom: 10 }}>
+      {children}
+    </div>
+  );
+
+  const RadioBtn = ({ label, value, current, onChange }: { label: React.ReactNode; value: string; current: string; onChange: (v: string) => void }) => (
+    <button
+      onClick={() => onChange(value)}
+      style={{
+        flex: 1, padding: '5px 4px', fontSize: 10, borderRadius: 6, cursor: 'pointer', border: 'none',
+        background: current === value ? '#111827' : 'transparent',
+        color: current === value ? 'white' : 'hsl(var(--muted-foreground))',
+        outline: current !== value ? '1px solid #e5e7eb' : 'none',
+        fontWeight: current === value ? 600 : 400,
+      }}
+    >
+      {label}
+    </button>
+  );
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Global toggles */}
       <ToggleSwitch label="Afficher graduation" checked={showGraduation} onChange={setShowGraduation} />
       <ToggleSwitch label="Afficher masque" checked={showGraduationMask} onChange={setShowGraduationMask} />
+
+      {showGraduation && (
+        <>
+          {/* Section A — Style library */}
+          <div>
+            <SectionTitle>Style de graduation</SectionTitle>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {/* Default card */}
+              <button
+                onClick={() => setGraduationStyle({ svgId: null })}
+                style={{
+                  border: graduationStyle.svgId === null ? '2px solid #111827' : '1px solid #e5e7eb',
+                  background: graduationStyle.svgId === null ? '#f9fafb' : 'transparent',
+                  borderRadius: 8, padding: '10px 8px', display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', gap: 6, cursor: 'pointer',
+                }}
+              >
+                <svg viewBox="0 0 80 60" style={{ height: 60, width: '100%' }}>
+                  <line x1="10" y1="15" x2="70" y2="15" stroke="currentColor" strokeWidth="1.5" />
+                  <text x="72" y="18" fontSize="7" fill="currentColor">25cl</text>
+                  <line x1="10" y1="30" x2="70" y2="30" stroke="currentColor" strokeWidth="1.5" />
+                  <text x="72" y="33" fontSize="7" fill="currentColor">12,5cl</text>
+                  <line x1="10" y1="45" x2="70" y2="45" stroke="currentColor" strokeWidth="1.5" />
+                  <text x="72" y="48" fontSize="7" fill="currentColor">5cl</text>
+                </svg>
+                <span style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))' }}>Par défaut</span>
+              </button>
+
+              {/* Custom graduation cards */}
+              {customGraduations.map((g) => (
+                <button
+                  key={g.id}
+                  onClick={() => setGraduationStyle({ svgId: g.id })}
+                  style={{
+                    border: graduationStyle.svgId === g.id ? '2px solid #111827' : '1px solid #e5e7eb',
+                    background: graduationStyle.svgId === g.id ? '#f9fafb' : 'transparent',
+                    borderRadius: 8, padding: '10px 8px', display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', gap: 6, cursor: 'pointer',
+                  }}
+                >
+                  <img src={g.svg_url} alt={g.name} style={{ height: 60, width: '100%', objectFit: 'contain' }} />
+                  <span style={{ fontSize: 10, color: 'hsl(var(--muted-foreground))', textAlign: 'center' }}>{g.name}</span>
+                </button>
+              ))}
+            </div>
+            {customGraduations.length === 0 && (
+              <p style={{ fontSize: 11, fontStyle: 'italic', color: 'hsl(var(--muted-foreground))', marginTop: 8 }}>
+                Ajoutez des styles depuis l'espace Admin → Graduations
+              </p>
+            )}
+          </div>
+
+          {/* Section B — Marks visibility */}
+          <div>
+            <SectionTitle>Marques affichées</SectionTitle>
+            {marks.map((mark) => (
+              <div key={mark.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '5px 0', borderBottom: '0.5px solid #f3f4f6' }}>
+                <span style={{ fontSize: 12 }}>{mark.label}</span>
+                <ToggleSwitch
+                  checked={!graduationStyle.hiddenMarks.includes(mark.id)}
+                  onChange={(v) => {
+                    const hidden = v
+                      ? graduationStyle.hiddenMarks.filter((id) => id !== mark.id)
+                      : [...graduationStyle.hiddenMarks, mark.id];
+                    setGraduationStyle({ hiddenMarks: hidden });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Section C — Appearance */}
+          <div>
+            <SectionTitle>Apparence</SectionTitle>
+
+            {/* Color */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ fontSize: 12 }}>Couleur</span>
+              <input
+                type="color"
+                value={graduationStyle.color.slice(0, 7)}
+                onChange={(e) => setGraduationStyle({ color: e.target.value })}
+                style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', cursor: 'pointer' }}
+              />
+            </div>
+
+            {/* Stroke width */}
+            <div style={{ marginBottom: 12 }}>
+              <span style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>Épaisseur</span>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <RadioBtn label="— Fin" value="thin" current={graduationStyle.strokeWidth} onChange={(v) => setGraduationStyle({ strokeWidth: v as any })} />
+                <RadioBtn label="— Normal" value="normal" current={graduationStyle.strokeWidth} onChange={(v) => setGraduationStyle({ strokeWidth: v as any })} />
+                <RadioBtn label="— Épais" value="thick" current={graduationStyle.strokeWidth} onChange={(v) => setGraduationStyle({ strokeWidth: v as any })} />
+              </div>
+            </div>
+
+            {/* Stroke style */}
+            <div style={{ marginBottom: 12 }}>
+              <span style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>Style</span>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <RadioBtn label="── Continu" value="solid" current={graduationStyle.strokeStyle} onChange={(v) => setGraduationStyle({ strokeStyle: v as any })} />
+                <RadioBtn label="- - Tirets" value="dashed" current={graduationStyle.strokeStyle} onChange={(v) => setGraduationStyle({ strokeStyle: v as any })} />
+                <RadioBtn label="··· Points" value="dotted" current={graduationStyle.strokeStyle} onChange={(v) => setGraduationStyle({ strokeStyle: v as any })} />
+              </div>
+            </div>
+
+            {/* Font size */}
+            <div>
+              <span style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>Taille du texte</span>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <RadioBtn label="Petit" value="small" current={graduationStyle.fontSize} onChange={(v) => setGraduationStyle({ fontSize: v as any })} />
+                <RadioBtn label="Normal" value="normal" current={graduationStyle.fontSize} onChange={(v) => setGraduationStyle({ fontSize: v as any })} />
+                <RadioBtn label="Grand" value="large" current={graduationStyle.fontSize} onChange={(v) => setGraduationStyle({ fontSize: v as any })} />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
