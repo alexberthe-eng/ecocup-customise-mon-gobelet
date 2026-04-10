@@ -221,6 +221,20 @@ export const useStore = create<AppState>((set, get) => ({
   setDesignName: (name) => set((s) => ({ currentDesign: { ...s.currentDesign, name } })),
   setShowGraduation: (v) => set({ showGraduation: v }),
   setShowGraduationMask: (v) => set({ showGraduationMask: v }),
+  setGraduationStyle: (updates) => {
+    set((s) => {
+      const newStyle = { ...s.currentDesign.graduationStyle, ...updates };
+      return {
+        currentDesign: {
+          ...s.currentDesign,
+          graduationStyle: newStyle,
+          ...(updates.offsetDx !== undefined ? { graduationOffset: { dx: updates.offsetDx, dy: 0 } } : {}),
+        },
+      };
+    });
+    get().pushHistory();
+  },
+
   setGlobalComment: (c) => set({ globalComment: c }),
   setIsDirty: (v) => set({ isDirty: v }),
   setPendingTextCreation: (v) => set({ pendingTextCreation: v }),
