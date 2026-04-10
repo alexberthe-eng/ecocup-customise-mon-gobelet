@@ -1,25 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Upload, Pencil, Trash2, Eye } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-interface AdminItem {
+type AdminTab = 'visuels' | 'graduations' | 'tags' | 'masques';
+
+interface Motif {
   id: string;
   name: string;
   tags: string[];
   format: string;
-  status: 'actif' | 'brouillon';
-  src?: string;
+  status: string;
+  svg_url: string;
 }
 
-const DEMO_ITEMS: AdminItem[] = [
-  { id: '1', name: 'Logo étoile', tags: ['logo', 'étoile'], format: 'SVG', status: 'actif' },
-  { id: '2', name: 'Motif vagues', tags: ['motif', 'nature'], format: 'SVG', status: 'brouillon' },
-];
-
-type AdminTab = 'visuels' | 'graduations' | 'tags' | 'masques';
+interface Graduation {
+  id: string;
+  name: string;
+  status: string;
+  svg_url: string;
+}
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('visuels');
-  const [items, setItems] = useState<AdminItem[]>(DEMO_ITEMS);
+  const [motifs, setMotifs] = useState<Motif[]>([]);
+  const [graduations, setGraduations] = useState<Graduation[]>([]);
+  const [loading, setLoading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
 
   const tabs: { id: AdminTab; label: string }[] = [
@@ -28,6 +33,31 @@ const AdminPage = () => {
     { id: 'tags', label: 'Tags & catégories' },
     { id: 'masques', label: 'Masques' },
   ];
+
+  const fetchMotifs = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('motifs')
+      .select('*')
+      .order('name');
+    setMotifs((data as Motif[]) ?? []);
+    setLoading(false);
+  };
+
+  const fetchGraduations = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('graduations')
+      .select('*')
+      .order('name');
+    setGraduations((data as Graduation[]) ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (activeTab === 'visuels') fetchMotifs();
+    if (activeTab === 'graduations') fetchGraduations();
+  }, [activeTab]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -38,7 +68,6 @@ const AdminPage = () => {
       </header>
 
       <div className="max-w-5xl mx-auto p-6">
-        {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b border-thin">
           {tabs.map((t) => (
             <button
@@ -67,74 +96,121 @@ const AdminPage = () => {
               </button>
             </div>
 
-            <div className="border-thin rounded-xl overflow-hidden">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-secondary/50">
-                    <th className="text-left px-3 py-2 font-medium">Aperçu</th>
-                    <th className="text-left px-3 py-2 font-medium">Nom</th>
-                    <th className="text-left px-3 py-2 font-medium">Tags</th>
-                    <th className="text-left px-3 py-2 font-medium">Format</th>
-                    <th className="text-left px-3 py-2 font-medium">Statut</th>
-                    <th className="text-right px-3 py-2 font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr key={item.id} className="border-t border-thin">
-                      <td className="px-3 py-2">
-                        <div className="w-8 h-8 bg-secondary rounded flex items-center justify-center">
-                          <Eye size={12} className="text-muted-foreground" />
-                        </div>
-                      </td>
-                      <td className="px-3 py-2">{item.name}</td>
-                      <td className="px-3 py-2">
-                        <div className="flex gap-1 flex-wrap">
-                          {item.tags.map((t) => (
-                            <span key={t} className="bg-secondary px-1.5 py-0.5 rounded text-[9px]">{t}</span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2">{item.format}</td>
-                      <td className="px-3 py-2">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] ${
-                          item.status === 'actif' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
-                        }`}>
-                          {item.status === 'actif' ? 'Actif' : 'Brouillon'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2 text-right">
-                        <div className="flex justify-end gap-1">
-                          <button className="p-1 hover:bg-secondary rounded" title="Modifier">
-                            <Pencil size={10} />
-                          </button>
-                          <button className="p-1 hover:bg-secondary rounded" title="Re-upload">
-                            <Upload size={10} />
-                          </button>
-                          <button className="p-1 hover:bg-destructive/10 rounded text-destructive" title="Retirer">
-                            <Trash2 size={10} />
-                          </button>
-                          {item.status === 'brouillon' && (
-                            <button
-                              onClick={() => setItems(items.map(i => i.id === item.id ? { ...i, status: 'actif' } : i))}
-                              className="text-[9px] px-1.5 py-0.5 bg-accent text-accent-foreground rounded hover:opacity-90"
-                            >
-                              Publier
-                            </button>
-                          )}
-                        </div>
-                      </td>
+            {loading ? (
+              <p className="text-xs text-muted-foreground">Chargement…</p>
+            ) : motifs.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Aucun visuel pour le moment.</p>
+            ) : (
+              <div className="border-thin rounded-xl overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-secondary/50">
+                      <th className="text-left px-3 py-2 font-medium">Aperçu</th>
+                      <th className="text-left px-3 py-2 font-medium">Nom</th>
+                      <th className="text-left px-3 py-2 font-medium">Tags</th>
+                      <th className="text-left px-3 py-2 font-medium">Format</th>
+                      <th className="text-left px-3 py-2 font-medium">Statut</th>
+                      <th className="text-right px-3 py-2 font-medium">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {motifs.map((item) => (
+                      <tr key={item.id} className="border-t border-thin">
+                        <td className="px-3 py-2">
+                          {item.svg_url ? (
+                            <img src={item.svg_url} alt={item.name} className="w-8 h-8 rounded object-contain bg-secondary" />
+                          ) : (
+                            <div className="w-8 h-8 bg-secondary rounded flex items-center justify-center">
+                              <Eye size={12} className="text-muted-foreground" />
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2">{item.name}</td>
+                        <td className="px-3 py-2">
+                          <div className="flex gap-1 flex-wrap">
+                            {item.tags?.map((t) => (
+                              <span key={t} className="bg-secondary px-1.5 py-0.5 rounded text-[9px]">{t}</span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2">{item.format}</td>
+                        <td className="px-3 py-2">
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] ${
+                            item.status === 'actif' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                          }`}>
+                            {item.status === 'actif' ? 'Actif' : 'Brouillon'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <div className="flex justify-end gap-1">
+                            <button className="p-1 hover:bg-secondary rounded" title="Modifier">
+                              <Pencil size={10} />
+                            </button>
+                            <button className="p-1 hover:bg-secondary rounded" title="Re-upload">
+                              <Upload size={10} />
+                            </button>
+                            <button className="p-1 hover:bg-destructive/10 rounded text-destructive" title="Retirer">
+                              <Trash2 size={10} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </>
         )}
 
         {activeTab === 'graduations' && (
-          <p className="text-xs text-muted-foreground">Gestion des fichiers SVG de graduation à venir.</p>
+          <>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-sm font-semibold">Graduations</h2>
+            </div>
+            {loading ? (
+              <p className="text-xs text-muted-foreground">Chargement…</p>
+            ) : graduations.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Aucune graduation pour le moment.</p>
+            ) : (
+              <div className="border-thin rounded-xl overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-secondary/50">
+                      <th className="text-left px-3 py-2 font-medium">Aperçu</th>
+                      <th className="text-left px-3 py-2 font-medium">Nom</th>
+                      <th className="text-left px-3 py-2 font-medium">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {graduations.map((g) => (
+                      <tr key={g.id} className="border-t border-thin">
+                        <td className="px-3 py-2">
+                          {g.svg_url ? (
+                            <img src={g.svg_url} alt={g.name} className="w-8 h-8 rounded object-contain bg-secondary" />
+                          ) : (
+                            <div className="w-8 h-8 bg-secondary rounded flex items-center justify-center">
+                              <Eye size={12} className="text-muted-foreground" />
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2">{g.name}</td>
+                        <td className="px-3 py-2">
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] ${
+                            g.status === 'actif' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
+                          }`}>
+                            {g.status === 'actif' ? 'Actif' : 'Brouillon'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
+
         {activeTab === 'tags' && (
           <p className="text-xs text-muted-foreground">Gestion de la taxonomie de tags à venir.</p>
         )}
@@ -143,7 +219,6 @@ const AdminPage = () => {
         )}
       </div>
 
-      {/* Upload modal */}
       {showUpload && (
         <div className="fixed inset-0 bg-foreground/40 flex items-center justify-center z-50" onClick={() => setShowUpload(false)}>
           <div className="bg-background rounded-xl p-6 w-96" onClick={(e) => e.stopPropagation()}>
