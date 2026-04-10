@@ -206,7 +206,7 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
         Ajouter au design
       </button>
 
-      <input ref={fileRef} type="file" accept="image/png,image/jpeg" className="hidden"
+      <input ref={fileRef} type="file" accept="image/png,image/jpeg,application/pdf" className="hidden"
         onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFile(file); }} />
     </div>
   );
