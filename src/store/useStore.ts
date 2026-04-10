@@ -176,6 +176,7 @@ export const useStore = create<AppState>((set, get) => ({
   showTour: false,
   tourStep: 0,
   selectedElementId: null,
+  pendingTextCreation: false,
   showGraduation: true,
   showGraduationMask: false,
   history: [{ ...defaultDesign }],
