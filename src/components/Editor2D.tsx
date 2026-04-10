@@ -521,7 +521,7 @@ const Editor2D = ({ onEditWithAI }: { onEditWithAI?: (elementId: string) => void
       </div>
 
       {/* Floating context menu (desktop) */}
-      {selectedElement && !isMobile && (
+      {selectedElement && !isMobile && !showTextModal && !showElementModal && (
         <FloatingContextMenu
           element={selectedElement}
           canvasScale={1}
