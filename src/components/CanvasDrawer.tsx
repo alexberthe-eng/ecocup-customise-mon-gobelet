@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
-import { X, Search } from 'lucide-react';
+import { X, Search, AlertTriangle } from 'lucide-react';
 import { useStore, MaskType, OpenDrawer } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
+
+const MIN_RECOMMENDED_PX = 500; // minimum width or height for good print quality
 
 /* ─── Shared drawer shell ─── */
 const DrawerShell = ({
@@ -53,16 +55,57 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<{ dataUrl: string; name: string } | null>(null);
   const [selectedMask, setSelectedMask] = useState<MaskType>(null);
+  const [lowRes, setLowRes] = useState(false);
   const { addElement, currentDesign, setSelectedElementId } = useStore();
 
-  const handleFile = (file: File) => {
+  const checkResolution = (dataUrl: string) => {
+    const img = new Image();
+    img.onload = () => {
+      if (img.naturalWidth < MIN_RECOMMENDED_PX || img.naturalHeight < MIN_RECOMMENDED_PX) {
+        setLowRes(true);
+      } else {
+        setLowRes(false);
+      }
+    };
+    img.src = dataUrl;
+  };
+
+  const handleFile = async (file: File) => {
     if (file.size > 10 * 1024 * 1024) {
       alert('Fichier trop volumineux (max 10 Mo)');
       return;
     }
+
+    // Handle PDF files
+    if (file.type === 'application/pdf') {
+      try {
+        const pdfjs = await import('pdfjs-dist');
+        pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+        const page = await pdf.getPage(1);
+        const scale = 2; // render at 2x for quality
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d')!;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        const dataUrl = canvas.toDataURL('image/png');
+        setSelectedFile({ dataUrl, name: file.name });
+        checkResolution(dataUrl);
+      } catch {
+        alert('Impossible de lire ce fichier PDF.');
+      }
+      return;
+    }
+
+    // Handle image files
     const reader = new FileReader();
     reader.onload = (e) => {
-      setSelectedFile({ dataUrl: e.target?.result as string, name: file.name });
+      const dataUrl = e.target?.result as string;
+      setSelectedFile({ dataUrl, name: file.name });
+      checkResolution(dataUrl);
     };
     reader.readAsDataURL(file);
   };
@@ -97,9 +140,13 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
       >
         {selectedFile ? (
           <div className="flex flex-col items-center gap-2">
-            <img src={selectedFile.dataUrl} alt="" className="max-h-24 object-contain rounded" />
+            {selectedFile.name.toLowerCase().endsWith('.pdf') ? (
+              <div className="w-16 h-20 bg-destructive/10 rounded flex items-center justify-center text-destructive text-xs font-bold">PDF</div>
+            ) : (
+              <img src={selectedFile.dataUrl} alt="" className="max-h-24 object-contain rounded" />
+            )}
             <p className="text-[10px] text-muted-foreground truncate max-w-full">{selectedFile.name}</p>
-            <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null); }} className="text-[10px] text-destructive hover:underline">Supprimer</button>
+            <button onClick={(e) => { e.stopPropagation(); setSelectedFile(null); setLowRes(false); }} className="text-[10px] text-destructive hover:underline">Supprimer</button>
           </div>
         ) : (
           <>
@@ -112,15 +159,24 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
         )}
       </div>
 
+      {lowRes && (
+        <div className="flex items-start gap-2 p-2.5 mb-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-300">
+          <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+          <p className="text-[10px] leading-snug">
+            <span className="font-semibold">Résolution faible.</span> Votre image fait moins de {MIN_RECOMMENDED_PX}px. Le rendu d'impression risque d'être pixelisé. Privilégiez un fichier haute résolution.
+          </p>
+        </div>
+      )}
+
       <div className="text-[11px] text-foreground mb-1">
-        <span className="font-medium">Formats de fichier :</span> PNG, JPG
+        <span className="font-medium">Formats de fichier :</span> PNG, JPG, PDF
       </div>
       <div className="text-[11px] text-foreground mb-4">
         <span className="font-medium">Taille de fichier :</span> 10 Mo max.
       </div>
 
       <p className="text-[11px] text-muted-foreground text-center mb-4">
-        Importez un fichier image à ajouter à votre design.
+        Importez un fichier image ou PDF à ajouter à votre design.
       </p>
 
       {/* Mask selector */}
@@ -150,7 +206,7 @@ const ImageDrawerContent = ({ onClose }: { onClose: () => void }) => {
         Ajouter au design
       </button>
 
-      <input ref={fileRef} type="file" accept="image/png,image/jpeg" className="hidden"
+      <input ref={fileRef} type="file" accept="image/png,image/jpeg,application/pdf" className="hidden"
         onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFile(file); }} />
     </div>
   );
