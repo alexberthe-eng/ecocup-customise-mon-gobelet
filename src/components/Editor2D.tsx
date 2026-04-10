@@ -532,22 +532,103 @@ const Editor2D = ({ onEditWithAI }: { onEditWithAI?: (elementId: string) => void
         </div>
       </div>
 
-      {/* Contextual panel */}
-      {selectedElement && (
-        <ElementPanel
+      {/* Floating context menu (desktop) */}
+      {selectedElement && !isMobile && (
+        <FloatingContextMenu
           element={selectedElement}
-          isMobile={isMobile}
-          onEditWithAI={onEditWithAI}
-          anchor={
-            !isMobile && canvasRef.current
-              ? {
-                  left: canvasRef.current.offsetLeft + Math.min(selectedElement.x + selectedElement.width + 24, 420),
-                  top: canvasRef.current.offsetTop + Math.max(selectedElement.y - 10, 10),
-                }
-              : undefined
-          }
+          canvasScale={1}
+          onClose={() => setSelectedElementId(null)}
+          onModify={() => {
+            setEditingElementId(selectedElement.id);
+            if (selectedElement.type === 'text') {
+              setTextModalMode('edit');
+              setShowTextModal(true);
+            } else {
+              setShowElementModal(true);
+            }
+          }}
+          onMoveUp={() => moveElementLayer(selectedElement.id, 'up')}
+          onMoveDown={() => moveElementLayer(selectedElement.id, 'down')}
+          onDelete={() => { removeElement(selectedElement.id); setSelectedElementId(null); }}
         />
       )}
+
+      {/* Mobile bottom sheet */}
+      {selectedElement && isMobile && (
+        <div
+          className="absolute bottom-0 left-0 right-0 bg-background border-t border-thin shadow-lg p-3 z-20 animate-fade-in"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-xs font-semibold truncate">
+              {selectedElement.type === 'text' ? `Texte : "${(selectedElement.text || '').slice(0, 15)}"` : selectedElement.type === 'image' ? 'Image' : 'SVG'}
+            </span>
+            <button onClick={() => setSelectedElementId(null)} className="p-1 rounded hover:bg-secondary">
+              <X size={14} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => {
+                setEditingElementId(selectedElement.id);
+                if (selectedElement.type === 'text') { setTextModalMode('edit'); setShowTextModal(true); }
+                else setShowElementModal(true);
+              }}
+              className="w-full h-12 flex items-center gap-3 px-4 rounded-lg text-sm"
+              style={{ border: '0.5px solid hsl(var(--border))' }}
+            >
+              <Pencil size={14} /> Modifier
+            </button>
+            <button onClick={() => moveElementLayer(selectedElement.id, 'up')} className="w-full h-12 flex items-center gap-3 px-4 rounded-lg text-sm" style={{ border: '0.5px solid hsl(var(--border))' }}>
+              <ChevronUp size={14} /> Vers l'avant
+            </button>
+            <button onClick={() => moveElementLayer(selectedElement.id, 'down')} className="w-full h-12 flex items-center gap-3 px-4 rounded-lg text-sm" style={{ border: '0.5px solid hsl(var(--border))' }}>
+              <ChevronDown size={14} /> Vers l'arrière
+            </button>
+            <button onClick={() => { removeElement(selectedElement.id); setSelectedElementId(null); }} className="w-full h-12 flex items-center gap-3 px-4 rounded-lg text-sm text-destructive" style={{ border: '0.5px solid hsl(var(--border))' }}>
+              <Trash2 size={14} /> Supprimer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Text edit modal */}
+      <TextEditModal
+        open={showTextModal}
+        mode={textModalMode}
+        element={editingElement}
+        onClose={() => { setShowTextModal(false); setEditingElementId(null); }}
+        onConfirm={(data) => {
+          if (textModalMode === 'edit' && editingElementId) {
+            updateElement(editingElementId, {
+              text: data.text, fontFamily: data.fontFamily, fontSize: data.fontSize,
+              color: data.color, bold: data.bold, italic: data.italic,
+              underline: data.underline, align: data.align,
+            }, true);
+          } else {
+            const newId = crypto.randomUUID();
+            addElement({
+              id: newId, type: 'text',
+              x: 150, y: 100, width: 200, height: 60,
+              rotation: 0, opacity: 100, color: data.color,
+              zIndex: currentDesign.elements.length,
+              text: data.text, fontFamily: data.fontFamily, fontSize: data.fontSize,
+              bold: data.bold, italic: data.italic, underline: data.underline, align: data.align,
+            });
+            setSelectedElementId(newId);
+          }
+          setShowTextModal(false);
+          setEditingElementId(null);
+        }}
+      />
+
+      {/* Element edit modal */}
+      <ElementEditModal
+        open={showElementModal}
+        element={editingElement ?? null}
+        onClose={() => { setShowElementModal(false); setEditingElementId(null); }}
+        onEditWithAI={onEditWithAI}
+      />
 
       <CanvasDrawer />
     </div>

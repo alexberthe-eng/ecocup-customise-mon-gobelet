@@ -108,9 +108,17 @@ function CupMesh({ onDragStateChange }: { onDragStateChange: (dragging: boolean)
 
         if (el.type === 'text' && el.text) {
           ctx.fillStyle = el.color;
-          ctx.font = `600 ${el.fontSize || 16}px system-ui`;
-          ctx.textAlign = 'center';
+          const weight = el.bold ? 700 : (600);
+          const style = el.italic ? 'italic ' : '';
+          ctx.font = `${style}${weight} ${el.fontSize || 16}px ${el.fontFamily || 'system-ui'}`;
+          ctx.textAlign = (el.align as CanvasTextAlign) || 'center';
           ctx.textBaseline = 'middle';
+          if (el.underline) {
+            const metrics = ctx.measureText(el.text);
+            const textW = metrics.width;
+            const offsetX = el.align === 'left' ? -el.width / 2 : el.align === 'right' ? el.width / 2 - textW : -textW / 2;
+            ctx.fillRect(offsetX, 4, textW, 1);
+          }
           ctx.fillText(el.text, 0, 0);
         } else if ((el.type === 'image' || el.type === 'svg') && imgMap.has(el.id)) {
           const img = imgMap.get(el.id)!;
