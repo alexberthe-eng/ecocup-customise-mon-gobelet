@@ -300,6 +300,138 @@ const GraduationPanel = () => {
   );
 };
 
+/* ─── My Designs Panel ─── */
+function timeAgo(dateStr: string): string {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "Aujourd'hui";
+  if (diffDays === 1) return 'Hier';
+  if (diffDays < 30) return `Il y a ${diffDays} jours`;
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
+const MyDesignsPanel = () => {
+  const navigate = useNavigate();
+  const isDirty = useStore((s) => s.isDirty);
+  const [user, setUser] = useState<any>(null);
+  const [designs, setDesigns] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [confirmDesign, setConfirmDesign] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const { data } = await supabase
+          .from('saved_designs')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        setDesigns(data || []);
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  const doLoad = (design: any) => {
+    const designData = design.design_data;
+    if (designData) {
+      useStore.setState({
+        currentDesign: { ...designData, id: designData.id || crypto.randomUUID() },
+        history: [designData],
+        historyIndex: 0,
+        isDirty: false,
+      });
+    }
+    setConfirmDesign(null);
+    toast('Design chargé');
+  };
+
+  const handleClick = (design: any) => {
+    if (isDirty) {
+      setConfirmDesign(design);
+    } else {
+      doLoad(design);
+    }
+  };
+
+  const handleSaveFirst = () => {
+    document.dispatchEvent(new CustomEvent('ecocup-save'));
+    setTimeout(() => { if (confirmDesign) doLoad(confirmDesign); }, 500);
+  };
+
+  if (!user) {
+    return (
+      <div className="space-y-3 text-center py-6">
+        <p className="text-xs text-muted-foreground">Connectez-vous pour accéder à vos créations sauvegardées</p>
+        <button onClick={() => navigate('/auth?redirect=/')} className="text-xs bg-primary text-primary-foreground rounded-lg px-4 py-2 font-medium hover:opacity-90">Se connecter</button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 size={20} className="animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {designs.length === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-6">Aucun design sauvegardé</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-2">
+          {designs.map((d) => (
+            <button
+              key={d.id}
+              onClick={() => handleClick(d)}
+              className="border border-border rounded-lg overflow-hidden cursor-pointer transition-all hover:-translate-y-px text-left hover:border-foreground"
+            >
+              <div style={{ height: 70, overflow: 'hidden' }}>
+                {d.thumbnail_url ? (
+                  <img src={d.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full" style={{ backgroundColor: d.cup_color || '#f2f2f2' }} />
+                )}
+              </div>
+              <div className="p-1.5">
+                <div className="truncate text-[10px] font-medium">{d.design_name}</div>
+                <div className="text-[9px] text-muted-foreground">{timeAgo(d.created_at)}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+      <a href="/account" className="block text-center text-primary hover:underline" style={{ fontSize: 11 }}>
+        Voir tout →
+      </a>
+
+      {/* Confirm dialog */}
+      <Dialog open={!!confirmDesign} onOpenChange={() => setConfirmDesign(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Charger ce design ?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Charger ce design remplacera votre design en cours. Voulez-vous d'abord sauvegarder ?
+          </p>
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <Button variant="ghost" size="sm" onClick={() => { if (confirmDesign) doLoad(confirmDesign); }}>Ignorer</Button>
+            <Button variant="outline" size="sm" onClick={handleSaveFirst}>Sauvegarder d'abord</Button>
+            <Button size="sm" onClick={() => { if (confirmDesign) doLoad(confirmDesign); }}>Charger</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
 /* ─── Mobile Color Popover ─── */
 const MobileColorPopover = () => {
   const { currentDesign, setCupColor, setShowColorPopover } = useStore();
