@@ -1,9 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, Ruler, Sparkles, HelpCircle, Headphones, Plus, X, Search, MessageCircle } from 'lucide-react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, Ruler, Sparkles, HelpCircle, Headphones, Plus, X, Search, MessageCircle, FolderOpen, Loader2 } from 'lucide-react';
 import { useStore, ActiveTool, MaskType } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import ToggleSwitch from '@/components/ToggleSwitch';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 /* ─── Tab definitions ─── */
 const TABS = [
