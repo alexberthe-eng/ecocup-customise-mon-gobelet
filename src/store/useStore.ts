@@ -46,11 +46,29 @@ export type ActiveTool = 'color' | 'image' | 'text' | 'sticker' | 'collection' |
 export type OpenDrawer = 'image' | 'sticker' | 'collection' | 'mask' | null;
 
 /** Capacity options per product type */
-export const PRODUCT_CAPACITIES: Record<string, { label: string; capacities: string[] }> = {
-  'gobelet-eco': { label: 'Gobelet Eco', capacities: ['25cl', '30cl', '33cl', '50cl'] },
-  'verre-champagne': { label: 'Verre à champagne', capacities: ['15cl', '20cl'] },
-  'mug': { label: 'Mug', capacities: ['25cl', '35cl'] },
-  'gobelet-carton': { label: 'Gobelet carton', capacities: ['20cl', '25cl', '33cl'] },
+export const PRODUCT_CAPACITIES: Record<string, { label: string; ref: string; capacities: string[] }> = {
+  'eco-12': { label: 'Gobelet Ecocup', ref: 'ECO 12', capacities: ['12cl'] },
+  'eco-18': { label: 'Gobelet Ecocup', ref: 'ECO 18', capacities: ['18cl'] },
+  'eco-28': { label: 'Gobelet Ecocup', ref: 'ECO 28', capacities: ['28cl'] },
+  'eco-30': { label: 'Gobelet Ecocup', ref: 'ECO 30', capacities: ['30cl'] },
+  'eco-40': { label: 'Gobelet Ecocup', ref: 'ECO 40', capacities: ['40cl'] },
+  'eco-50': { label: 'Gobelet Ecocup', ref: 'ECO 50', capacities: ['50cl'] },
+  'eco-60': { label: 'Gobelet pinte Ecocup', ref: 'ECO 60', capacities: ['60cl'] },
+  'eco-90': { label: 'Gobelet XXL Ecocup', ref: 'ECO 90', capacities: ['90cl'] },
+  'eco-carafe': { label: 'Carafe Ecocup', ref: 'ECO CARAFE', capacities: ['1,5L', '1,6L'] },
+};
+
+/** Base unit prices (blank, no customization) */
+export const BASE_PRICES: Record<string, number> = {
+  'eco-12': 0.29,
+  'eco-18': 0.30,
+  'eco-28': 0.38,
+  'eco-30': 0.44,
+  'eco-40': 0.36,
+  'eco-50': 0.44,
+  'eco-60': 0.43,
+  'eco-90': 0.60,
+  'eco-carafe': 1.57,
 };
 
 /** Default graduation for a given capacity */
@@ -135,15 +153,15 @@ interface AppState {
 
 const defaultDesign: Design = {
   id: crypto.randomUUID(),
-  name: 'Gobelet personnalisé par vos soins – ECO 30 Digital',
+  name: 'Mon gobelet personnalisé — ECO 30',
   elements: [],
   cupColor: '#f2f2f2',
   graduation: 'standard-33cl',
   quantity: 250,
   comment: '',
   graduationOffset: { dx: 0, dy: 0 },
-  productType: 'gobelet-eco',
-  capacity: '33cl',
+  productType: 'eco-30',
+  capacity: '30cl',
 };
 
 const PRICE_TIERS: Record<number, number> = {
@@ -156,8 +174,10 @@ const PRICE_TIERS: Record<number, number> = {
   10000: 0.82,
 };
 
-export const getUnitPrice = (quantity: number): number => {
-  return PRICE_TIERS[quantity] ?? 1.60;
+export const getUnitPrice = (quantity: number, productType?: string): number => {
+  const basePrice = BASE_PRICES[productType ?? 'eco-30'] ?? 0.44;
+  const markup = PRICE_TIERS[quantity] ?? 1.60;
+  return basePrice + markup;
 };
 
 export const useStore = create<AppState>((set, get) => ({

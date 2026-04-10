@@ -17,7 +17,7 @@ import SaveModal from '@/components/SaveModal';
 import AIWizardModal from '@/components/AIWizardModal';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const DEFAULT_NAME = 'Gobelet personnalisé par vos soins – ECO 30 Digital';
+const DEFAULT_NAME = 'Mon gobelet personnalisé — ECO 30';
 
 const Index = () => {
   const { activeTab, startTour, currentDesign } = useStore();
