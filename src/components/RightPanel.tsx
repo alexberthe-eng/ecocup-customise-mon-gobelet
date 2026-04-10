@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore, getUnitPrice, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { X, ShoppingCart, Check, Plus } from 'lucide-react';
-import html2canvas from 'html2canvas';
+
 
 import { useIsMobile, useIsDesktop } from '@/hooks/use-mobile';
 

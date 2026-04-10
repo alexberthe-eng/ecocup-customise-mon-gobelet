@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '@/store/useStore';
-import html2canvas from 'html2canvas';
+
 import TopBar from '@/components/TopBar';
 import ToolBar from '@/components/ToolBar';
 import LeftSidebar from '@/components/LeftSidebar';

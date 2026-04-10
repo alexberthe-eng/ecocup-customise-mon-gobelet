@@ -5,7 +5,7 @@ import { useStore, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import AuthModal from '@/components/AuthModal';
-import html2canvas from 'html2canvas';
+
 import { toast } from 'sonner';
 
 const TopBar = () => {
