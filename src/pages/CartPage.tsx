@@ -30,10 +30,10 @@ const CartItem = ({ design, index }: { design: any; index: number }) => {
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl p-5 mb-4">
-      <div className="flex gap-5">
+    <div className="bg-card border border-border rounded-xl p-4 sm:p-5 mb-4">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-5">
         {/* Thumbnail */}
-        <div className="w-[130px] h-[130px] rounded-lg border border-border overflow-hidden shrink-0 bg-secondary flex items-center justify-center">
+        <div className="w-full sm:w-[130px] h-[120px] sm:h-[130px] rounded-lg border border-border overflow-hidden shrink-0 bg-secondary flex items-center justify-center">
           {design.thumbnail ? (
             <img
               src={design.thumbnail}
@@ -91,34 +91,40 @@ const CartItem = ({ design, index }: { design: any; index: number }) => {
             </p>
           )}
 
-          {/* Actions */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleModify}
-              className="text-xs font-medium text-primary hover:underline flex items-center gap-1"
-            >
-              <Pencil size={12} />
-              Modifier
-            </button>
-            <button
-              onClick={() => duplicateCartDesign(design.id)}
-              className="text-xs text-muted-foreground hover:underline flex items-center gap-1"
-            >
-              <Copy size={12} />
-              Dupliquer
-            </button>
-            <button
-              onClick={() => setConfirmDelete(true)}
-              className="text-xs text-destructive hover:underline flex items-center gap-1"
-            >
-              <Trash2 size={12} />
-              Retirer
-            </button>
+          {/* Actions + price on same row for mobile */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleModify}
+                className="text-xs font-medium text-primary hover:underline flex items-center gap-1"
+              >
+                <Pencil size={12} />
+                Modifier
+              </button>
+              <button
+                onClick={() => duplicateCartDesign(design.id)}
+                className="text-xs text-muted-foreground hover:underline flex items-center gap-1"
+              >
+                <Copy size={12} />
+                Dupliquer
+              </button>
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="text-xs text-destructive hover:underline flex items-center gap-1"
+              >
+                <Trash2 size={12} />
+                Retirer
+              </button>
+            </div>
+            <div className="text-right shrink-0 sm:hidden">
+              <p className="text-base font-bold text-foreground">{itemTotal.toFixed(2)} €</p>
+              <p className="text-[10px] text-muted-foreground">HT</p>
+            </div>
           </div>
         </div>
 
-        {/* Price */}
-        <div className="text-right shrink-0">
+        {/* Price — desktop only */}
+        <div className="text-right shrink-0 hidden sm:block">
           <p className="text-lg font-bold text-foreground">{itemTotal.toFixed(2)} €</p>
           <p className="text-[11px] text-muted-foreground">HT</p>
         </div>
@@ -335,24 +341,25 @@ const CartPage = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="border-b border-border bg-card px-6 py-3 flex items-center justify-between">
+      <header className="border-b border-border bg-card px-4 sm:px-6 py-3 flex items-center justify-between gap-2">
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors shrink-0"
         >
           <ArrowLeft size={16} />
-          Retour au configurateur
+          <span className="hidden sm:inline">Retour au configurateur</span>
+          <span className="sm:hidden">Retour</span>
         </button>
-        <span className="text-xs font-bold tracking-widest text-foreground">ECOCUP®</span>
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
+        <span className="text-xs font-bold tracking-widest text-foreground shrink-0">ECOCUP®</span>
+        <span className="text-xs text-muted-foreground items-center gap-1 hidden sm:flex">
           <Phone size={12} />
           02 41 93 00 44
         </span>
       </header>
 
       {/* Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-8">
-        <h1 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <h1 className="text-lg sm:text-xl font-semibold text-foreground mb-5 sm:mb-6 flex items-center gap-2">
           <ShoppingCart size={20} />
           Votre panier
           {cart.length > 0 && (
@@ -364,7 +371,7 @@ const CartPage = () => {
 
         {cart.length === 0 ? (
           /* Empty state */
-          <div className="text-center py-20">
+          <div className="text-center py-16 sm:py-20">
             <ShoppingCart size={48} className="mx-auto text-muted-foreground/30 mb-4" />
             <h2 className="text-lg font-medium text-foreground mb-2">Votre panier est vide</h2>
             <p className="text-sm text-muted-foreground mb-6">
@@ -378,9 +385,9 @@ const CartPage = () => {
             </button>
           </div>
         ) : (
-          <div className="flex gap-8 items-start">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
             {/* Left — items */}
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 w-full">
               {cart.map((design, index) => (
                 <CartItem key={design.id} design={design} index={index} />
               ))}
@@ -394,7 +401,7 @@ const CartPage = () => {
             </div>
 
             {/* Right — summary */}
-            <div className="w-[340px] shrink-0">
+            <div className="w-full lg:w-[340px] shrink-0">
               <CartSummary onOrder={() => setShowOrderConfirm(true)} />
             </div>
           </div>
@@ -402,8 +409,8 @@ const CartPage = () => {
       </main>
 
       {/* Footer reassurance */}
-      <footer className="border-t border-border bg-card px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-center gap-8 text-[11px] text-muted-foreground">
+      <footer className="border-t border-border bg-card px-4 sm:px-6 py-4">
+        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] text-muted-foreground">
           <span>🔒 Paiement sécurisé</span>
           <span>🚚 Livraison offerte dès 200 € HT</span>
           <span>♻️ Gobelets réutilisables</span>
