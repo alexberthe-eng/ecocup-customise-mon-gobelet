@@ -44,6 +44,42 @@ export type Database = {
         }
         Relationships: []
       }
+      motifs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          format: string
+          id: string
+          name: string
+          status: string
+          svg_url: string
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          format?: string
+          id?: string
+          name?: string
+          status?: string
+          svg_url?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          format?: string
+          id?: string
+          name?: string
+          status?: string
+          svg_url?: string
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string
