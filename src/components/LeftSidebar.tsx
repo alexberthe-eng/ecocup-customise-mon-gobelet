@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, Ruler, Sparkles, HelpCircle, Headphones, Plus, X, Search, MessageCircle, FolderOpen, Loader2 } from 'lucide-react';
+import { Palette, ImagePlus, Type, Shapes, BookOpen, Frame, Ruler, Sparkles, HelpCircle, Headphones, Plus, X, Search, MessageCircle, FolderOpen, Loader2, AlertTriangle } from 'lucide-react';
 import { useStore, ActiveTool, MaskType } from '@/store/useStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
