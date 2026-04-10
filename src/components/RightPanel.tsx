@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStore, getUnitPrice, PRODUCT_CAPACITIES } from '@/store/useStore';
 import { X, ShoppingCart, Check, Plus } from 'lucide-react';
 import html2canvas from 'html2canvas';
@@ -18,8 +19,8 @@ const RightPanel = () => {
     setCapacity,
     addToCart,
     setShowRightPanel,
-    setShowCartPanel,
   } = useStore();
+  const navigate = useNavigate();
 
   const isMobile = useIsMobile();
   const isDesktop = useIsDesktop();
@@ -147,7 +148,7 @@ const RightPanel = () => {
 
         {cart.length > 0 && (
           <button
-            onClick={() => { setShowRightPanel(false); setShowCartPanel(true); }}
+            onClick={() => { setShowRightPanel(false); navigate('/panier'); }}
             className="w-full text-xs border-thin rounded-md py-2 text-foreground hover:bg-secondary transition-colors"
           >
             Voir mon panier ({cart.length} {cart.length === 1 ? 'design' : 'designs'})
@@ -176,7 +177,7 @@ const RightPanel = () => {
             Créer un nouveau design
           </button>
           <button
-            onClick={() => { setShowConfirmModal(false); setShowCartPanel(true); }}
+            onClick={() => { setShowConfirmModal(false); navigate('/panier'); }}
             className="w-full flex items-center justify-center gap-1.5 text-xs border-thin rounded-md py-2.5 text-foreground hover:bg-secondary transition-colors font-medium"
           >
             <ShoppingCart size={14} />
