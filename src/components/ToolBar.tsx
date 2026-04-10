@@ -63,7 +63,7 @@ const ToolBar = ({ onExportPNG, onOpenAIWizard }: ToolBarProps) => {
 
   return (
     <div className="h-11 flex items-center justify-center px-3 gap-1 border-b border-thin bg-background shrink-0">
-      <Btn icon={Save} title="Sauvegarder" onClick={() => document.dispatchEvent(new CustomEvent('ecocup-save'))} />
+      <Btn icon={Save} title="Sauvegarder" onClick={() => document.dispatchEvent(new CustomEvent('ecocup-save'))} data-tour="toolbar-save" />
       <Sep />
       <Btn icon={Undo2} title="Annuler (Ctrl+Z)" onClick={undo} disabled={!canUndo} />
       <Btn icon={Redo2} title="Rétablir (Ctrl+Y)" onClick={redo} disabled={!canRedo} />
@@ -76,7 +76,7 @@ const ToolBar = ({ onExportPNG, onOpenAIWizard }: ToolBarProps) => {
           <Sep />
         </>
       )}
-      <div className="flex items-center gap-0.5 bg-secondary rounded-full p-0.5 shrink-0">
+      <div className="flex items-center gap-0.5 bg-secondary rounded-full p-0.5 shrink-0" data-tour="toggle-2d-3d">
         <span className="text-[10px] font-medium px-1.5 text-muted-foreground select-none">2D</span>
         <button
           onClick={() => setActiveTab(activeTab === '2d' ? '3d' : '2d')}
@@ -87,7 +87,7 @@ const ToolBar = ({ onExportPNG, onOpenAIWizard }: ToolBarProps) => {
         </button>
         <span className="text-[10px] font-medium px-1.5 text-muted-foreground select-none">3D</span>
       </div>
-      <Btn icon={FileCheck} title="Aperçu Bon à Tirer" onClick={() => setActiveTab('bat')} active={activeTab === 'bat'} />
+      <Btn icon={FileCheck} title="Aperçu Bon à Tirer" onClick={() => setActiveTab('bat')} active={activeTab === 'bat'} data-tour="tab-bat" />
       <Sep />
       {activeTab === '2d' && (
         <Btn icon={Grid3x3} title="Afficher/masquer la grille" onClick={() => setGridVisible(!gridVisible)} active={gridVisible} />
