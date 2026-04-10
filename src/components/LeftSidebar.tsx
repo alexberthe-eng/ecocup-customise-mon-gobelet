@@ -24,7 +24,7 @@ const TABS = [
 
 const BOTTOM_TAB = { id: 'my-designs' as const, icon: FolderOpen, label: 'Mes designs', title: 'Mes créations' };
 
-type PanelId = typeof TABS[number]['id'] | null;
+type PanelId = typeof TABS[number]['id'] | 'my-designs' | null;
 
 /* ─── Data ─── */
 const DEMO_STICKERS = [
