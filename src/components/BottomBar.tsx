@@ -66,11 +66,6 @@ const BottomBar = () => {
       </button>
 
       <div className="flex-1" />
-
-      <button onClick={() => document.dispatchEvent(new CustomEvent('ecocup-share'))} className="flex flex-col items-center gap-0.5 text-muted-foreground hover:text-foreground transition-colors shrink-0" title="Partager">
-        <Share2 size={16} />
-        <span className="text-[10px]">Partager</span>
-      </button>
     </footer>
   );
 };
