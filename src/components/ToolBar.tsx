@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Save, Undo2, Redo2, Copy, ClipboardPaste, Trash2, PenLine, Box, FileCheck, Grid3x3, Download, Sparkles } from 'lucide-react';
+import { Save, Share2, Undo2, Redo2, Copy, ClipboardPaste, Trash2, PenLine, Box, FileCheck, Grid3x3, Download, Sparkles } from 'lucide-react';
 import { useStore as useGlobalStore } from '@/store/useStore';
 import { useStore, DesignElement } from '@/store/useStore';
 
